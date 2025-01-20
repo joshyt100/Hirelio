@@ -31,3 +31,27 @@ export const registerUser = async (userData: {
     throw new Error(error.message || "Failed to register");
   }
 };
+
+// login new user
+export const loginUser = async (userData: {
+  email: string;
+  password: string;
+}) => {
+  try {
+    const response = await request(`${API_URL}/login/`, "POST", userData);
+    return response;
+  } catch (error) {
+    throw new Error(error.message || "Failed to register");
+  }
+};
+// logout user
+export const logoutUser = async () => {
+  try {
+    const response = await request(`${API_URL}/logout/`, "POST", {});
+    return response;
+  } catch (error) {
+    throw new Error(error.message || "Failed to logout")
+  }
+
+}
+

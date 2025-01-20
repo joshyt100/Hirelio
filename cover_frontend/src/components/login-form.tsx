@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { useState } from 'react'
 import {
   Card,
   CardContent,
@@ -9,11 +10,32 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { loginUser } from "@/api/auth"
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
+  const [email, setEmail] = useState<string>("")
+  const [password, setPassword] = useState<string>("")
+  const [message, setMessage] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    const data = { email, password }
+
+    try {
+      const response = await loginUser(data)
+      setMessage("Logged in Successfully")
+    }
+    catch (err) {
+      console.log(err)
+      setError(err.message || "Error occured during the login process`")
+    }
+  }
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
@@ -24,13 +46,14 @@ export function LoginForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form>
+          <form onSubmit={handleSubmit}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
                   type="email"
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder="m@example.com"
                   required
                 />
@@ -45,7 +68,7 @@ export function LoginForm({
                     Forgot your password?
                   </a>
                 </div>
-                <Input id="password" type="password" required />
+                <Input id="password" onChange={(e) => setPassword(e.target.value)} type="password" required />
               </div>
               <Button type="submit" className="w-full">
                 Login
@@ -61,7 +84,10 @@ export function LoginForm({
               </a>
             </div>
           </form>
+          {message && <p className="text-center text-green-500">{message}</p>}
+          {error && <p className="text-center text-red-500">{error}</p>}
         </CardContent>
+
       </Card>
     </div>
   )
