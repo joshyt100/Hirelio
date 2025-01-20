@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "social_django",  # For third-party OAUTH
     "accounts",  # Added accounts app here
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
@@ -51,6 +52,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
 ]
 
 ROOT_URLCONF = "cover_backend.urls"
@@ -134,7 +136,8 @@ SESSION_ENGINE = "django.contrib.sessions.backends.db"
 SESSION_COOKIE_NAME = "sessionid"
 SESSION_COOKIE_SECURE = False  # SET TO TRUE IN PRODUCTION
 SESSION_COOKIE_HTTPONLY = True
-
-
 CSRF_COOKIE_SECURE = False
 CSRF_COOKIE_HTTPONLY = True
+
+AUTH_USER_MODEL = "accounts.CustomUser"
+CORS_ALLOW_ALL_ORIGINS = True

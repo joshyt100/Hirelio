@@ -1,25 +1,30 @@
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.shortcuts import render
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+User = get_user_model()  # use the custom user model
+
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]  # Allow any user to register
 
     def post(self, request):
-        username = request.data.get("username")
         email = request.data.get("email")
         password = request.data.get("password")
 
+        if not email or not password:
+            return Response(
+                {"error": "Email and password are required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         # try-except to create a user and catch errors
         try:
-            user = User.objects.create_user(
-                username=username, email=email, password=password
-            )
+            # create user using email and password
+            user = User.objects.create_user(email=email, password=password)
             login(request, user)
             return Response(
                 {"message": " Account created successfully"},
@@ -33,10 +38,10 @@ class LoginView(APIView):
     permission_classes = [AllowAny]  # Allow any user to login
 
     def post(self, request):
-        username = request.data.get("username")
+        email = request.data.get("email")
         password = request.data.get("password")
 
-        user = authenticate(request, username=username, password=password)
+        user = authenticate(request, email=email, password=password)
 
         if user is not None:
             login(request, user)  # create session

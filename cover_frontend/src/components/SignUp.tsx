@@ -1,5 +1,8 @@
+
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { useState } from "react"
+import { registerUser } from "@/api/auth" //import function to register user
 import {
   Card,
   CardContent,
@@ -10,27 +13,51 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
-export function LoginForm({
+export function SignUpForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
+  const [email, setEmail] = useState<string>("")
+  const [password, setPassword] = useState<string>("")
+  const [message, setMessage] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  // to submit form <information></information>
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    const data = { email, password }
+
+    try {
+      const response = await registerUser(data)
+      setMessage(response.message)
+    }
+    catch (err) {
+      console.log(err)
+      setError(err.message || "Error occured during registry process")
+
+    }
+  }
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">Login</CardTitle>
+          <CardTitle className="text-2xl">Register</CardTitle>
           <CardDescription>
-            Enter your email below to login to your account
+            Enter your email below to create your account
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form>
+          <form onSubmit={handleSubmit}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
                   type="email"
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder="m@example.com"
                   required
                 />
@@ -38,29 +65,25 @@ export function LoginForm({
               <div className="grid gap-2">
                 <div className="flex items-center">
                   <Label htmlFor="password">Password</Label>
-                  <a
-                    href="/forgot-password"
-                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                  >
-                    Forgot your password?
-                  </a>
                 </div>
-                <Input id="password" type="password" required />
+                <Input id="password" type="password" onChange={(e) => setPassword(e.target.value)} required />
               </div>
               <Button type="submit" className="w-full">
-                Login
+                Register
               </Button>
               <Button variant="outline" className="w-full">
-                Login with Google
+                Register with Google
               </Button>
             </div>
             <div className="mt-4 text-center text-sm">
-              Don&apos;t have an account?{" "}
-              <a href="/sign-up" className="underline underline-offset-4">
-                Sign up
+              Already have an account? {"  "}
+              <a href="/login" className="underline underline-offset-4">
+                Login
               </a>
             </div>
           </form>
+          {message && <p className="text-center text-green-500">{message}</p>}
+          {error && <p className="text-center text-red-500">{error}</p>}
         </CardContent>
       </Card>
     </div>
