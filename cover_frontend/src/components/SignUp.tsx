@@ -40,6 +40,7 @@ export function SignUpForm({
     }
   }
 
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
@@ -71,9 +72,15 @@ export function SignUpForm({
               <Button type="submit" className="w-full">
                 Register
               </Button>
-              <Button variant="outline" className="w-full">
+
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => window.location.href = "http://127.0.0.1:8000/google/login/google-oauth2/"}
+              >
                 Register with Google
               </Button>
+
             </div>
             <div className="mt-4 text-center text-sm">
               Already have an account? {"  "}

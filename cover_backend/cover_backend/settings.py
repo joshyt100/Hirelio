@@ -44,15 +44,21 @@ INSTALLED_APPS = [
     "corsheaders",
 ]
 
+# authentication Backends
+AUTHENTICATION_BACKENDS = [
+    "social_core.backends.google.GoogleOAuth2",
+    "django.contrib.auth.backends.ModelBackend",
+]
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "corsheaders.middleware.CorsMiddleware",
 ]
 
 ROOT_URLCONF = "cover_backend.urls"
@@ -109,6 +115,16 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+SOCIAL_AUTH_PIPELINE = [
+    "social_core.pipeline.social_auth.social_details",
+    "social_core.pipeline.social_auth.social_uid",
+    "social_core.pipeline.social_auth.auth_allowed",
+    "social_core.pipeline.social_auth.social_user",
+    "social_core.pipeline.social_auth.associate_user",
+    "social_core.pipeline.social_auth.load_extra_data",
+    "social_core.pipeline.user.user_details",
+]
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
@@ -137,7 +153,31 @@ SESSION_COOKIE_NAME = "sessionid"
 SESSION_COOKIE_SECURE = False  # SET TO TRUE IN PRODUCTION
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SECURE = False
-CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = False
+LOGIN_URL = "/google/login/google-oauth2/"
+SESSION_COOKIE_SAMESITE = "Lax"
+
 
 AUTH_USER_MODEL = "accounts.CustomUser"
 CORS_ALLOW_ALL_ORIGINS = True
+ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5174",
+    "http://127.0.0.1:5174",
+]
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = (
+    "444676959653-ab588g7886fp8jgngl15fji5i59vvllb.apps.googleusercontent.com"
+)
+
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = "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"
+SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI = (
+    "http://127.0.0.1:8000/google/complete/google-oauth2/"
+)
+SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = ["email", "profile", "openid"]
+
+
+# Redirect URLs
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/"

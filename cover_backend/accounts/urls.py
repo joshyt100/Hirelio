@@ -1,5 +1,5 @@
 from django.contrib.auth import views as auth_views  # import for password_reset views *
-from django.urls import path
+from django.urls import include, path
 
 from .views import LoginView, RegisterView
 
@@ -24,4 +24,5 @@ urlpatterns = [
         auth_views.PasswordResetCompleteView.as_view(),
         name="password-reset-complete",
     ),
+    # path("google/", include("social_django.urls", namespace="social")),
 ]

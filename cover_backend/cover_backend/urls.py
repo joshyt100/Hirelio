@@ -1,7 +1,15 @@
 from django.contrib import admin
+from django.http import HttpResponse
 from django.urls import include, path
+
+
+def test_view(request):
+    return HttpResponse("hello")
+
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include("accounts.urls")),
+    path("google/", include("social_django.urls", namespace="social")),
+    path("", test_view, name="home"),
 ]

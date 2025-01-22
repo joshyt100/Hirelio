@@ -2,28 +2,25 @@ import React, { useState, ChangeEvent, FormEvent } from "react"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { resetPassword } from "@/api/auth"
 
 const ForgotPasswordComponent: React.FC = () => {
   const [email, setEmail] = useState<string>("")
-  const [message, setMessage] = useState<string>("")
-  const [error, setError] = useState<string>("")
+  const [message, setMessage] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    // Simple form validation
-    if (!email) {
-      setError("Please enter a valid email address")
-      return
+    try {
+      const response = await resetPassword(email)
+      setMessage("reset password link has been sent to your email")
+    } catch (err) {
+      console.log(err)
+      setError(err.message || "Error occured during reset password process")
     }
 
-    // Simulate success/failure (this is where you'd normally make an API request)
-    setMessage("If an account with that email exists, we have sent a password reset link.")
-    setError("")
-  }
 
-  const handleEmailChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setEmail(e.target.value)
   }
 
   return (
@@ -50,7 +47,7 @@ const ForgotPasswordComponent: React.FC = () => {
               required
               placeholder="Email address"
               value={email}
-              onChange={handleEmailChange}
+              onChange={(e) => setEmail(e.target.value)}
             />
           </div>
           <Button type="submit" className="w-full">
