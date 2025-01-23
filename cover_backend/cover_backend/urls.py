@@ -1,10 +1,12 @@
 from django.contrib import admin
+from django.contrib.auth.views import login_required
 from django.http import HttpResponse
 from django.urls import include, path
 
 
+@login_required()
 def test_view(request):
-    return HttpResponse("hello")
+    return HttpResponse("cats are cool")
 
 
 urlpatterns = [

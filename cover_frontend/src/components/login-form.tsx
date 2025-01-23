@@ -73,9 +73,15 @@ export function LoginForm({
               <Button type="submit" className="w-full">
                 Login
               </Button>
-              <Button variant="outline" className="w-full">
+
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => window.location.href = "http://127.0.0.1:8000/google/login/google-oauth2/"}
+              >
                 Login with Google
               </Button>
+
             </div>
             <div className="mt-4 text-center text-sm">
               Don&apos;t have an account?{" "}

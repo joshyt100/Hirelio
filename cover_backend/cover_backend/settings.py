@@ -154,7 +154,7 @@ SESSION_COOKIE_SECURE = False  # SET TO TRUE IN PRODUCTION
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SECURE = False
 CSRF_COOKIE_HTTPONLY = False
-LOGIN_URL = "/google/login/google-oauth2/"
+# LOGIN_URL = "/google/login/google-oauth2/"
 SESSION_COOKIE_SAMESITE = "Lax"
 
 
