@@ -1,5 +1,8 @@
 from django.contrib.auth import authenticate, get_user_model, login, logout
+from django.contrib.auth.views import method_decorator
+from django.http import JsonResponse
 from django.shortcuts import render
+from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -8,6 +11,7 @@ from rest_framework.views import APIView
 User = get_user_model()  # use the custom user model
 
 
+@method_decorator(csrf_protect, name="dispatch")
 class RegisterView(APIView):
     permission_classes = [AllowAny]  # Allow any user to register
 
@@ -34,6 +38,7 @@ class RegisterView(APIView):
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
+@method_decorator(csrf_protect, name="dispatch")
 class LoginView(APIView):
     permission_classes = [AllowAny]  # Allow any user to login
 
@@ -58,3 +63,9 @@ class LogoutView(APIView):
         return Response(
             {"message": "Logged out successfully"}, status=status.HTTP_200_OK
         )
+
+
+@method_decorator(ensure_csrf_cookie, name="dispatch")
+class GetCSRFTokenView(APIView):
+    def get(self, request, format=None):
+        return JsonResponse({"success": "CSRF cookie set"})

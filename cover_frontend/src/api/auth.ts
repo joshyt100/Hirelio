@@ -1,98 +1,107 @@
 import axios from "axios";
+import { getCookie } from "../utils/csrfUtils";
+import Cookies from 'js-cookie';
 
 const API_URL = "http://127.0.0.1:8000/api";
 
-// Helper to get CSRF token from cookies
-const getCSRFToken = (): string | null => {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; csrftoken=`);
-  if (parts.length === 2) return parts.pop()?.split(";").shift() || null;
-  return null;
-};
-
-// General request function
-const request = async (url: string, method: string, data: any) => {
-  try {
-    const response = await axios({
-      url,
-      method,
-      headers: {
-        "Content-Type": "application/json",
-      },
-      data,
-    });
-    return response.data;
-  } catch (error: any) {
-    throw new Error(error.response?.data?.error || "Error occurred");
-  }
-};
-
-// Request function with CSRF token for protected endpoints
-const resetRequest = async (url: string, method: string, data: any) => {
-  try {
-    const csrfToken = getCSRFToken();
-  } catch (error: any) {
-    throw new Error(error.message || "Failed to get CSRF token");
-  }
-
-  try {
-    const response = await axios({
-      url,
-      method,
-      headers: {
-        "Content-Type": "application/json",
-        ...(csrfToken && { "X-CSRFToken": csrfToken }),
-      },
-      data,
-    });
-    return response.data;
-  } catch (error: any) {
-    throw new Error(error.response?.data?.error || "Error occurred");
-  }
-};
-
 // Register new user
 export const registerUser = async (userData: { email: string; password: string }) => {
+  //console.log('token', getCookie('csrftoken'));
+  //console.log('full cookies', document.cookie);
   try {
-    const response = await request(`${API_URL}/register/`, "POST", userData);
-    return response;
+    const response = await axios.post(`${API_URL}/register/`, userData, {
+      withCredentials: true,
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCookie('csrftoken'),
+      },
+    });
+    return response.data;
   } catch (error: any) {
-    throw new Error(error.message || "Failed to register");
+    throw new Error(error.response?.data?.error || "Failed to register");
   }
 };
 
 // Login user
 export const loginUser = async (userData: { email: string; password: string }) => {
   try {
-    const response = await request(`${API_URL}/login/`, "POST", userData);
-    return response;
+    const response = await axios.post(`${API_URL}/login/`, userData, {
+      withCredentials: true,
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCookie('csrftoken'),
+      },
+    });
+    return response.data;
   } catch (error: any) {
-    throw new Error(error.message || "Failed to login");
+    throw new Error(error.response?.data?.error || "Failed to login");
   }
 };
 
 // Logout user
 export const logoutUser = async () => {
   try {
-    const response = await request(`${API_URL}/logout/`, "POST", {});
-    return response;
+    const response = await axios.post(`${API_URL}/logout/`, {}, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    return response.data;
   } catch (error: any) {
-    throw new Error(error.message || "Failed to logout");
+    throw new Error(error.response?.data?.error || "Failed to logout");
   }
 };
+
+
+
 
 // Reset password
+// export const resetPassword = async (email: string) => {
+//   try {
+//     const response = await axios.post(`${API_URL}/password_reset/`, { email }, {
+//       headers: {
+//         "Content-Type": "application/json",
+//       },
+//     });
+//     return response.data;
+//   } catch (error: any) {
+//     throw new Error(error.response?.data?.error || "Failed to reset password");
+//   }
+// };
+//
+//
+
+// Reset password function
+//
+//
 export const resetPassword = async (email: string) => {
   try {
-    const response = await resetRequest(`${API_URL}/password_reset/`, "POST", { email });
-    return response;
+    const csrfToken = getCookie('csrftoken');
+
+    if (!csrfToken) {
+      throw new Error("CSRF token not found. Please refresh the page.");
+    }
+
+    const response = await axios.post(
+      `${API_URL}/password_reset/`,
+      { email },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrfToken, // Add CSRF token here
+        },
+        withCredentials: true,
+      }
+    );
+
+    return response.data;
   } catch (error: any) {
-    throw new Error(error.message || "Failed to reset password");
+    if (error.response) {
+      throw new Error(error.response.data?.error || "Failed to reset password");
+    }
+    throw new Error("An unexpected error occurred. Please try again.");
   }
 };
-
-
-
-
-
 

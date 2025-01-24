@@ -38,7 +38,6 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
-    "rest_framework_simplejwt",
     "social_django",  # For third-party OAUTH
     "accounts",  # Added accounts app here
     "corsheaders",
@@ -142,29 +141,51 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = "static/"
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
-
+#
+# # Default primary key field type
+# # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
+#
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
+#
 SESSION_ENGINE = "django.contrib.sessions.backends.db"
 SESSION_COOKIE_NAME = "sessionid"
 SESSION_COOKIE_SECURE = False  # SET TO TRUE IN PRODUCTION
-SESSION_COOKIE_HTTPONLY = True
+# SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SECURE = False
 CSRF_COOKIE_HTTPONLY = False
+# CSRF_USE_SESSIONS = False
+CSRF_USE_SESSIONS = False
+
+# CORS_ALLOW_HEADERS = [
+#     "accept",
+#     "accept-encoding",
+#     "authorization",
+#     "content-type",
+#     "dnt",
+#     "origin",
+#     "user-agent",
+#     "x-csrftoken",
+#     "x-requested-with",
+# ]
 # LOGIN_URL = "/google/login/google-oauth2/"
-SESSION_COOKIE_SAMESITE = "Lax"
+# SESSION_COOKIE_SAMESITE = "Lax"
 
 
 AUTH_USER_MODEL = "accounts.CustomUser"
 CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
 ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5174",
     "http://127.0.0.1:5174",
 ]
+SESSION_COOKIE_SAMESITE = "Lax"
+# CSRF_COOKIE_DOMAIN = None // may need for deployment
+# CSRF_COOKIE_SAMESITE = None  # For cross-origin requests
+# CSRF_COOKIE_PATH = "/"
+# CORS_EXPOSE_HEADERS = ["Content-Type", "X-CSRFToken"]
+# CSRF_COOKIE_SECURE = True
+
 
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = (
     "444676959653-ab588g7886fp8jgngl15fji5i59vvllb.apps.googleusercontent.com"

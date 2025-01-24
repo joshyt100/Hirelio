@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import CSRFToken from "./csrftoken";
 
 export function SignUpForm({
   className,
@@ -52,6 +53,7 @@ export function SignUpForm({
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit}>
+            <CSRFToken />
             <div className="flex flex-col gap-6">
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
