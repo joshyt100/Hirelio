@@ -21,17 +21,26 @@ const CSRFToken: React.FC = () => {
     return cookieValue;
   };
 
-  // component did mount for setting csrf token
+  // component did mount for setting csrf token 
+  // only fetches csrf token if not already set
   useEffect(() => {
     const fetchCsrfToken = async () => {
-      try {
-        await axios.get(`${API_URL}/csrf/`, { withCredentials: true });
-      } catch (error) {
-        console.error("Error fetching CSRF token:", error);
+      const csrfToken = getCookie('csrftoken');
+
+      if (!csrfToken) {
+        try {
+          await axios.get(`${API_URL}/csrf/`, { withCredentials: true });
+          setCsrfToken(getCookie('csrftoken'));
+
+        } catch (error) {
+          console.error("Error fetching CSRF token:", error);
+        }
+      }
+      else {
+        setCsrfToken(getCookie("csrftoken"));
       }
     };
     fetchCsrfToken();
-    setCsrfToken(getCookie('csrftoken'));
   }, []);
 
   // returns hidden input for csrf token which is expected by django backend

@@ -9,32 +9,30 @@ function App() {
 
 
   return (
-    <Router>
-      <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
-        <div className="bg-zinc-50">
-          <Routes>
-            <Route
-              path="/login" element={
-                <>
-                  <div className=" min-h-screen  flex items-center justify-center">
-                    <LoginForm />
-                  </div>
-                </>}
-            />
+    <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+      <Router>
+        <Routes>
+          <Route
+            path="/login" element={
+              <>
+                <div className=" min-h-screen  flex items-center justify-center">
+                  <LoginForm />
+                </div>
+              </>}
+          />
 
-            <Route path="/forgot-password" element={<ForgotPasswordComponent />} />
-            <Route path="/sign-up" element=
-              {
-                <div className=" min-h-screen  flex items-center justify-center" >
-                  <SignUpForm /> </div>} />
+          <Route path="/forgot-password" element={<ForgotPasswordComponent />} />
+          <Route path="/sign-up" element=
+            {
+              <div className=" min-h-screen  flex items-center justify-center " >
+                <SignUpForm /> </div>} />
 
-            <Route path="/cover-letter-generator" element={
-              <p>cover letter generator page</p>
-            } />
-          </Routes>
-        </div>
-      </ThemeProvider>
-    </Router>
+          <Route path="/cover-letter-generator" element={
+            <p className="min-h-screen flex items-center justify-center">cover letter generator page</p>
+          } />
+        </Routes>
+      </Router >
+    </ThemeProvider>
   );
 }
 
