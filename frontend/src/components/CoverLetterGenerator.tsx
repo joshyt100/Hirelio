@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Link } from "react-router-dom";
+import { FaRegCopy } from "react-icons/fa"
 
 const API_URL = "http://127.0.0.1:8000/cover/generate/";
 
@@ -46,7 +46,7 @@ export const CoverLetterGenerator: React.FC = () => {
       const data = await response.json();
       setCoverLetter(data.cover_letter);
     } catch (err) {
-      setError("Error generating cover letter. Please try again.");
+      setError("Error s try again.");
     } finally {
       setLoading(false);
     }
@@ -54,7 +54,7 @@ export const CoverLetterGenerator: React.FC = () => {
 
   return (
 
-    <div className="max-w-6xl 2xl:max-w-7xl h-full w-full mx-auto flex flex-row">
+    <div className="max-w-6xl 2xl:max-w-8xl h-full w-full mx-auto flex flex-row">
       <div className="p-6 w-2/3 rounded-lg h-full flex flex-col">
         <h2 className="text-lg w-full font-semibold mb-4">Enter Job Description</h2>
         <Textarea
@@ -73,12 +73,11 @@ export const CoverLetterGenerator: React.FC = () => {
           className="w-full mt-2"
         />
 
-        <Button onClick={handleGenerateCoverLetter} disabled={loading} className="mt-4 w-full">
+        <Button onClick={handleGenerateCoverLetter} disabled={loading} className="mt-4  w-full">
           {loading ? "Generating..." : "Generate Cover Letter"}
         </Button>
       </div>
 
-      {/* Right Side: Generated Cover Letter & Loading State */}
       <div className="p-6 w-4/5 rounded-lg flex flex-col justify-center items-center min-h-[300px]">
         {loading ? (
           <div className="flex flex-col items-center">
@@ -86,15 +85,28 @@ export const CoverLetterGenerator: React.FC = () => {
             <p className="mt-4">Generating your cover letter...</p>
           </div>
         ) : coverLetter ? (
-          <div className="w-full">
+          <div className="w-full relative">
             <h2 className="text-lg font-semibold mb-4">Generated Cover Letter</h2>
-            <Textarea
-              placeholder=""
-              value={coverLetter}
-              onChange={(e) => setJobDescription(e.target.value)}
-              className="w flex-1  min-h-[800px] bg-zinc-900 resize-None mb-4"
-            />
+            <div className="relative">
+              <Textarea
+                placeholder=""
+                value={coverLetter}
+                onChange={(e) => setJobDescription(e.target.value)}
+                className="w flex-1  min-h-[750px] bg-zinc-100 dark:bg-zinc-900 resize-None mb-4"
+              />
 
+              <button
+                //onClick={handleCopy}
+                className="absolute top-3 right-3 bg-black text-white p-2 rounded-md hover:bg-gray-600 transition flex items-center justify-center"
+              >
+                <FaRegCopy size={18} />
+              </button>
+              <Button className="absolute top-3 bg-black mr-1 right-12">
+                Save
+              </Button>
+
+
+            </div>
           </div>
         ) : (
           <p className="">Your cover letter will appear here.</p>

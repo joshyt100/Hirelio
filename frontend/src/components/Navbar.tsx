@@ -5,12 +5,12 @@ const Navbar: React.FC = () => {
     <div className="">
       <nav className="p-4 flex justify-between items-center">
         <h1 className="text-xl font-bold">CoverAI</h1>
-        <div className="flex gap-4">
-          <Link to="/saved-cover-letters">
-            <Button variant="ghost">Saved Cover Letters</Button>
+        <div className="flex gap-2">
+          <Link to="/cover-letter-generator">
+            <Button variant="ghost" className=" border dark:border-gray-600">Generate</Button>
           </Link>
-          <Link to="/profile">
-            <Button variant="ghost">Profile</Button>
+          <Link to="/saved">
+            <Button variant="ghost" className="border dark:border-gray-600">Saved</Button>
           </Link>
           <Link to="/login">
             <Button>Login</Button>
