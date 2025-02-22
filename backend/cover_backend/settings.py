@@ -10,17 +10,29 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+import os
 from pathlib import Path
+
+import environ
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+env = environ.Env()
+environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
+
+# SECURITY
+SECRET_KEY = env("SECRET_KEY")
+DEBUG = True
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
+COVER_LETTER_PROMPT = env("COVER_LETTER_PROMPT")
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-ef8b-x646$(fjq_0(b3yj+k)rl8^fyoh!xdxu%lt&4j1_x-6%!"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -39,10 +51,15 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "social_django",  # For third-party OAUTH
+    "storages",
     "accounts",  # Added accounts app here
     "corsheaders",
-    # "AI_generator",
+    "AI_generator",
+    "cover_backend",
 ]
+
+STATIC_URL = "static/"
+MEDIA_URL = "media/"
 
 # authentication Backends
 AUTHENTICATION_BACKENDS = [
@@ -85,15 +102,14 @@ WSGI_APPLICATION = "cover_backend.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "cover",
-        "USER": "josh",
-        "PASSWORD": "Ilovecats-09",
-        "HOST": "localhost",
-        "PORT": "5432",
+        "NAME": env("DATABASE_NAME"),
+        "USER": env("DATABASE_USER"),
+        "PASSWORD": env("DATABASE_PASSWORD"),
+        "HOST": env("DATABASE_HOST"),
+        "PORT": env("DATABASE_PORT"),
     }
 }
 
@@ -175,6 +191,14 @@ CSRF_USE_SESSIONS = False
 # LOGIN_URL = "/google/login/google-oauth2/"
 # SESSION_COOKIE_SAMESITE = "Lax"
 
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+    },
+    "staticfiles": {
+        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+    },
+}
 
 AUTH_USER_MODEL = "accounts.CustomUser"
 CORS_ALLOW_ALL_ORIGINS = True
@@ -190,21 +214,25 @@ SESSION_COOKIE_SAMESITE = "Lax"
 # CORS_EXPOSE_HEADERS = ["Content-Type", "X-CSRFToken"]
 # CSRF_COOKIE_SECURE = True
 
-
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = (
-    "444676959653-ab588g7886fp8jgngl15fji5i59vvllb.apps.googleusercontent.com"
-)
-
-
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = "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"
-SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI = (
-    "http://127.0.0.1:8000/google/complete/google-oauth2/"
-)
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = env("SOCIAL_AUTH_GOOGLE_OAUTH2_KEY")
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = env("SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET")
+SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI = env("SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI")
 SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = ["email", "profile", "openid"]
 SOCIAL_AUTH_ASSOCIATE_BY_EMAIL = True
 
+AWS_ACCESS_KEY_ID = env("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = env("AWS_SECRET_ACCESS_KEY")
+AWS_STORAGE_BUCKET_NAME = env("AWS_STORAGE_BUCKET_NAME")
+AWS_S3_REGION_NAME = "us-east-2"  # Change if needed
+AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
+print("custom AWS_S3_CUSTOM_DOMAIN", AWS_S3_CUSTOM_DOMAIN)
+print("AWS_STORAGE_BUCKET_NAME", AWS_STORAGE_BUCKET_NAME)
+print("secret", AWS_SECRET_ACCESS_KEY)
+print("access", AWS_ACCESS_KEY_ID)
+AWS_S3_FILE_OVERWRITE = False
 
+# Use S3 as default storage for files
 # Redirect URLs
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
-GEMINI_API_KEY = "AIzaSyDnbK7J3mGM8o6Qk9I1XoUj3H4qmWLjwNE"
+GEMINI_API_KEY = env("GEMINI_API_KEY")

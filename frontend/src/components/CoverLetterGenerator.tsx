@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { FaRegCopy } from "react-icons/fa"
+import { FaRegCopy } from "react-icons/fa";
 
 const API_URL = "http://127.0.0.1:8000/cover/generate/";
 
@@ -13,6 +13,8 @@ export const CoverLetterGenerator: React.FC = () => {
   const [coverLetter, setCoverLetter] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [jobName, setJobName] = useState<string>("");
+  const [companyName, setCompanyName] = useState<string>("");
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
@@ -21,8 +23,8 @@ export const CoverLetterGenerator: React.FC = () => {
   };
 
   const handleGenerateCoverLetter = async () => {
-    if (!resume || !jobDescription) {
-      setError("Please upload a resume and enter a job description.");
+    if (!resume || !jobDescription || !jobName || !companyName) {
+      setError("Please upload a resume, enter a job description, and provide job and company names.");
       return;
     }
 
@@ -32,6 +34,8 @@ export const CoverLetterGenerator: React.FC = () => {
     const formData = new FormData();
     formData.append("job_description", jobDescription);
     formData.append("resume", resume);
+    formData.append("job_name", jobName);
+    formData.append("company_name", companyName);
 
     try {
       const response = await fetch(API_URL, {
@@ -46,14 +50,13 @@ export const CoverLetterGenerator: React.FC = () => {
       const data = await response.json();
       setCoverLetter(data.cover_letter);
     } catch (err) {
-      setError("Error s try again.");
+      setError("Error, please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-
     <div className="max-w-6xl 2xl:max-w-8xl h-full w-full mx-auto flex flex-row">
       <div className="p-6 w-2/3 rounded-lg h-full flex flex-col">
         <h2 className="text-lg w-full font-semibold mb-4">Enter Job Description</h2>
@@ -61,8 +64,32 @@ export const CoverLetterGenerator: React.FC = () => {
           placeholder="Enter job description..."
           value={jobDescription}
           onChange={(e) => setJobDescription(e.target.value)}
-          className="w flex-1  min-h-[400px] resize-None mb-4"
+          className="w flex-1 min-h-[400px] resize-none mb-4"
         />
+
+        <div className="mb-4">
+          <Label htmlFor="job-name">Job Name</Label>
+          <Input
+            id="job-name"
+            type="text"
+            value={jobName}
+            onChange={(e) => setJobName(e.target.value)}
+            className="w-full mt-2"
+            placeholder="Enter job name"
+          />
+        </div>
+
+        <div className="mb-4">
+          <Label htmlFor="company-name">Company Name</Label>
+          <Input
+            id="company-name"
+            type="text"
+            value={companyName}
+            onChange={(e) => setCompanyName(e.target.value)}
+            className="w-full mt-2"
+            placeholder="Enter company name"
+          />
+        </div>
 
         <Label htmlFor="resume">Upload Resume</Label>
         <Input
@@ -73,7 +100,7 @@ export const CoverLetterGenerator: React.FC = () => {
           className="w-full mt-2"
         />
 
-        <Button onClick={handleGenerateCoverLetter} disabled={loading} className="mt-4  w-full">
+        <Button onClick={handleGenerateCoverLetter} disabled={loading} className="mt-4 w-full">
           {loading ? "Generating..." : "Generate Cover Letter"}
         </Button>
       </div>
@@ -92,7 +119,7 @@ export const CoverLetterGenerator: React.FC = () => {
                 placeholder=""
                 value={coverLetter}
                 onChange={(e) => setJobDescription(e.target.value)}
-                className="w flex-1  min-h-[750px] bg-zinc-100 dark:bg-zinc-900 resize-None mb-4"
+                className="w flex-1 min-h-[750px] bg-zinc-100 dark:bg-zinc-900 resize-none mb-4"
               />
 
               <button
@@ -104,8 +131,6 @@ export const CoverLetterGenerator: React.FC = () => {
               <Button className="absolute top-3 bg-black mr-1 right-12">
                 Save
               </Button>
-
-
             </div>
           </div>
         ) : (

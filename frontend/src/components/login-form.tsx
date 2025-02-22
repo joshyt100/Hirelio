@@ -32,7 +32,7 @@ export function LoginForm({
 
     try {
       const response = await loginUser(data)
-      navigate("/cover-letter-generator")
+      navigate("/")
 
       setMessage("Logged in Successfully")
 

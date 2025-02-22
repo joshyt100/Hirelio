@@ -1,27 +1,29 @@
 
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { useState } from "react"
-import { registerUser } from "@/api/auth" //import function to register user
+import { registerUser } from "@/api/auth"; //import function to register user
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import CSRFToken from "./csrftoken";
+import { useNavigate } from 'react-router-dom';
 
 export function SignUpForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
-  const [email, setEmail] = useState<string>("")
-  const [password, setPassword] = useState<string>("")
-  const [message, setMessage] = useState<string | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   // to submit form <information></information>
 
@@ -33,6 +35,7 @@ export function SignUpForm({
     try {
       const response = await registerUser(data)
       setMessage(response.message)
+      navigate("/")
     }
     catch (err) {
       console.log(err)
