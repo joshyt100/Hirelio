@@ -114,7 +114,6 @@ class SaveCoverLetter(APIView):
             file_name = cover_letter.cover_letter_file.name
             cover_letter.cover_letter_file.seek(0)  # Reset the file pointer
             try:
-                # Upload the file to S3
                 s3 = boto3.client(
                     "s3",
                     aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
@@ -175,4 +174,24 @@ class GetCoverLetterURL(APIView):
             return Response(
                 {"error": "Failed to generate URL: " + str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+
+class GetCoverLetters(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return CoverLetter.objects.filter(user=self.request.user).order_by(
+            "-created_at"
+        )
+
+    def get(self, request, *args, **kwargs):
+        try:
+            queryset = self.get_queryset()
+            serializer = CoverLetterSerializer(queryset, many=True)
+            return Response(serializer.data)
+        except Exception as e:
+            logger.error("Error listing cover letters: %s", str(e))
+            return Response(
+                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )

@@ -1,6 +1,11 @@
 from django.urls import include, path
 
-from .views import GenerateCoverLetterView, GetCoverLetterURL, SaveCoverLetter
+from .views import (
+    GenerateCoverLetterView,
+    GetCoverLetterURL,
+    SaveCoverLetter,
+    GetCoverLetters,
+)
 
 urlpatterns = [
     path("generate/", GenerateCoverLetterView.as_view(), name="generate_cover_letter"),
@@ -10,4 +15,5 @@ urlpatterns = [
         GetCoverLetterURL.as_view(),
         name="get_cover_letter_url",
     ),
+    path("get-cover-letters/", GetCoverLetters.as_view(), name="get_cover_letters"),
 ]
