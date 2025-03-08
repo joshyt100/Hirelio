@@ -27,7 +27,6 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Header */}
       <header className="border-b sticky top-0 z-50 bg-background backdrop-blur-sm bg-opacity-80">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
@@ -58,7 +57,6 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* Hero Section */}
       <section className="py-24 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-background -z-10"></div>
         <div className="absolute top-20 -right-24 w-96 h-96 bg-primary/10 rounded-full blur-3xl -z-10"></div>
@@ -160,7 +158,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* How It Works Section */}
       <section id="how-it-works" className="py-24 relative">
         <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 via-background to-primary/5 -z-10"></div>
 
@@ -257,7 +254,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Features Section */}
       <section className="py-24 relative">
         <div className="absolute inset-0 bg-gradient-to-bl from-primary/10 via-background to-background -z-10"></div>
 
@@ -279,7 +275,7 @@ export default function LandingPage() {
               </div>
               <h3 className="text-xl font-semibold mb-2">AI-Powered Personalization</h3>
               <p className="text-muted-foreground">
-                Our advanced AI analyzes job descriptions and your resume to create tailored cover letters that
+                Our AI analyzes job descriptions and your resume to create tailored cover letters that
                 highlight your relevant skills and experience.
               </p>
             </div>

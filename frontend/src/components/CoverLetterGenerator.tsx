@@ -1,22 +1,43 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { FaRegCopy } from "react-icons/fa";
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { CiEdit } from "react-icons/ci";
 import { generateCoverLetter } from "@/api/generate";
 import { saveCoverLetter } from "@/api/save";
 import { CoverLetterData } from "../types";
 
-
 export const CoverLetterGenerator: React.FC = () => {
-  const [jobDescription, setJobDescription] = useState<string>("");
+  const [jobDescription, setJobDescription] = useState<string>(() => localStorage.getItem("jobDescription") || "");
   const [resume, setResume] = useState<File | null>(null);
-  const [coverLetter, setCoverLetter] = useState<string | null>(null);
+  const [coverLetter, setCoverLetter] = useState<string | null>(() => localStorage.getItem("coverLetter") || null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [jobName, setJobName] = useState<string>("");
-  const [companyName, setCompanyName] = useState<string>("");
+  const [jobName, setJobName] = useState<string>(() => localStorage.getItem("jobName") || "");
+  const [companyName, setCompanyName] = useState<string>(() => localStorage.getItem("companyName") || "");
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [editedCoverLetter, setEditedCoverLetter] = useState<string | null>(coverLetter);
+  const [isSaved, setIsSaved] = useState<boolean>(() => localStorage.getItem("isSaved") === "true");
+
+  useEffect(() => {
+    localStorage.setItem("jobDescription", jobDescription);
+  }, [jobDescription]);
+
+  useEffect(() => {
+    if (coverLetter) {
+      localStorage.setItem("coverLetter", coverLetter);
+    }
+  }, [coverLetter]);
+
+  useEffect(() => {
+    localStorage.setItem("jobName", jobName);
+  }, [jobName]);
+
+  useEffect(() => {
+    localStorage.setItem("companyName", companyName);
+  }, [companyName]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
@@ -42,22 +63,20 @@ export const CoverLetterGenerator: React.FC = () => {
     try {
       const response = await generateCoverLetter(formData);
       setCoverLetter(response.coverLetter);
-      console.log("response", response);
-    }
-    catch (error) {
-      console.log("error", error);
+      localStorage.setItem("coverLetter", response.coverLetter);
+      setIsSaved(false); // Allow saving again since it's a new cover letter
+      localStorage.setItem("isSaved", "false");
+    } catch (error) {
       setError("Failed to generate cover letter");
-    }
-    finally {
+    } finally {
       setLoading(false);
     }
-
-
   };
 
   const handleCoverLetterSave = async (): Promise<void> => {
-    if (!jobName || !companyName || !coverLetter) {
-      setError("Please provide job name, company name,and cover letter");
+    if (!jobName || !companyName || !coverLetter || isSaved) {
+      setError("You have already saved this cover letter.");
+      return;
     }
 
     const data: CoverLetterData = {
@@ -68,20 +87,32 @@ export const CoverLetterGenerator: React.FC = () => {
 
     try {
       await saveCoverLetter(data);
+      setIsSaved(true);
+      localStorage.setItem("isSaved", "true");
     } catch (error) {
-      console.log("error", error);
-      setError("Failed to save cover letter")
+      setError("Failed to save cover letter");
     }
-  }
+  };
+
+  const handleEditSave = () => {
+    if (editedCoverLetter) {
+      setCoverLetter(editedCoverLetter);
+      localStorage.setItem("coverLetter", editedCoverLetter);
+      setIsSaved(false); // Allow saving again since it's modified
+      localStorage.setItem("isSaved", "false");
+    }
+    setIsEditing(false);
+  };
+
   return (
-    <div className="max-w-6xl 2xl:max-w-8xl h-full w-full mx-auto flex flex-col sm:flex-row ">
+    <div className="  w-full sm:max-w-6xl 2xl:max-w-8xl h-full  mx-auto flex flex-col sm:flex-row ">
       <div className="p-6 w-full sm:w-2/3 rounded-lg h-full flex flex-col">
         <h2 className="text-lg w-full font-semibold mb-4">Enter Job Description</h2>
         <Textarea
           placeholder="Enter job description..."
           value={jobDescription}
           onChange={(e) => setJobDescription(e.target.value)}
-          className="w flex-1 min-h-[400px] resize-none mb-4"
+          className="w-full sm:w flex-1 min-h-[400px] resize-none mb-4"
         />
 
         <div className="mb-4">
@@ -109,20 +140,14 @@ export const CoverLetterGenerator: React.FC = () => {
         </div>
 
         <Label htmlFor="resume">Upload Resume</Label>
-        <Input
-          id="resume"
-          type="file"
-          accept=".pdf"
-          onChange={handleFileChange}
-          className="w-full mt-2"
-        />
+        <Input id="resume" type="file" accept=".pdf" onChange={handleFileChange} className="w-full mt-2" />
 
         <Button onClick={handleGenerateCoverLetter} disabled={loading} className="mt-4 w-full">
           {loading ? "Generating..." : "Generate Cover Letter"}
         </Button>
       </div>
 
-      <div className="p-6 w-4/5 rounded-lg flex flex-col justify-center items-center min-h-[300px]">
+      <div className="p-6 w-full sm:w-4/5 rounded-lg flex flex-col justify-center items-center min-h-[300px]">
         {loading ? (
           <div className="flex flex-col items-center">
             <div className="animate-spin h-8 w-8 border-4 border-t-transparent rounded-full"></div>
@@ -135,23 +160,39 @@ export const CoverLetterGenerator: React.FC = () => {
               <Textarea
                 placeholder=""
                 value={coverLetter}
-                onChange={(e) => setJobDescription(e.target.value)}
-                className="w flex-1 min-h-[750px] bg-zinc-100 dark:bg-zinc-900 resize-none mb-4"
+                className="w-full sm:w flex-1 min-h-[750px] bg-zinc-100 dark:bg-zinc-900 resize-none mb-4"
+                readOnly
               />
 
-              <button
-                //onClick={handleCopy}
-                className="absolute top-3 right-3 bg-black text-white p-2 rounded-md hover:bg-gray-600 transition flex items-center justify-center"
-              >
-                <FaRegCopy size={18} />
-              </button>
-              <Button onClick={handleCoverLetterSave} className="absolute top-3 bg-black mr-1 right-12">
-                Save
+              <Dialog open={isEditing} onOpenChange={setIsEditing}>
+                <DialogTrigger asChild>
+                  <button className="absolute top-3 right-3 bg-black text-white p-2 rounded-md hover:bg-gray-600 transition flex items-center justify-center">
+                    <CiEdit />
+                  </button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>Edit Cover Letter</DialogTitle>
+                  </DialogHeader>
+                  <Textarea
+                    placeholder="Edit cover letter..."
+                    value={editedCoverLetter || ""}
+                    onChange={(e) => setEditedCoverLetter(e.target.value)}
+                    className="w-full h-[500px] resize-none"
+                  />
+                  <DialogFooter>
+                    <Button onClick={handleEditSave}>Save Changes</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+
+              <Button onClick={handleCoverLetterSave} disabled={isSaved} className="absolute top-3 bg-black mr-1 right-12">
+                {isSaved ? "Already Saved" : "Save"}
               </Button>
             </div>
           </div>
         ) : (
-          <p className="">Your cover letter will appear here.</p>
+          <p>Your cover letter will appear here.</p>
         )}
 
         {error && <p className="text-red-500 mt-4">{error}</p>}
