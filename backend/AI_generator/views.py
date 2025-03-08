@@ -3,6 +3,7 @@ import logging
 import boto3
 import google.generativeai as genai
 import PyPDF2
+from io import BytesIO
 from AI_generator.models import CoverLetter
 from AI_generator.serializers import CoverLetterRequestSerializer, CoverLetterSerializer
 from django.conf import settings
@@ -13,6 +14,8 @@ from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from reportlab.pdfgen import canvas
+import textwrap
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +71,7 @@ Now, generate a **highly engaging, professional, and personalized cover letter**
 """
             # Configure and call the generative AI model.
             genai.configure(api_key=settings.GEMINI_API_KEY)
-            model = genai.GenerativeModel("gemini-pro")
+            model = genai.GenerativeModel("gemini-2.0-flash-lite")
             response = model.generate_content(prompt)
             generated_cover_letter = (
                 response.text if response else "Error generating cover letter."
@@ -94,49 +97,94 @@ class SaveCoverLetter(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         job_title = serializer.validated_data.get("job_title")
         company_name = serializer.validated_data.get("company_name")
+        cover_letter_text = request.data.get("cover_letter")
 
-        if not job_title or not company_name:
+        if not job_title or not company_name or not cover_letter_text:
             return Response(
-                {"error": "Job title and company name are required"},
+                {"error": "Job title and company name and cover letter are required"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-
         try:
-            cover_letter = serializer.save(user=request.user)
+            file_name = (
+                f"cover_letters/{request.user.id}/{job_title}_{company_name}.pdf"
+            )
+            buffer = BytesIO()
+            pdf = canvas.Canvas(buffer)
+            pdf.setFont("Helvetica", 12)
+
+            page_width = 780  # A4 width in points
+            left_margin = 40
+            right_margin = 30
+            usable_width = page_width - left_margin - right_margin
+
+            # Starting text position
+            x_position = left_margin
+            y_position = 780  # Start from the top of the page
+
+            # Wrap text properly while preserving paragraph breaks
+            line_height = 15  # Space between lines
+            paragraph_spacing = 10  # Extra space between paragraphs
+            max_chars_per_line = int(
+                usable_width / pdf.stringWidth("A", "Helvetica", 12)
+            )
+
+            for paragraph in cover_letter_text.split("\n"):
+                if (
+                    not paragraph.strip()
+                ):  # If it's an empty line, add a paragraph space
+                    y_position -= paragraph_spacing
+                    continue
+
+                wrapped_lines = textwrap.wrap(paragraph, width=max_chars_per_line)
+
+                for line in wrapped_lines:
+                    if y_position < 40:  # Move to a new page if reaching bottom margin
+                        pdf.showPage()
+                        pdf.setFont("Helvetica", 12)
+                        y_position = 780  # Reset y-position for new page
+
+                    pdf.drawString(x_position, y_position, line)
+                    y_position -= line_height  # Move down for the next line
+
+                y_position -= paragraph_spacing  # Extra space between paragraphs
+
+            pdf.save()
+            buffer.seek(0)  # Reset pointer for buffer (for upload)
+
+            # generate PDF from text
+            s3 = boto3.client(
+                "s3",
+                aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+                aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+                region_name=settings.AWS_S3_REGION_NAME,  # Ensure the correct region is set.
+            )
+
+            s3.upload_fileobj(
+                buffer,
+                settings.AWS_STORAGE_BUCKET_NAME,
+                file_name,
+                ExtraArgs={"ContentType": "application/pdf"},
+            )
+
+            cover_letter = CoverLetter.objects.create(
+                user=request.user,
+                job_title=job_title,
+                company_name=company_name,
+                cover_letter_file_path=file_name,  # Store only the structured path
+            )
+
+            return Response(
+                {
+                    "message": "Cover letter saved successfully",
+                    "cover_letter_id": cover_letter.id,
+                },
+                status=status.HTTP_201_CREATED,
+            )
+
         except Exception as e:
-            logger.error("Error saving cover letter model instance: %s", str(e))
             return Response(
                 {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-
-        # Ensure the file pointer is reset before uploading to S3
-        if cover_letter.cover_letter_file:
-            file_name = cover_letter.cover_letter_file.name
-            cover_letter.cover_letter_file.seek(0)  # Reset the file pointer
-            try:
-                s3 = boto3.client(
-                    "s3",
-                    aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-                    aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-                    region_name=settings.AWS_S3_REGION_NAME,
-                )
-                s3.upload_fileobj(
-                    cover_letter.cover_letter_file,
-                    settings.AWS_STORAGE_BUCKET_NAME,
-                    file_name,
-                )
-                logger.info("File saved successfully to S3: %s", file_name)
-            except Exception as e:
-                logger.error("Error saving file to S3: %s", str(e))
-                return Response(
-                    {"error": "Failed to save file to S3: " + str(e)},
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                )
-
-        return Response(
-            {"message": "Cover letter saved successfully"},
-            status=status.HTTP_201_CREATED,
-        )
 
 
 class GetCoverLetterURL(APIView):
@@ -147,6 +195,7 @@ class GetCoverLetterURL(APIView):
             cover_letter = CoverLetter.objects.get(
                 id=cover_letter_id, user=request.user
             )
+
         except CoverLetter.DoesNotExist:
             return Response(
                 {"error": "Cover letter not found"}, status=status.HTTP_404_NOT_FOUND
@@ -164,11 +213,13 @@ class GetCoverLetterURL(APIView):
                 "get_object",
                 Params={
                     "Bucket": settings.AWS_STORAGE_BUCKET_NAME,
-                    "Key": cover_letter.cover_letter_file.name,
+                    "Key": cover_letter.cover_letter_file_path,  # use stored path for s3 url
                 },
                 ExpiresIn=600,  # URL expires in 10 minutes.
             )
-            return Response({"url": pre_signed_url}, status=status.HTTP_200_OK)
+            return Response({"download_url": pre_signed_url}, status=status.HTTP_200_OK)
+
+            # exception handling
         except Exception as e:
             logger.error("Error generating pre-signed URL: %s", str(e))
             return Response(
@@ -180,18 +231,9 @@ class GetCoverLetterURL(APIView):
 class GetCoverLetters(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        return CoverLetter.objects.filter(user=self.request.user).order_by(
+    def get(self, request):
+        cover_letters = CoverLetter.objects.filter(user=request.user).order_by(
             "-created_at"
         )
-
-    def get(self, request, *args, **kwargs):
-        try:
-            queryset = self.get_queryset()
-            serializer = CoverLetterSerializer(queryset, many=True)
-            return Response(serializer.data)
-        except Exception as e:
-            logger.error("Error listing cover letters: %s", str(e))
-            return Response(
-                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+        serializer = CoverLetterSerializer(cover_letters, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

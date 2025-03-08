@@ -8,11 +8,11 @@ const Navbar: React.FC = () => {
           <h1 className="text-xl  font-bold">CoverAI</h1>
         </Link>
         <div className="flex gap-2">
-          <Link to="/">
-            <Button variant="ghost" className=" border dark:border-gray-600">Generate</Button>
+          <Link to="/generate">
+            <Button variant="ghost" className=" border dark:border-gray-600">Generate Cover Letter</Button>
           </Link>
           <Link to="/saved">
-            <Button variant="ghost" className="border dark:border-gray-600">Saved</Button>
+            <Button variant="ghost" className="border dark:border-gray-600">Saved Cover Letters</Button>
           </Link>
           <Link to="/login">
             <Button>Login</Button>

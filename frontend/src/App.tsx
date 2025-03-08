@@ -1,30 +1,33 @@
-import { LoginForm } from './components/login-form'
-import { SignUpForm } from './components/SignUp'
-import { CoverLetterGenerator } from './components/CoverLetterGenerator'
-import ForgotPasswordComponent from './components/ForgotPasswordComponent'
-import Navbar from './components/Navbar'
+import { LoginForm } from "./components/login-form"
+import { SignUpForm } from "./components/SignUp"
+import { CoverLetterGenerator } from "./components/CoverLetterGenerator"
+import { SavedCoverLetters } from "./components/SavedCoverLetters"
+import ForgotPasswordComponent from "./components/ForgotPasswordComponent"
+import Navbar from "./components/Navbar"
+import LandingPage from "./components/landing-page"
 import "./App.css"
-import { ThemeProvider } from './components/theme-provider'
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { ThemeProvider } from "./components/theme-provider"
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom"
 
 const Layout = ({ children }) => {
-  const location = useLocation();
-  const hideNavbar: Array<string> = ['/login', '/sign-up', '/forgot-password'];
+  const location = useLocation()
+  const hideNavbar: Array<string> = ["/login", "/sign-up", "/forgot-password", "/"]
 
   return (
     <>
       {!hideNavbar.includes(location.pathname) && <Navbar />}
       {children}
     </>
-  );
-};
+  )
+}
 
 function App() {
   return (
-    <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <Router>
         <Layout>
           <Routes>
+            <Route path="/" element={<LandingPage />} />
             <Route
               path="/login"
               element={
@@ -34,6 +37,7 @@ function App() {
               }
             />
             <Route path="/forgot-password" element={<ForgotPasswordComponent />} />
+            <Route path="/saved" element={<SavedCoverLetters />} />
             <Route
               path="/sign-up"
               element={
@@ -43,7 +47,7 @@ function App() {
               }
             />
             <Route
-              path="/"
+              path="/generate"
               element={
                 <div>
                   <CoverLetterGenerator />
@@ -54,7 +58,9 @@ function App() {
         </Layout>
       </Router>
     </ThemeProvider>
-  );
+  )
 }
 
-export default App;
+export default App
+
+

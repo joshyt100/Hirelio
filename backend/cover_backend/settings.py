@@ -233,6 +233,6 @@ AWS_S3_FILE_OVERWRITE = False
 
 # Use S3 as default storage for files
 # Redirect URLs
-LOGIN_REDIRECT_URL = "/"
-LOGOUT_REDIRECT_URL = "/"
+# LOGIN_REDIRECT_URL = "/"
+# LOGOUT_REDIRECT_URL = "/"
 GEMINI_API_KEY = env("GEMINI_API_KEY")

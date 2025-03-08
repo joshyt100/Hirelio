@@ -4,8 +4,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FaRegCopy } from "react-icons/fa";
+import { generateCoverLetter } from "@/api/generate";
+import { saveCoverLetter } from "@/api/save";
+import { CoverLetterData } from "../types";
 
-const API_URL = "http://127.0.0.1:8000/cover/generate/";
 
 export const CoverLetterGenerator: React.FC = () => {
   const [jobDescription, setJobDescription] = useState<string>("");
@@ -22,7 +24,7 @@ export const CoverLetterGenerator: React.FC = () => {
     }
   };
 
-  const handleGenerateCoverLetter = async () => {
+  const handleGenerateCoverLetter = async (): Promise<void> => {
     if (!resume || !jobDescription || !jobName || !companyName) {
       setError("Please upload a resume, enter a job description, and provide job and company names.");
       return;
@@ -38,27 +40,42 @@ export const CoverLetterGenerator: React.FC = () => {
     formData.append("company_name", companyName);
 
     try {
-      const response = await fetch(API_URL, {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to generate cover letter");
-      }
-
-      const data = await response.json();
-      setCoverLetter(data.cover_letter);
-    } catch (err) {
-      setError("Error, please try again.");
-    } finally {
+      const response = await generateCoverLetter(formData);
+      setCoverLetter(response.coverLetter);
+      console.log("response", response);
+    }
+    catch (error) {
+      console.log("error", error);
+      setError("Failed to generate cover letter");
+    }
+    finally {
       setLoading(false);
     }
+
+
   };
 
+  const handleCoverLetterSave = async (): Promise<void> => {
+    if (!jobName || !companyName || !coverLetter) {
+      setError("Please provide job name, company name,and cover letter");
+    }
+
+    const data: CoverLetterData = {
+      job_title: jobName,
+      company_name: companyName,
+      cover_letter: coverLetter,
+    };
+
+    try {
+      await saveCoverLetter(data);
+    } catch (error) {
+      console.log("error", error);
+      setError("Failed to save cover letter")
+    }
+  }
   return (
-    <div className="max-w-6xl 2xl:max-w-8xl h-full w-full mx-auto flex flex-row">
-      <div className="p-6 w-2/3 rounded-lg h-full flex flex-col">
+    <div className="max-w-6xl 2xl:max-w-8xl h-full w-full mx-auto flex flex-col sm:flex-row ">
+      <div className="p-6 w-full sm:w-2/3 rounded-lg h-full flex flex-col">
         <h2 className="text-lg w-full font-semibold mb-4">Enter Job Description</h2>
         <Textarea
           placeholder="Enter job description..."
@@ -128,7 +145,7 @@ export const CoverLetterGenerator: React.FC = () => {
               >
                 <FaRegCopy size={18} />
               </button>
-              <Button className="absolute top-3 bg-black mr-1 right-12">
+              <Button onClick={handleCoverLetterSave} className="absolute top-3 bg-black mr-1 right-12">
                 Save
               </Button>
             </div>

@@ -12,7 +12,7 @@ class CoverLetter(models.Model):
     )
     job_title = models.CharField(max_length=255)
     company_name = models.CharField(max_length=255)
-    cover_letter_file = models.FileField(upload_to="cover_letters/")
+    cover_letter_file_path = models.CharField(max_length=1024)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
