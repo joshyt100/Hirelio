@@ -113,11 +113,16 @@ WSGI_APPLICATION = "cover_backend.wsgi.application"
 #         "PORT": os.getenv("DATABASE_PORT", "5432"),
 #     }
 # }
+
 DATABASES = {
-    "default": dj_database_url.config(
-        default=os.getenv("DATABASE_URL"),
-        conn_max_age=600,  # Optimize for performance
-    ),
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.environ["PGDATABASE"],
+        "USER": os.environ["PGUSER"],
+        "PASSWORD": os.environ["PGPASSWORD"],
+        "HOST": os.environ["PGHOST"],
+        "PORT": os.environ["PGPORT"],
+    }
 }
 
 # Password validation
