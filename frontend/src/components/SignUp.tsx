@@ -35,7 +35,7 @@ export function SignUpForm({
     try {
       const response = await registerUser(data)
       setMessage(response.message)
-      navigate("/")
+      navigate("/generate")
     }
     catch (err) {
       console.log(err)
