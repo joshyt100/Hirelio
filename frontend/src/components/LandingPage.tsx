@@ -25,9 +25,10 @@ export default function LandingPage() {
   const { theme, setTheme } = useTheme()
   const [isHovered, setIsHovered] = useState(false)
 
+
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="border-b sticky top-0 z-50 bg-background backdrop-blur-sm bg-opacity-80">
+      <header className="border-b sticky top-0 z-50 backdrop-blur-2xl bg-opacity-80">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <div className="bg-primary rounded-lg p-1.5">
@@ -93,7 +94,7 @@ export default function LandingPage() {
 
           {/* Cover Letter Preview */}
           <div className="max-w-5xl mx-auto relative">
-            <div className="bg-card rounded-xl shadow-xl border overflow-hidden">
+            <div className="bg-card rounded-xl shadow-xl border dark:border-zinc-900 overflow-hidden">
               <div className="bg-muted p-4 border-b flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-destructive"></div>
                 <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
@@ -170,7 +171,7 @@ export default function LandingPage() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            <div className="bg-card rounded-xl p-8 shadow-sm border relative group hover:shadow-md transition-all">
+            <div className="bg-card rounded-xl p-8 shadow-sm border dark:border-zinc-900 relative group hover:shadow-md transition-all">
               <div className="absolute -top-5 -left-5 bg-primary text-primary-foreground w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg shadow-md">
                 1
               </div>
@@ -197,7 +198,7 @@ export default function LandingPage() {
               </ul>
             </div>
 
-            <div className="bg-card rounded-xl p-8 shadow-sm border relative group hover:shadow-md transition-all">
+            <div className="bg-card rounded-xl p-8 shadow-sm border dark:border-zinc-900 relative group hover:shadow-md transition-all">
               <div className="absolute -top-5 -left-5 bg-primary text-primary-foreground w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg shadow-md">
                 2
               </div>
@@ -224,7 +225,7 @@ export default function LandingPage() {
               </ul>
             </div>
 
-            <div className="bg-card rounded-xl p-8 shadow-sm border relative group hover:shadow-md transition-all">
+            <div className="bg-card rounded-xl p-8 shadow-sm border dark:border-zinc-900 relative group hover:shadow-md transition-all">
               <div className="absolute -top-5 -left-5 bg-primary text-primary-foreground w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg shadow-md">
                 3
               </div>
@@ -269,7 +270,7 @@ export default function LandingPage() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            <div className="bg-card rounded-xl p-6 shadow-sm border hover:shadow-md transition-all">
+            <div className="bg-card rounded-xl p-6 shadow-sm border dark:border-zinc-900 hover:shadow-md transition-all">
               <div className="bg-primary/10 w-12 h-12 rounded-full flex items-center justify-center mb-4">
                 <Sparkles className="text-primary h-6 w-6" />
               </div>
@@ -280,7 +281,7 @@ export default function LandingPage() {
               </p>
             </div>
 
-            <div className="bg-card rounded-xl p-6 shadow-sm border hover:shadow-md transition-all">
+            <div className="bg-card rounded-xl p-6 shadow-sm border dark:border-zinc-900 hover:shadow-md transition-all">
               <div className="bg-primary/10 w-12 h-12 rounded-full flex items-center justify-center mb-4">
                 <Building className="text-primary h-6 w-6" />
               </div>
@@ -291,7 +292,7 @@ export default function LandingPage() {
               </p>
             </div>
 
-            <div className="bg-card rounded-xl p-6 shadow-sm border hover:shadow-md transition-all">
+            <div className="bg-card rounded-xl p-6 shadow-sm border dark:border-zinc-900 hover:shadow-md transition-all">
               <div className="bg-primary/10 w-12 h-12 rounded-full flex items-center justify-center mb-4">
                 <Clock className="text-primary h-6 w-6" />
               </div>
@@ -302,7 +303,7 @@ export default function LandingPage() {
               </p>
             </div>
 
-            <div className="bg-card rounded-xl p-6 shadow-sm border hover:shadow-md transition-all">
+            <div className="bg-card rounded-xl p-6 shadow-sm border dark:border-zinc-900 hover:shadow-md transition-all">
               <div className="bg-primary/10 w-12 h-12 rounded-full flex items-center justify-center mb-4">
                 <Save className="text-primary h-6 w-6" />
               </div>
@@ -313,7 +314,7 @@ export default function LandingPage() {
               </p>
             </div>
 
-            <div className="bg-card rounded-xl p-6 shadow-sm border hover:shadow-md transition-all">
+            <div className="bg-card rounded-xl p-6 shadow-sm border dark:border-zinc-900 hover:shadow-md transition-all">
               <div className="bg-primary/10 w-12 h-12 rounded-full flex items-center justify-center mb-4">
                 <PenTool className="text-primary h-6 w-6" />
               </div>
@@ -324,7 +325,7 @@ export default function LandingPage() {
               </p>
             </div>
 
-            <div className="bg-card rounded-xl p-6 shadow-sm border hover:shadow-md transition-all">
+            <div className="bg-card rounded-xl p-6 shadow-sm border dark:border-zinc-900 hover:shadow-md transition-all">
               <div className="bg-primary/10 w-12 h-12 rounded-full flex items-center justify-center mb-4">
                 <Award className="text-primary h-6 w-6" />
               </div>
@@ -431,7 +432,7 @@ export default function LandingPage() {
               </div>
 
               <div className="grid grid-cols-4 gap-4 mb-2 items-center bg-card rounded-lg p-4">
-                <div className="col-span-1 font-medium">Unlimited Letters</div>
+                <div className="col-span-1 font-medium">Generous Free Usage Limits</div>
                 <div className="col-span-1 text-center">
                   <Check className="h-5 w-5 text-primary mx-auto" />
                 </div>
@@ -447,7 +448,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* FAQ Section */}
       <section className="py-24">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
@@ -497,12 +497,17 @@ export default function LandingPage() {
                   generate, edit, or save.
                 </AccordionContent>
               </AccordionItem>
+              <AccordionItem value="item-6">
+                <AccordionTrigger>What's next?</AccordionTrigger>
+                <AccordionContent>
+                  We're working on expanding this service to include resume optimizations and more advanced features. Stay tuned for updates!
+                </AccordionContent>
+              </AccordionItem>
             </Accordion>
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
       <section className="py-24 relative">
         <div className="absolute inset-0 bg-gradient-to-b from-background to-primary/10 -z-10"></div>
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/5 rounded-full blur-3xl -z-10"></div>
@@ -536,14 +541,13 @@ export default function LandingPage() {
               </div>
               <div className="flex items-center gap-1">
                 <Check className="h-4 w-4 text-primary" />
-                <span>Unlimited cover letters</span>
+                <span>Generous free usage</span>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
       <footer className="border-t py-12">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-4 gap-8">
@@ -557,62 +561,6 @@ export default function LandingPage() {
               <p className="text-sm text-muted-foreground">
                 Creating professional cover letters with AI technology to help you land your dream job.
               </p>
-              <div className="flex items-center gap-4">
-                <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
-                  <span className="sr-only">Twitter</span>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="lucide lucide-twitter"
-                  >
-                    <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z" />
-                  </svg>
-                </Button>
-                <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
-                  <span className="sr-only">LinkedIn</span>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="lucide lucide-linkedin"
-                  >
-                    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
-                    <rect width="4" height="12" x="2" y="9" />
-                    <circle cx="4" cy="4" r="2" />
-                  </svg>
-                </Button>
-                <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
-                  <span className="sr-only">GitHub</span>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="lucide lucide-github"
-                  >
-                    <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
-                    <path d="M9 18c-4.51 2-5-2-7-2" />
-                  </svg>
-                </Button>
-              </div>
             </div>
 
           </div>

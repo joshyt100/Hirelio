@@ -96,3 +96,18 @@ def complete(request, backend, *args, **kwargs):
         *args,
         **kwargs
     )
+
+
+class UserView(APIView):
+    def get(self, request):
+        if request.user.is_authenticated:
+            return Response(
+                {
+                    "isAuthenticated": True,
+                    "user": {
+                        "email": request.user.email,
+                        # Add other user fields you need
+                    },
+                }
+            )
+        return Response({"isAuthenticated": False})

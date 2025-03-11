@@ -5,9 +5,9 @@ import { SavedCoverLetters } from "./components/SavedCoverLetters"
 import ForgotPasswordComponent from "./components/ForgotPasswordComponent"
 import Navbar from "./components/Navbar"
 import LandingPage from "./components/LandingPage"
-import "./App.css"
 import { ThemeProvider } from "./components/theme-provider"
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom"
+import { AuthProvider } from "./context/AuthContext"
 
 const Layout = ({ children }) => {
   const location = useLocation()
@@ -23,41 +23,43 @@ const Layout = ({ children }) => {
 
 function App() {
   return (
-    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <Router>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route
-              path="/login"
-              element={
-                <div className="min-h-screen flex items-center justify-center">
-                  <LoginForm />
-                </div>
-              }
-            />
-            <Route path="/forgot-password" element={<ForgotPasswordComponent />} />
-            <Route path="/saved" element={<SavedCoverLetters />} />
-            <Route
-              path="/sign-up"
-              element={
-                <div className="min-h-screen flex items-center justify-center">
-                  <SignUpForm />
-                </div>
-              }
-            />
-            <Route
-              path="/generate"
-              element={
-                <div>
-                  <CoverLetterGenerator />
-                </div>
-              }
-            />
-          </Routes>
-        </Layout>
-      </Router>
-    </ThemeProvider>
+    <AuthProvider>
+      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+        <Router>
+          <Layout>
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route
+                path="/login"
+                element={
+                  <div className="min-h-screen flex items-center justify-center">
+                    <LoginForm />
+                  </div>
+                }
+              />
+              <Route path="/forgot-password" element={<ForgotPasswordComponent />} />
+              <Route path="/saved" element={<SavedCoverLetters />} />
+              <Route
+                path="/sign-up"
+                element={
+                  <div className="min-h-screen flex items-center justify-center">
+                    <SignUpForm />
+                  </div>
+                }
+              />
+              <Route
+                path="/generate"
+                element={
+                  <div>
+                    <CoverLetterGenerator />
+                  </div>
+                }
+              />
+            </Routes>
+          </Layout>
+        </Router>
+      </ThemeProvider>
+    </AuthProvider>
   )
 }
 

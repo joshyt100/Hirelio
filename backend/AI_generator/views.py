@@ -237,3 +237,33 @@ class GetCoverLetters(APIView):
         )
         serializer = CoverLetterSerializer(cover_letters, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class DeleteCoverLetter(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, cover_letter_id):
+        try:
+            cover_letter = CoverLetter.objects.get(
+                id=cover_letter_id, user=request.user
+            )
+            s3 = boto3.client(
+                "s3",
+                aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+                aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+                region_name=settings.AWS_S3_REGION_NAME,  # Ensure the correct region is set.
+            )
+            s3.delete_object(
+                Bucket=settings.AWS_STORAGE_BUCKET_NAME,
+                Key=cover_letter.cover_letter_file_path,
+            )
+            cover_letter.delete()
+            return Response(
+                {"message": "Cover letter deleted successfully"},
+                status=status.HTTP_200_OK,
+            )
+
+        except CoverLetter.DoesNotExist:
+            return Response(
+                {"error": "Cover letter not found"}, status=status.HTTP_404_NOT_FOUND
+            )

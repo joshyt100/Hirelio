@@ -17,8 +17,7 @@ export const SavedCoverLetters: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [coverLetters, setCoverLetters] = useState<CoverLetterMetadataResponse[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const lettersPerPage = 12; // Number of cover letters per page
-
+  const lettersPerPage = 12;
   useEffect(() => {
     const fetchCoverLetters = async () => {
       try {
@@ -34,7 +33,6 @@ export const SavedCoverLetters: React.FC = () => {
     fetchCoverLetters();
   }, []);
 
-  // Pagination logic
   const totalPages = Math.ceil(coverLetters.length / lettersPerPage);
   const startIndex = (currentPage - 1) * lettersPerPage;
   const paginatedLetters = coverLetters.slice(startIndex, startIndex + lettersPerPage);
@@ -62,8 +60,8 @@ export const SavedCoverLetters: React.FC = () => {
 
   return (
     <div className="flex flex-col items-center h-screen">
-      <h1 className="text-4xl font-bold mt-20 mb-12">Saved Cover Letters</h1>
-      <div className="w-11/12 bg-zinc-100 dark:bg-zinc-950">
+      <h1 className="text-4xl font-bold mt-12 mb-12">Saved Cover Letters</h1>
+      <div className="w-11/12 bg-zinc-200 dark:bg-zinc-950">
         <div className="rounded-md border">
           <Table>
             <TableHeader>
@@ -86,7 +84,7 @@ export const SavedCoverLetters: React.FC = () => {
                     <TableCell className="text-right">
                       <button
                         onClick={() => handleDownload(letter.id)}
-                        className="px-2 py-2 text-purple-700"
+                        className="px-2 py-2 text-primary"
                       >
                         <FaRegCopy size={20} />
                       </button>
@@ -109,7 +107,7 @@ export const SavedCoverLetters: React.FC = () => {
             <Button
               onClick={handlePreviousPage}
               disabled={currentPage === 1}
-              className="bg-transparent hover:bg-transparent text-purple-700"
+              className="bg-transparent hover:bg-transparent text-primary"
             >
               <FaChevronLeft size={16} />
             </Button>
@@ -119,7 +117,7 @@ export const SavedCoverLetters: React.FC = () => {
             <Button
               onClick={handleNextPage}
               disabled={currentPage === totalPages}
-              className="bg-transparent hover:bg-transparent text-purple-700"
+              className="bg-transparent hover:bg-transparent text-primary"
             >
               <FaChevronRight size={10} />
             </Button>

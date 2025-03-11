@@ -1,7 +1,7 @@
 from django.contrib.auth import views as auth_views  # import for password_reset views *
 from django.urls import include, path
 
-from .views import GetCSRFTokenView, LoginView, RegisterView
+from .views import GetCSRFTokenView, LoginView, RegisterView, LogoutView, UserView
 
 urlpatterns = [
     path("register/", RegisterView.as_view(), name="register"),
@@ -25,6 +25,8 @@ urlpatterns = [
         name="password-reset-complete",
     ),
     path("csrf/", GetCSRFTokenView.as_view(), name="csrf"),
+    path("logout/", LogoutView.as_view(), name="logout"),
+    path("user/", UserView.as_view(), name="user"),
     # path("complete/<str:backend>/", complete, name="complete"),
     # path("google/", include("social_django.urls", namespace="social")),
 ]

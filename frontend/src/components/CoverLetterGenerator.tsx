@@ -112,7 +112,7 @@ export const CoverLetterGenerator: React.FC = () => {
           placeholder="Enter job description..."
           value={jobDescription}
           onChange={(e) => setJobDescription(e.target.value)}
-          className="w-full sm:w flex-1 min-h-[400px] resize-none mb-4"
+          className="w-full sm:w flex-1 min-h-[400px] border border-border resize-none mb-4"
         />
 
         <div className="mb-4">
@@ -122,7 +122,7 @@ export const CoverLetterGenerator: React.FC = () => {
             type="text"
             value={jobName}
             onChange={(e) => setJobName(e.target.value)}
-            className="w-full mt-2"
+            className="w-full mt-2 border border-border"
             placeholder="Enter job name"
           />
         </div>
@@ -134,13 +134,13 @@ export const CoverLetterGenerator: React.FC = () => {
             type="text"
             value={companyName}
             onChange={(e) => setCompanyName(e.target.value)}
-            className="w-full mt-2"
+            className="w-full mt-2 border-border"
             placeholder="Enter company name"
           />
         </div>
 
         <Label htmlFor="resume">Upload Resume</Label>
-        <Input id="resume" type="file" accept=".pdf" onChange={handleFileChange} className="w-full mt-2" />
+        <Input id="resume" type="file" accept=".pdf" onChange={handleFileChange} className="w-full border border-border mt-2" />
 
         <Button onClick={handleGenerateCoverLetter} disabled={loading} className="mt-4 w-full">
           {loading ? "Generating..." : "Generate Cover Letter"}
@@ -160,13 +160,13 @@ export const CoverLetterGenerator: React.FC = () => {
               <Textarea
                 placeholder=""
                 value={coverLetter}
-                className="w-full sm:w flex-1 min-h-[750px] bg-zinc-100 dark:bg-zinc-900 resize-none mb-4"
+                className="w-full sm:w flex-1 min-h-[750px] bg-zinc-200 border border-border    dark:bg-zinc-900 resize-none mb-4"
                 readOnly
               />
 
               <Dialog open={isEditing} onOpenChange={setIsEditing}>
                 <DialogTrigger asChild>
-                  <button className="absolute top-3 right-3 bg-black text-white p-2 rounded-md hover:bg-gray-600 transition flex items-center justify-center">
+                  <button className="absolute top-3 right-3 bg-black text-white p-2 rounded-md hover:bg-gray-700 transition flex items-center justify-center">
                     <CiEdit />
                   </button>
                 </DialogTrigger>
@@ -178,7 +178,7 @@ export const CoverLetterGenerator: React.FC = () => {
                     placeholder="Edit cover letter..."
                     value={editedCoverLetter || ""}
                     onChange={(e) => setEditedCoverLetter(e.target.value)}
-                    className="w-full h-[500px] resize-none"
+                    className="w-full h-[500px] resize-none border border-border"
                   />
                   <DialogFooter>
                     <Button onClick={handleEditSave}>Save Changes</Button>
@@ -186,7 +186,7 @@ export const CoverLetterGenerator: React.FC = () => {
                 </DialogContent>
               </Dialog>
 
-              <Button onClick={handleCoverLetterSave} disabled={isSaved} className="absolute top-3 bg-black mr-1 right-12">
+              <Button onClick={handleCoverLetterSave} disabled={isSaved} className="absolute dark:bg-black text-white da hover:dark:bg-gray-700  top-3  mr-1 right-12">
                 {isSaved ? "Already Saved" : "Save"}
               </Button>
             </div>
