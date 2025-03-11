@@ -37,7 +37,7 @@ COVER_LETTER_PROMPT = env("COVER_LETTER_PROMPT")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
