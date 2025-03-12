@@ -39,9 +39,9 @@ COVER_LETTER_PROMPT = env("COVER_LETTER_PROMPT")
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    ".onrender.com",
     "localhost",
     "127.0.0.1",
+    "ai-cover-letter-generator-i2xa.onrender.com",
 ]
 
 
@@ -241,7 +241,7 @@ CSRF_TRUSTED_ORIGINS = [
 CORS_ALLOW_METHODS = (*default_methods,)
 SESSION_COOKIE_SAMESITE = "None"
 CSRF_COOKIE_SAMESITE = "None"
-# CSRF_COOKIE_DOMAIN = "https://ai-cover-letter-generator-i2xa.onrender.com"
+CSRF_COOKIE_DOMAIN = "ai-cover-letter-generator-i2xa.onrender.com"
 
 # CSRF_COOKIE_SAMESITE = None  # For cross-origin requests
 # CSRF_COOKIE_PATH = "/"
