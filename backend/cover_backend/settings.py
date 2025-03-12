@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 import os
 from pathlib import Path
 import dj_database_url
+from corsheaders.defaults import default_methods
 
 import environ
 
@@ -35,7 +36,7 @@ COVER_LETTER_PROMPT = env("COVER_LETTER_PROMPT")
 # SECURITY WARNING: keep the secret key used in production secret!
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
@@ -186,9 +187,9 @@ SOCIAL_AUTH_ASSOCIATE_BY_EMAIL = True
 #
 SESSION_ENGINE = "django.contrib.sessions.backends.db"
 SESSION_COOKIE_NAME = "sessionid"
-SESSION_COOKIE_SECURE = True  # SET TO TRUE IN PRODUCTION
+SESSION_COOKIE_SECURE = False  # SET TO TRUE IN PRODUCTION
 # SESSION_COOKIE_HTTPONLY = True
-CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = False
 CSRF_COOKIE_HTTPONLY = False
 # CSRF_USE_SESSIONS = False
 CSRF_USE_SESSIONS = False
@@ -226,6 +227,7 @@ CSRF_TRUSTED_ORIGINS = [
     "https://ai-cover-letter-generator-i2xa.onrender.com",
     "https://ai-cover-letter-generator-mrxj.vercel.app",
 ]
+CORS_ALLOW_METHODS = (*default_methods,)
 SESSION_COOKIE_SAMESITE = None
 # CSRF_COOKIE_SAMESITE = None  # For cross-origin requests
 # CSRF_COOKIE_PATH = "/"
