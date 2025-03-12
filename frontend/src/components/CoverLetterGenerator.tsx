@@ -7,7 +7,7 @@ import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, Dialog
 import { CiEdit } from "react-icons/ci";
 import { generateCoverLetter } from "@/api/generate";
 import { saveCoverLetter } from "@/api/save";
-import { CoverLetterData } from "../types";
+import { CoverLetterData } from "../types/types";
 
 export const CoverLetterGenerator: React.FC = () => {
   const [jobDescription, setJobDescription] = useState<string>(() => localStorage.getItem("jobDescription") || "");

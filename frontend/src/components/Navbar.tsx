@@ -8,7 +8,7 @@ import { LogoutConfirm } from "./LogoutConfirm";
 
 const Navbar: React.FC = () => {
   const { theme, setTheme } = useTheme();
-  const { isAuthenticated, loading, logout } = useAuth();
+  const { isAuthenticated, isLoading, logout } = useAuth();
   const [logoutModal, setLogoutModal] = useState(false);
   const [authStatus, setAuthStatus] = useState(isAuthenticated);
 
@@ -51,7 +51,7 @@ const Navbar: React.FC = () => {
               <Button variant="ghost" className="border dark:border-gray-600">Saved Cover Letters</Button>
             </Link>
 
-            {loading ? null : authStatus ? (
+            {isLoading ? null : authStatus ? (
               <Button onClick={handleLogoutModal} className="flex items-center gap-2">
                 <LogOut className="h-4 w-4" />
                 Logout

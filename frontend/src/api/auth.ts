@@ -1,6 +1,5 @@
 import axios from "axios";
 import { getCookie } from "../utils/csrfUtils";
-import Cookies from 'js-cookie';
 
 const API_URL = "http://127.0.0.1:8000/api";
 
