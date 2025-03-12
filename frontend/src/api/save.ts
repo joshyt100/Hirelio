@@ -2,8 +2,8 @@ import axios from "axios";
 import { getCookie } from "../utils/csrfUtils";
 import { CoverLetterData, CoverLetterMetadataResponse } from "../types/types";
 
-const API_URL = "https://ai-cover-letter-generator-mrxj.vercel.app/cover/save-cover-letter/";
-const OTHER_API_URL = "https://ai-cover-letter-generator-mrxj.vercel.app/cover/get-cover-letters/";
+const API_URL = "https://ai-cover-letter-generator-i2xa.onrender.com/cover/save-cover-letter/";
+const OTHER_API_URL = "https://ai-cover-letter-generator-i2xa.onrender.com/cover/get-cover-letters/";
 
 export const saveCoverLetter = async (coverLetter: CoverLetterData): Promise<void> => {
   try {

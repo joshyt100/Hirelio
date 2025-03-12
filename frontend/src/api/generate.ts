@@ -32,7 +32,7 @@
 import axios from "axios";
 import { getCookie } from "../utils/csrfUtils";
 
-const API_URL = "https://ai-cover-letter-generator-mrxj.vercel.app/cover/generate/";
+const API_URL = "https://ai-cover-letter-generator-i2xa.onrender.com/cover/generate/";
 
 // Response type (matches frontend expectation)
 interface CoverLetterResponse {
