@@ -55,7 +55,6 @@ INSTALLED_APPS = [
     "accounts",  # Added accounts app here
     "corsheaders",
     "AI_generator",
-    "cover_backend",
 ]
 
 STATIC_URL = "static/"
@@ -114,15 +113,21 @@ WSGI_APPLICATION = "cover_backend.wsgi.application"
 #     }
 # }
 
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql",
+#         "NAME": os.environ["PGDATABASE"],
+#         "USER": os.environ["PGUSER"],
+#         "PASSWORD": os.environ["PGPASSWORD"],
+#         "HOST": os.environ["PGHOST"],
+#         "PORT": os.environ["PGPORT"],
+#     }
+# }
+
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ["PGDATABASE"],
-        "USER": os.environ["PGUSER"],
-        "PASSWORD": os.environ["PGPASSWORD"],
-        "HOST": os.environ["PGHOST"],
-        "PORT": os.environ["PGPORT"],
-    }
+    "default": dj_database_url.config(
+        default=env("DATABASE_URL"), conn_max_age=600, ssl_require=True
+    )
 }
 
 # Password validation
@@ -214,10 +219,11 @@ STORAGES = {
 AUTH_USER_MODEL = "accounts.CustomUser"
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
-ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+# ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5174",
     "http://127.0.0.1:5174",
+    "https://ai-cover-letter-generator-i2xa.onrender.com",
 ]
 SESSION_COOKIE_SAMESITE = "Lax"
 # CSRF_COOKIE_SAMESITE = None  # For cross-origin requests
