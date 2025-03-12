@@ -1,7 +1,7 @@
 import axios from "axios";
 import { getCookie } from "../utils/csrfUtils";
 
-const API_URL = "http://127.0.0.1:8000/api";
+const API_URL = "https://ai-cover-letter-generator-i2xa.onrender.com/api";
 
 // Register new user
 export const registerUser = async (userData: { email: string; password: string }) => {
