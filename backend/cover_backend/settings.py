@@ -228,7 +228,7 @@ CSRF_TRUSTED_ORIGINS = [
     "https://ai-cover-letter-generator-mrxj.vercel.app",
 ]
 CORS_ALLOW_METHODS = (*default_methods,)
-SESSION_COOKIE_SAMESITE = None
+SESSION_COOKIE_SAMESITE = "Lax"
 # CSRF_COOKIE_SAMESITE = None  # For cross-origin requests
 # CSRF_COOKIE_PATH = "/"
 # CORS_EXPOSE_HEADERS = ["Content-Type", "X-CSRFToken"]
