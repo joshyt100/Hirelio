@@ -241,7 +241,7 @@ CSRF_TRUSTED_ORIGINS = [
 CORS_ALLOW_METHODS = (*default_methods,)
 SESSION_COOKIE_SAMESITE = "None"
 CSRF_COOKIE_SAMESITE = "None"
-CSRF_COOKIE_DOMAIN = "ai-cover-letter-generator-i2xa.onrender.com"
+# CSRF_COOKIE_DOMAIN = "ai-cover-letter-generator-i2xa.onrender.com"
 
 # CSRF_COOKIE_SAMESITE = None  # For cross-origin requests
 # CSRF_COOKIE_PATH = "/"
