@@ -224,7 +224,7 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5174",
     "http://127.0.0.1:5174",
     "https://ai-cover-letter-generator-i2xa.onrender.com",
-    "https://ai-cover-letter-generator-mrxj.vercel.app/",
+    "https://ai-cover-letter-generator-mrxj.vercel.app",
 ]
 SESSION_COOKIE_SAMESITE = "Lax"
 # CSRF_COOKIE_SAMESITE = None  # For cross-origin requests
