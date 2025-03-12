@@ -39,9 +39,9 @@ COVER_LETTER_PROMPT = env("COVER_LETTER_PROMPT")
 DEBUG = True
 
 ALLOWED_HOSTS = [
+    ".onrender.com",
     "localhost",
     "127.0.0.1",
-    "onrender.com",
 ]
 
 
