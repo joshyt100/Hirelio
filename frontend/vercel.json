@@ -1,4 +1,9 @@
 {
-  "rewrites": [{ "source": "/(.*)", "destination": "/" }]
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://ai-cover-letter-generator-i2xa.onrender.com/api/$1"
+    }
+  ]
 }
 
