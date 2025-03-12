@@ -187,7 +187,7 @@ SOCIAL_AUTH_ASSOCIATE_BY_EMAIL = True
 #
 SESSION_ENGINE = "django.contrib.sessions.backends.db"
 SESSION_COOKIE_NAME = "sessionid"
-SESSION_COOKIE_SECURE = False  # SET TO TRUE IN PRODUCTION
+SESSION_COOKIE_SECURE = True  # SET TO TRUE IN PRODUCTION
 # SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SECURE = False
 CSRF_COOKIE_HTTPONLY = False
@@ -218,13 +218,14 @@ STORAGES = {
 }
 
 AUTH_USER_MODEL = "accounts.CustomUser"
-CORS_ALLOW_ALL_ORIGINS = True
-# CORS_ALLOWED_ORIGINS = [
-#     "http://localhost:5174",
-#     "http://127.0.0.1:5174",
-#     "https://ai-cover-letter-generator-i2xa.onrender.com",
-#     "https://ai-cover-letter-generator-mrxj.vercel.app",
-# ]
+# CORS_ALLOW_ALL_ORIGINS = True
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5174",
+    "http://127.0.0.1:5174",
+    "https://ai-cover-letter-generator-i2xa.onrender.com",
+    "https://ai-cover-letter-generator-mrxj.vercel.app",
+]
 CORS_ALLOW_CREDENTIALS = True
 # ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 CSRF_TRUSTED_ORIGINS = [
