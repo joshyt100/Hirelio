@@ -218,7 +218,12 @@ STORAGES = {
 }
 
 AUTH_USER_MODEL = "accounts.CustomUser"
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5174",
+    "http://127.0.0.1:5174",
+    "https://ai-cover-letter-generator-i2xa.onrender.com",
+    "https://ai-cover-letter-generator-mrxj.vercel.app",
+]
 CORS_ALLOW_CREDENTIALS = True
 # ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 CSRF_TRUSTED_ORIGINS = [
@@ -228,7 +233,7 @@ CSRF_TRUSTED_ORIGINS = [
     "https://ai-cover-letter-generator-mrxj.vercel.app",
 ]
 CORS_ALLOW_METHODS = (*default_methods,)
-SESSION_COOKIE_SAMESITE = "Lax"
+SESSION_COOKIE_SAMESITE = "None"
 # CSRF_COOKIE_SAMESITE = None  # For cross-origin requests
 # CSRF_COOKIE_PATH = "/"
 # CORS_EXPOSE_HEADERS = ["Content-Type", "X-CSRFToken"]
