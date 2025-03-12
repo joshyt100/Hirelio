@@ -186,9 +186,9 @@ SOCIAL_AUTH_ASSOCIATE_BY_EMAIL = True
 #
 SESSION_ENGINE = "django.contrib.sessions.backends.db"
 SESSION_COOKIE_NAME = "sessionid"
-SESSION_COOKIE_SECURE = False  # SET TO TRUE IN PRODUCTION
+SESSION_COOKIE_SECURE = True  # SET TO TRUE IN PRODUCTION
 # SESSION_COOKIE_HTTPONLY = True
-CSRF_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_HTTPONLY = False
 # CSRF_USE_SESSIONS = False
 CSRF_USE_SESSIONS = False
@@ -226,7 +226,7 @@ CSRF_TRUSTED_ORIGINS = [
     "https://ai-cover-letter-generator-i2xa.onrender.com",
     "https://ai-cover-letter-generator-mrxj.vercel.app",
 ]
-SESSION_COOKIE_SAMESITE = "Lax"
+SESSION_COOKIE_SAMESITE = None
 # CSRF_COOKIE_SAMESITE = None  # For cross-origin requests
 # CSRF_COOKIE_PATH = "/"
 # CORS_EXPOSE_HEADERS = ["Content-Type", "X-CSRFToken"]
