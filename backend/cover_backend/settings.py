@@ -128,7 +128,18 @@ WSGI_APPLICATION = "cover_backend.wsgi.application"
 #         "PORT": os.environ["PGPORT"],
 #     }
 # }
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql",
+#         "NAME": os.environ["DATABASE_NAME"],
+#         "USER": os.environ["DATABASE_USER"],
+#         "PASSWORD": os.environ["DATABASE_PASSWORD"],
+#         "HOST": os.environ["DATABASE_HOST"],
+#         "PORT": os.environ["DATABASE_PORT"],
+#     }
+# }
 
+# prod
 DATABASES = {
     "default": dj_database_url.config(
         default=env("DATABASE_URL"), conn_max_age=600, ssl_require=True
@@ -191,9 +202,9 @@ SOCIAL_AUTH_ASSOCIATE_BY_EMAIL = True
 #
 SESSION_ENGINE = "django.contrib.sessions.backends.db"
 SESSION_COOKIE_NAME = "sessionid"
-SESSION_COOKIE_SECURE = True  # SET TO TRUE IN PRODUCTION
+SESSION_COOKIE_SECURE = False  # SET TO TRUE IN PRODUCTION
 # SESSION_COOKIE_HTTPONLY = True
-CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = False  # set to true in prod
 CSRF_COOKIE_HTTPONLY = False
 # CSRF_USE_SESSIONS = False
 CSRF_USE_SESSIONS = False
@@ -230,18 +241,20 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5174",
     "http://127.0.0.1:5174",
+    "http://127.0.0.1:5173",
     "https://ai-cover-letter-generator-i2xa.onrender.com",
     "https://ai-cover-letter-generator-mrxj.vercel.app",
 ]
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5174",
     "http://127.0.0.1:5174",
+    "http://127.0.0.1:5173",
     "https://ai-cover-letter-generator-i2xa.onrender.com",
     "https://ai-cover-letter-generator-mrxj.vercel.app",
 ]
-CORS_ALLOW_METHODS = (*default_methods,)
-SESSION_COOKIE_SAMESITE = "None"
-CSRF_COOKIE_SAMESITE = "None"
+# CORS_ALLOW_METHODS = (*default_methods,)
+SESSION_COOKIE_SAMESITE = "Lax"
+# CSRF_COOKIE_SAMESITE = "None"
 # CSRF_COOKIE_DOMAIN = "ai-cover-letter-generator-i2xa.onrender.com"
 
 # CSRF_COOKIE_SAMESITE = None  # For cross-origin requests
