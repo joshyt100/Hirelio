@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-//const API_URL = "http://127.0.0.1:8000/api";
-const API_URL = "https://ai-cover-letter-generator-i2xa.onrender.com/api";
+const API_URL = "http://127.0.0.1:8000/api";
+//const API_URL = "https://ai-cover-letter-generator-i2xa.onrender.com/api";
 
 const CSRFToken: React.FC = () => {
   const [csrftoken, setCsrfToken] = useState<string | null>(null)

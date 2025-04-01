@@ -34,7 +34,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setIsLoading(true);
     try {
       // Check if user is authenticated by calling a Django endpoint
-      const response = await axios.get('https://ai-cover-letter-generator-i2xa.onrender.com/api/user/', {
+      const response = await axios.get('http://127.0.0.1:8000/api/user/', {
         withCredentials: true,
       });
 
