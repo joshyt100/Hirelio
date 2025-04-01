@@ -105,8 +105,8 @@ export const CoverLetterGenerator: React.FC = () => {
   };
 
   return (
-    <div className="  w-full sm:max-w-6xl 2xl:max-w-8xl h-full  mx-auto flex flex-col sm:flex-row ">
-      <div className="p-6 w-full sm:w-2/3 rounded-lg h-full flex flex-col">
+    <div className="  w-full sm:max-w-xl md:max-w-4xl lg:max-w-6xl 2xl:max-w-8xl h-full  mx-auto flex flex-col ml-20  max-w-lg md:flex-row ">
+      <div className="p-6 w-full sm:w-full rounded-lg h-full flex flex-col">
         <h2 className="text-lg w-full font-semibold mb-4">Enter Job Description</h2>
         <Textarea
           placeholder="Enter job description..."
@@ -147,7 +147,7 @@ export const CoverLetterGenerator: React.FC = () => {
         </Button>
       </div>
 
-      <div className="p-6 w-full sm:w-4/5 rounded-lg flex flex-col justify-center items-center min-h-[300px]">
+      <div className="p-6 w-full sm:w-full rounded-lg flex flex-col justify-center items-center min-h-[300px]">
         {loading ? (
           <div className="flex flex-col items-center">
             <div className="animate-spin h-8 w-8 border-4 border-t-transparent rounded-full"></div>

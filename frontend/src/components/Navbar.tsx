@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useTheme } from "@/components/theme-provider";
 import { Button } from "@/components/ui/button";
-import { FileText, Moon, Sun, LogOut } from "lucide-react";
+import { FileText, Moon, ChartBarBig, Sun, LogOut, FilePlus, Save } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { LogoutConfirm } from "./LogoutConfirm";
 
@@ -11,6 +11,7 @@ const Navbar: React.FC = () => {
   const { isAuthenticated, isLoading, logout } = useAuth();
   const [logoutModal, setLogoutModal] = useState(false);
   const [authStatus, setAuthStatus] = useState(isAuthenticated);
+  const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
     setAuthStatus(isAuthenticated);
@@ -24,45 +25,65 @@ const Navbar: React.FC = () => {
 
   return (
     <>
-      <div className="border-b sticky top-0 z-50 bg-background backdrop-blur-sm bg-opacity-80">
-        <nav className="p-4 flex items-center justify-between container mx-auto">
-          <div className="flex items-center gap-2">
-            <div className="bg-primary rounded-lg p-1.5">
-              <FileText className="h-5 w-5 text-primary-foreground" />
-            </div>
+      <div className={`fixed top-0 left-0 h-full ${collapsed ? "w-20" : "w-64"} bg-background border-r z-50 p-4 flex flex-col gap-6 shadow-lg transition-all duration-300`}>
+        <div className="flex items-center gap-2">
+          <div className="bg-primary rounded-lg p-1.5">
+            <FileText className="h-5 w-5 text-primary-foreground" />
+          </div>
+          {!collapsed && (
             <Link to="/generate" className="text-xl font-bold">
               CoverAI
             </Link>
-          </div>
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              aria-label="Toggle theme"
-              className="rounded-full"
-            >
-              {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-            </Button>
-            <Link to="/generate">
-              <Button variant="ghost" className="border dark:border-gray-600">Generate Cover Letter</Button>
-            </Link>
-            <Link to="/saved">
-              <Button variant="ghost" className="border dark:border-gray-600">Saved Cover Letters</Button>
-            </Link>
+          )}
+        </div>
 
-            {isLoading ? null : authStatus ? (
-              <Button onClick={handleLogoutModal} className="flex items-center gap-2">
+        <div className="flex flex-col gap-4 items-start">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            aria-label="Toggle theme"
+            className="rounded-full"
+          >
+            {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          </Button>
+
+          <Link to="/generate" className="w-full">
+            <Button variant="ghost" className="w-full justify-start border border-zinc-300 dark:border-zinc-600">
+              {collapsed ? <FilePlus className="h-5 w-5" /> : "Generate Cover Letter"}
+            </Button>
+          </Link>
+          <Link to="/tracking" className="w-full">
+            <Button variant="ghost" className="w-full justify-start border border-zinc-300 dark:border-zinc-600">
+              {collapsed ? <ChartBarBig className="h-5 w-5" /> : "Tracking"}
+            </Button>
+          </Link>
+
+          <Link to="/saved" className="w-full">
+            <Button variant="ghost" className="w-full justify-start border border-zinc-300 dark:border-zinc-600">
+              {collapsed ? <Save className="h-5 w-5" /> : "Saved Cover Letters"}
+            </Button>
+          </Link>
+
+          {!isLoading && (
+            authStatus ? (
+              <Button onClick={handleLogoutModal} className="w-full justify-start flex items-center gap-2">
                 <LogOut className="h-4 w-4" />
-                Logout
+                {!collapsed && "Logout"}
               </Button>
             ) : (
-              <Link to="/login">
-                <Button>Login</Button>
+              <Link to="/login" className="w-full">
+                <Button className="w-full justify-start">
+                  {!collapsed ? "Login" : <LogOut className="h-4 w-4" />}
+                </Button>
               </Link>
-            )}
-          </div>
-        </nav>
+            )
+          )}
+
+          <Button variant="outline" size="icon" onClick={() => setCollapsed(!collapsed)} className="mt-auto">
+            {collapsed ? ">" : "<"}
+          </Button>
+        </div>
       </div>
 
       <LogoutConfirm open={logoutModal} onClose={() => setLogoutModal(false)} onConfirm={handleLogout} />
