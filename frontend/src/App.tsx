@@ -9,6 +9,7 @@ import { ThemeProvider } from "./components/theme-provider"
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom"
 import { AuthProvider } from "./context/AuthContext"
 import TrackingPageLayout from "./components/TrackingPageLayout"
+import DashboardLayout from "./components/DashboardLayout"
 
 const Layout = ({ children }) => {
   const location = useLocation()
@@ -57,6 +58,7 @@ function App() {
                 }
               />
               <Route path="/tracking" element={<TrackingPageLayout />} />
+              <Route path="/dashboard" element={<DashboardLayout />} />
             </Routes>
           </Layout>
         </Router>

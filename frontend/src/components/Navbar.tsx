@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useTheme } from "@/components/theme-provider";
 import { Button } from "@/components/ui/button";
-import { FileText, Moon, ChartBarBig, Sun, LogOut, FilePlus, Save } from "lucide-react";
+import { FileText, ChartLine, Moon, ChartBarBig, Sun, LogOut, FilePlus, Save } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { LogoutConfirm } from "./LogoutConfirm";
 
@@ -47,6 +47,11 @@ const Navbar: React.FC = () => {
           >
             {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </Button>
+          <Link to="/dashboard" className="w-full">
+            <Button variant="ghost" className="w-full justify-start border border-zinc-300 dark:border-zinc-600">
+              {collapsed ? <ChartLine className="h-5 w-5" /> : "Dashboard"}
+            </Button>
+          </Link>
 
           <Link to="/tracking" className="w-full">
             <Button variant="ghost" className="w-full justify-start border border-zinc-300 dark:border-zinc-600">
