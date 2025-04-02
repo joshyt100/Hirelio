@@ -8,6 +8,7 @@ import LandingPage from "./components/LandingPage"
 import { ThemeProvider } from "./components/theme-provider"
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom"
 import { AuthProvider } from "./context/AuthContext"
+import TrackingPageLayout from "./components/TrackingPageLayout"
 
 const Layout = ({ children }) => {
   const location = useLocation()
@@ -55,6 +56,7 @@ function App() {
                   </div>
                 }
               />
+              <Route path="/tracking" element={<TrackingPageLayout />} />
             </Routes>
           </Layout>
         </Router>

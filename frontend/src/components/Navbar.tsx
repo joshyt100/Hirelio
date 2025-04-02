@@ -11,7 +11,7 @@ const Navbar: React.FC = () => {
   const { isAuthenticated, isLoading, logout } = useAuth();
   const [logoutModal, setLogoutModal] = useState(false);
   const [authStatus, setAuthStatus] = useState(isAuthenticated);
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
 
   useEffect(() => {
     setAuthStatus(isAuthenticated);
@@ -48,14 +48,14 @@ const Navbar: React.FC = () => {
             {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </Button>
 
-          <Link to="/generate" className="w-full">
-            <Button variant="ghost" className="w-full justify-start border border-zinc-300 dark:border-zinc-600">
-              {collapsed ? <FilePlus className="h-5 w-5" /> : "Generate Cover Letter"}
-            </Button>
-          </Link>
           <Link to="/tracking" className="w-full">
             <Button variant="ghost" className="w-full justify-start border border-zinc-300 dark:border-zinc-600">
               {collapsed ? <ChartBarBig className="h-5 w-5" /> : "Tracking"}
+            </Button>
+          </Link>
+          <Link to="/generate" className="w-full">
+            <Button variant="ghost" className="w-full justify-start border border-zinc-300 dark:border-zinc-600">
+              {collapsed ? <FilePlus className="h-5 w-5" /> : "Generate Cover Letter"}
             </Button>
           </Link>
 

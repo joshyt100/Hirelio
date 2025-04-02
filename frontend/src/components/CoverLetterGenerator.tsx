@@ -105,97 +105,99 @@ export const CoverLetterGenerator: React.FC = () => {
   };
 
   return (
-    <div className="  w-full sm:max-w-xl md:max-w-4xl lg:max-w-6xl 2xl:max-w-8xl h-full  mx-auto flex flex-col ml-20  max-w-lg md:flex-row ">
-      <div className="p-6 w-full sm:w-full rounded-lg h-full flex flex-col">
-        <h2 className="text-lg w-full font-semibold mb-4">Enter Job Description</h2>
-        <Textarea
-          placeholder="Enter job description..."
-          value={jobDescription}
-          onChange={(e) => setJobDescription(e.target.value)}
-          className="w-full sm:w flex-1 min-h-[400px] border border-border resize-none mb-4"
-        />
-
-        <div className="mb-4">
-          <Label htmlFor="job-name">Job Name</Label>
-          <Input
-            id="job-name"
-            type="text"
-            value={jobName}
-            onChange={(e) => setJobName(e.target.value)}
-            className="w-full mt-2 border border-border"
-            placeholder="Enter job name"
+    <div className="flex flex-col items-center justify-center">
+      <div className="  w-11/12 sm:max-w-xl md:max-w-4xl lg:max-w-6xl 2xl:max-w-8xl h-full    flex flex-col items-center justify-center ml-28  max-w-lg md:flex-row ">
+        <div className="p-6 w-full sm:w-full rounded-lg h-full flex flex-col">
+          <h2 className="text-lg w-full font-semibold mb-4">Enter Job Description</h2>
+          <Textarea
+            placeholder="Enter job description..."
+            value={jobDescription}
+            onChange={(e) => setJobDescription(e.target.value)}
+            className="w-full sm:w flex-1 min-h-[400px] border border-border resize-none mb-4"
           />
-        </div>
 
-        <div className="mb-4">
-          <Label htmlFor="company-name">Company Name</Label>
-          <Input
-            id="company-name"
-            type="text"
-            value={companyName}
-            onChange={(e) => setCompanyName(e.target.value)}
-            className="w-full mt-2 border-border"
-            placeholder="Enter company name"
-          />
-        </div>
-
-        <Label htmlFor="resume">Upload Resume</Label>
-        <Input id="resume" type="file" accept=".pdf" onChange={handleFileChange} className="w-full border border-border mt-2" />
-
-        <Button onClick={handleGenerateCoverLetter} disabled={loading} className="mt-4 w-full">
-          {loading ? "Generating..." : "Generate Cover Letter"}
-        </Button>
-      </div>
-
-      <div className="p-6 w-full sm:w-full rounded-lg flex flex-col justify-center items-center min-h-[300px]">
-        {loading ? (
-          <div className="flex flex-col items-center">
-            <div className="animate-spin h-8 w-8 border-4 border-t-transparent rounded-full"></div>
-            <p className="mt-4">Generating your cover letter...</p>
+          <div className="mb-4">
+            <Label htmlFor="job-name">Job Name</Label>
+            <Input
+              id="job-name"
+              type="text"
+              value={jobName}
+              onChange={(e) => setJobName(e.target.value)}
+              className="w-full mt-2 border border-border"
+              placeholder="Enter job name"
+            />
           </div>
-        ) : coverLetter ? (
-          <div className="w-full relative">
-            <h2 className="text-lg font-semibold mb-4">Generated Cover Letter</h2>
-            <div className="relative">
-              <Textarea
-                placeholder=""
-                value={coverLetter}
-                className="w-full sm:w flex-1 min-h-[750px] bg-zinc-200 border border-border    dark:bg-zinc-900 resize-none mb-4"
-                readOnly
-              />
 
-              <Dialog open={isEditing} onOpenChange={setIsEditing}>
-                <DialogTrigger asChild>
-                  <button className="absolute top-3 right-3 bg-black text-white p-2 rounded-md hover:bg-gray-700 transition flex items-center justify-center">
-                    <CiEdit />
-                  </button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl">
-                  <DialogHeader>
-                    <DialogTitle>Edit Cover Letter</DialogTitle>
-                  </DialogHeader>
-                  <Textarea
-                    placeholder="Edit cover letter..."
-                    value={editedCoverLetter || ""}
-                    onChange={(e) => setEditedCoverLetter(e.target.value)}
-                    className="w-full h-[500px] resize-none border border-border"
-                  />
-                  <DialogFooter>
-                    <Button onClick={handleEditSave}>Save Changes</Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
+          <div className="mb-4">
+            <Label htmlFor="company-name">Company Name</Label>
+            <Input
+              id="company-name"
+              type="text"
+              value={companyName}
+              onChange={(e) => setCompanyName(e.target.value)}
+              className="w-full mt-2 border-border"
+              placeholder="Enter company name"
+            />
+          </div>
 
-              <Button onClick={handleCoverLetterSave} disabled={isSaved} className="absolute dark:bg-black text-white da hover:dark:bg-gray-700  top-3  mr-1 right-12">
-                {isSaved ? "Already Saved" : "Save"}
-              </Button>
+          <Label htmlFor="resume">Upload Resume</Label>
+          <Input id="resume" type="file" accept=".pdf" onChange={handleFileChange} className="w-full border border-border mt-2" />
+
+          <Button onClick={handleGenerateCoverLetter} disabled={loading} className="mt-4 w-full">
+            {loading ? "Generating..." : "Generate Cover Letter"}
+          </Button>
+        </div>
+
+        <div className="p-6 w-full sm:w-full rounded-lg flex flex-col justify-center items-center min-h-[300px]">
+          {loading ? (
+            <div className="flex flex-col items-center">
+              <div className="animate-spin h-8 w-8 border-4 border-t-transparent rounded-full"></div>
+              <p className="mt-4">Generating your cover letter...</p>
             </div>
-          </div>
-        ) : (
-          <p>Your cover letter will appear here.</p>
-        )}
+          ) : coverLetter ? (
+            <div className="w-full relative ">
+              <h2 className="text-lg font-semibold mt-10 mb-4">Generated Cover Letter</h2>
+              <div className="relative">
+                <Textarea
+                  placeholder=""
+                  value={coverLetter}
+                  className="w-full sm:w flex-1 min-h-[750px] bg-zinc-200 border border-border    dark:bg-zinc-900 resize-none mb-4"
+                  readOnly
+                />
 
-        {error && <p className="text-red-500 mt-4">{error}</p>}
+                <Dialog open={isEditing} onOpenChange={setIsEditing}>
+                  <DialogTrigger asChild>
+                    <button className="absolute top-3 right-3 bg-black text-white p-2 rounded-md hover:bg-gray-700 transition flex items-center justify-center">
+                      <CiEdit />
+                    </button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle>Edit Cover Letter</DialogTitle>
+                    </DialogHeader>
+                    <Textarea
+                      placeholder="Edit cover letter..."
+                      value={editedCoverLetter || ""}
+                      onChange={(e) => setEditedCoverLetter(e.target.value)}
+                      className="w-full h-[500px] resize-none border border-border"
+                    />
+                    <DialogFooter>
+                      <Button onClick={handleEditSave}>Save Changes</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+
+                <Button onClick={handleCoverLetterSave} disabled={isSaved} className="absolute dark:bg-black text-white da hover:dark:bg-gray-700  top-3  mr-1 right-12">
+                  {isSaved ? "Already Saved" : "Save"}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <p>Your cover letter will appear here.</p>
+          )}
+
+          {error && <p className="text-red-500 mt-4">{error}</p>}
+        </div>
       </div>
     </div>
   );
