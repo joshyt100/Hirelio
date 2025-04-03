@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useTheme } from "@/components/theme-provider";
 import { Button } from "@/components/ui/button";
-import { FileText, ChartLine, Moon, ChartBarBig, Sun, LogOut, FilePlus, Save } from "lucide-react";
+import { FileText, ChartLine, Moon, ChartBarBig, CircleUserRound, Sun, LogOut, FilePlus, Save } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { LogoutConfirm } from "./LogoutConfirm";
 
@@ -53,9 +53,14 @@ const Navbar: React.FC = () => {
             </Button>
           </Link>
 
-          <Link to="/tracking" className="w-full">
+          <Link to="/job-application-tracker" className="w-full">
             <Button variant="ghost" className="w-full justify-start border border-zinc-300 dark:border-zinc-600">
-              {collapsed ? <ChartBarBig className="h-5 w-5" /> : "Tracking"}
+              {collapsed ? <ChartBarBig className="h-5 w-5" /> : "Job Application Tracker"}
+            </Button>
+          </Link>
+          <Link to="/contacts-tracker" className="w-full">
+            <Button variant="ghost" className="w-full justify-start border border-zinc-300 dark:border-zinc-600">
+              {collapsed ? <CircleUserRound className="h-5 w-5" /> : "Contacts"}
             </Button>
           </Link>
           <Link to="/generate" className="w-full">

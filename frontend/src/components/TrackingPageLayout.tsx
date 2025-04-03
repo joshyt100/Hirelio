@@ -501,45 +501,11 @@ export default function TrackingPageLayout() {
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
           <div className="mb-4 sm:mb-0">
             <h1 className="text-3xl font-bold">Job Application Tracker</h1>
-            <p className="text-muted-foreground">Track and manage your job applications in one place</p>
+            <p className="text-muted-foreground mt-4">Track and manage your job applications in one place</p>
           </div>
           <Button className="text-black" onClick={() => setIsAddDialogOpen(true)}>
             <Plus className="mr-2 h-4 w-4" /> Add Application
           </Button>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Total Applications</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{jobs.length}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Applied</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{countByStatus("applied")}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Interviews</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{countByStatus("interview")}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Offers</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{countByStatus("offer")}</div>
-            </CardContent>
-          </Card>
         </div>
         <div className="flex flex-col md:flex-row gap-4 mb-6">
           <div className="relative flex-1">

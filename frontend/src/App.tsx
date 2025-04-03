@@ -57,7 +57,7 @@ function App() {
                   </div>
                 }
               />
-              <Route path="/tracking" element={<TrackingPageLayout />} />
+              <Route path="/job-application-tracker" element={<TrackingPageLayout />} />
               <Route path="/dashboard" element={<DashboardLayout />} />
             </Routes>
           </Layout>

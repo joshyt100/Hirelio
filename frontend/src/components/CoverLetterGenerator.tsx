@@ -161,7 +161,7 @@ export const CoverLetterGenerator: React.FC = () => {
                 <Textarea
                   placeholder=""
                   value={coverLetter}
-                  className="w-full sm:w flex-1 min-h-[750px] bg-zinc-200 border border-border    dark:bg-zinc-900 resize-none mb-4"
+                  className="w-full sm:w flex-1 min-h-[750px] bg-zinc-100 border border-border    dark:bg-zinc-900 resize-none mb-4"
                   readOnly
                 />
 
