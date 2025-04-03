@@ -17,35 +17,36 @@ export const SavedCoverLetters: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [coverLetters, setCoverLetters] = useState<CoverLetterMetadataResponse[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const lettersPerPage = 12;
+
   useEffect(() => {
-    const fetchCoverLetters = async () => {
+    const fetchCoverLetters = async (page: number) => {
       try {
         setLoading(true);
-        const response = await getCoverLetters();
-        setCoverLetters(response);
+        const response = await getCoverLetters(page);
+        setCoverLetters(response.results);
+        const count = response.count;
+        setTotalPages(Math.ceil(count / lettersPerPage));
       } catch (error) {
         console.error("Failed to get cover letters", error);
       } finally {
         setLoading(false);
       }
     };
-    fetchCoverLetters();
-  }, []);
 
-  const totalPages = Math.ceil(coverLetters.length / lettersPerPage);
-  const startIndex = (currentPage - 1) * lettersPerPage;
-  const paginatedLetters = coverLetters.slice(startIndex, startIndex + lettersPerPage);
+    fetchCoverLetters(currentPage);
+  }, [currentPage]);
 
   const handleNextPage = () => {
     if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
+      setCurrentPage(prevPage => prevPage + 1);
     }
   };
 
   const handlePreviousPage = () => {
     if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
+      setCurrentPage(prevPage => prevPage - 1);
     }
   };
 
@@ -61,7 +62,7 @@ export const SavedCoverLetters: React.FC = () => {
   return (
     <div className="flex flex-col items-center h-screen">
       <h1 className="text-3xl font-bold mt-12 mb-12">Saved Cover Letters</h1>
-      <div className="w-9/12 bg-zinc-50 dark:bg-zinc-950">
+      <div className="w-9/12  bg-zinc-50 dark:bg-zinc-950">
         <div className="rounded-md border">
           <Table>
             <TableHeader>
@@ -73,10 +74,21 @@ export const SavedCoverLetters: React.FC = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {paginatedLetters.length > 0 ? (
-                paginatedLetters.map((letter) => (
-                  <TableRow className="hover:bg-zinc-200 dark:hover:bg-zinc-900" key={letter.id}>
-                    <TableCell className="font-medium">{letter.company_name}</TableCell>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center">
+                    Loading...
+                  </TableCell>
+                </TableRow>
+              ) : coverLetters.length > 0 ? (
+                coverLetters.map((letter) => (
+                  <TableRow
+                    key={letter.id}
+                    className="hover:bg-zinc-100 dark:hover:bg-zinc-900"
+                  >
+                    <TableCell className="font-medium">
+                      {letter.company_name}
+                    </TableCell>
                     <TableCell>{letter.job_title}</TableCell>
                     <TableCell className="text-left">
                       {new Date(letter.created_at).toLocaleString()}
@@ -94,7 +106,7 @@ export const SavedCoverLetters: React.FC = () => {
               ) : (
                 <TableRow>
                   <TableCell colSpan={4} className="text-center">
-                    {loading ? "Loading..." : "No cover letters found."}
+                    No cover letters found.
                   </TableCell>
                 </TableRow>
               )}

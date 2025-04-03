@@ -1,9 +1,11 @@
 import axios from "axios";
 import { getCookie } from "../utils/csrfUtils";
 import { CoverLetterData, CoverLetterMetadataResponse } from "../types/types";
+import { PaginatedResponse } from "../types/types";
 
 const API_URL = "http://127.0.0.1:8000/cover/save-cover-letter/";
 const OTHER_API_URL = "http://127.0.0.1:8000/cover/get-cover-letters/";
+
 
 export const saveCoverLetter = async (coverLetter: CoverLetterData): Promise<void> => {
   try {
@@ -20,9 +22,9 @@ export const saveCoverLetter = async (coverLetter: CoverLetterData): Promise<voi
   }
 };
 
-export const getCoverLetters = async (): Promise<CoverLetterMetadataResponse[]> => {
+export const getCoverLetters = async (page: number): Promise<PaginatedResponse<CoverLetterMetadataResponse>> => {
   try {
-    const response = await axios.get(OTHER_API_URL, {
+    const response = await axios.get(`${OTHER_API_URL}?page=${page}`, {
       withCredentials: true,
       headers: {
         "Content-Type": "application/json",

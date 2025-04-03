@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useTheme } from "@/components/theme-provider";
 import { Button } from "@/components/ui/button";
-import { FileText, ChartLine, Moon, ChartBarBig, CircleUserRound, Sun, LogOut, FilePlus, Save } from "lucide-react";
+import { FileText, ChartLine, Moon, ChartBarBig, CircleUserRound, Sun, LogOut, FilePlus, Save, Briefcase } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { LogoutConfirm } from "./LogoutConfirm";
 
@@ -28,11 +28,11 @@ const Navbar: React.FC = () => {
       <div className={`fixed top-0 left-0 h-full ${collapsed ? "w-20" : "w-64"} bg-background border-r z-50 p-4 flex flex-col gap-6 shadow-lg transition-all duration-300`}>
         <div className="flex items-center gap-2">
           <div className="bg-primary rounded-lg p-1.5">
-            <FileText className="h-5 w-5 text-primary-foreground" />
+            <Briefcase className="h-5 w-5 text-primary-foreground" />
           </div>
           {!collapsed && (
             <Link to="/generate" className="text-xl font-bold">
-              CoverAI
+              HireMind
             </Link>
           )}
         </div>

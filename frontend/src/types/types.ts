@@ -13,3 +13,9 @@ export interface CoverLetterMetadataResponse {
   cover_letter_file_path: string,
   created_at: string,
 }
+export interface PaginatedResponse<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+}
