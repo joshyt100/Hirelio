@@ -65,7 +65,7 @@ const Navbar: React.FC = () => {
           </Link>
           <Link to="/generate" className="w-full">
             <Button variant="ghost" className="w-full justify-start border border-zinc-300 dark:border-zinc-600">
-              {collapsed ? <FilePlus className="h-5 w-5" /> : "Generate Cover Letter"}
+              {collapsed ? <FilePlus className="h-5 w-5" /> : "Cover Letter Generator"}
             </Button>
           </Link>
 

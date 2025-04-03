@@ -108,6 +108,7 @@ export const CoverLetterGenerator: React.FC = () => {
     <div className="flex flex-col items-center justify-center">
       <div className="  w-11/12 sm:max-w-xl md:max-w-4xl lg:max-w-6xl 2xl:max-w-8xl h-full    flex flex-col items-center justify-center ml-28  max-w-lg md:flex-row ">
         <div className="p-6 w-full sm:w-full rounded-lg h-full flex flex-col">
+          <h1 className="text-3xl w-full font-bold mb-6">Cover Letter Generator</h1>
           <h2 className="text-lg w-full font-semibold mb-4">Enter Job Description</h2>
           <Textarea
             placeholder="Enter job description..."
@@ -187,7 +188,7 @@ export const CoverLetterGenerator: React.FC = () => {
                   </DialogContent>
                 </Dialog>
 
-                <Button onClick={handleCoverLetterSave} disabled={isSaved} className="absolute dark:bg-black text-white da hover:dark:bg-gray-700  top-3  mr-1 right-12">
+                <Button onClick={handleCoverLetterSave} disabled={isSaved} className="absolute  text-white da   top-3  mr-1 right-12">
                   {isSaved ? "Already Saved" : "Save"}
                 </Button>
               </div>

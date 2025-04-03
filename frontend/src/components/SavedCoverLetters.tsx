@@ -60,7 +60,7 @@ export const SavedCoverLetters: React.FC = () => {
 
   return (
     <div className="flex flex-col items-center h-screen">
-      <h1 className="text-4xl font-bold mt-12 mb-12">Saved Cover Letters</h1>
+      <h1 className="text-3xl font-bold mt-12 mb-12">Saved Cover Letters</h1>
       <div className="w-9/12 bg-zinc-50 dark:bg-zinc-950">
         <div className="rounded-md border">
           <Table>

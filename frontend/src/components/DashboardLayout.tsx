@@ -243,7 +243,7 @@ const statusOptions = [
 
 const statusColors: Record<string, string> = {
   saved: "#64748b", // slate-500
-  applied: "#3b82f6", // blue-500
+  applied: "	#5D3FD3", // blue-500
   interview: "#f59e0b", // amber-500
   offer: "#22c55e", // green-500
   rejected: "#ef4444", // red-500
