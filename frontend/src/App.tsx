@@ -10,6 +10,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from "react-route
 import { AuthProvider } from "./context/AuthContext"
 import TrackingPageLayout from "./components/TrackingPageLayout"
 import DashboardLayout from "./components/DashboardLayout"
+import ContactLayout from "./components/ContactLayout";
 
 const Layout = ({ children }) => {
   const location = useLocation()
@@ -59,6 +60,7 @@ function App() {
               />
               <Route path="/job-application-tracker" element={<TrackingPageLayout />} />
               <Route path="/dashboard" element={<DashboardLayout />} />
+              <Route path="/contacts-tracker" element={<ContactLayout />} />
             </Routes>
           </Layout>
         </Router>
