@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     "accounts",  # Added accounts app here
     "corsheaders",
     "AI_generator",
+    "job_applications",
 ]
 
 STATIC_URL = "static/"

@@ -7,6 +7,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     # url
     path("api/", include("accounts.urls")),
+    path("api/job-applications/", include("job_applications.urls")),
     path("google/", include("social_django.urls", namespace="social")),
     path("cover/", include("AI_generator.urls")),
 ]
