@@ -10,10 +10,10 @@ class JobApplication(models.Model):
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="job_applications"
     )
-    company = models.CharField(max_length=255)
-    position = models.CharField(max_length=255)
+    company = models.CharField(max_length=255, db_index=True)
+    position = models.CharField(max_length=255, db_index=True)
     location = models.CharField(max_length=255, blank=True)
-    status = models.CharField(max_length=50)
+    status = models.CharField(max_length=50, db_index=True)
     date_applied = models.DateField()
     notes = models.TextField(blank=True)
     salary = models.CharField(max_length=100, blank=True)

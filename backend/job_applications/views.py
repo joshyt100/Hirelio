@@ -1,6 +1,7 @@
 import logging
 import uuid
 import boto3
+from django.db.models import Q  # <-- Import Q for complex queries
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -27,22 +28,26 @@ class JobApplicationListCreateView(APIView):
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
 
-    @method_decorator(cache_page(60 * 5), name="dispatch")
     def get(self, request):
-        # Optional query parameter to filter by status, e.g. ?status=saved
+        # Get optional query parameters
         status_filter = request.query_params.get("status")
+        search = request.query_params.get("search")
+
+        # Build the initial queryset filtered by user
+        job_apps = JobApplication.objects.filter(user=request.user)
+
+        # Apply status filter if provided
         if status_filter:
-            job_apps = (
-                JobApplication.objects.filter(user=request.user, status=status_filter)
-                .prefetch_related("attachments")
-                .order_by("-date_applied")
+            job_apps = job_apps.filter(status=status_filter)
+
+        # Apply search filter (lookup in company or position)
+        if search:
+            job_apps = job_apps.filter(
+                Q(company__icontains=search) | Q(position__icontains=search)
             )
-        else:
-            job_apps = (
-                JobApplication.objects.filter(user=request.user)
-                .prefetch_related("attachments")
-                .order_by("-date_applied")
-            )
+
+        # Optimize DB queries by prefetching related attachments and order results
+        job_apps = job_apps.prefetch_related("attachments").order_by("-date_applied")
 
         paginator = JobApplicationPagination()
         result_page = paginator.paginate_queryset(job_apps, request)
@@ -101,8 +106,7 @@ class JobApplicationDetailView(APIView):
         job_app = self.get_object(pk, request.user)
         if not job_app:
             return Response(
-                {"error": "Job application not found"},
-                status=status.HTTP_404_NOT_FOUND,
+                {"error": "Job application not found"}, status=status.HTTP_404_NOT_FOUND
             )
         serializer = JobApplicationSerializer(job_app)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -111,8 +115,7 @@ class JobApplicationDetailView(APIView):
         job_app = self.get_object(pk, request.user)
         if not job_app:
             return Response(
-                {"error": "Job application not found"},
-                status=status.HTTP_404_NOT_FOUND,
+                {"error": "Job application not found"}, status=status.HTTP_404_NOT_FOUND
             )
         data = request.data.copy()
         serializer = JobApplicationSerializer(job_app, data=data, partial=True)
@@ -150,8 +153,7 @@ class JobApplicationDetailView(APIView):
         job_app = self.get_object(pk, request.user)
         if not job_app:
             return Response(
-                {"error": "Job application not found"},
-                status=status.HTTP_404_NOT_FOUND,
+                {"error": "Job application not found"}, status=status.HTTP_404_NOT_FOUND
             )
         # Delete attachments from S3
         s3 = boto3.client(
@@ -181,15 +183,13 @@ class DeleteAttachmentView(APIView):
             job_app = JobApplication.objects.get(pk=job_id, user=request.user)
         except JobApplication.DoesNotExist:
             return Response(
-                {"error": "Job application not found"},
-                status=status.HTTP_404_NOT_FOUND,
+                {"error": "Job application not found"}, status=status.HTTP_404_NOT_FOUND
             )
         try:
             attachment = job_app.attachments.get(pk=attachment_id)
         except Attachment.DoesNotExist:
             return Response(
-                {"error": "Attachment not found"},
-                status=status.HTTP_404_NOT_FOUND,
+                {"error": "Attachment not found"}, status=status.HTTP_404_NOT_FOUND
             )
         s3 = boto3.client(
             "s3",
