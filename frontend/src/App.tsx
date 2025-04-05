@@ -9,7 +9,7 @@ import LandingPage from "./components/LandingPage";
 import { ThemeProvider } from "./components/theme-provider";
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
-import JobApplicationsPage from "./components/jobapplications/JobApplicationsPage";
+import JobApplicationsPage from "./components/job-applications/JobApplicationsPage";
 import DashboardLayout from "./components/DashboardLayout";
 import ContactLayout from "./components/ContactLayout";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
