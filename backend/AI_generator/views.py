@@ -6,7 +6,7 @@ import PyPDF2
 from io import BytesIO
 from AI_generator.models import CoverLetter
 from AI_generator.serializers import CoverLetterRequestSerializer, CoverLetterSerializer
-from AI_generator.pagination import CoverLetterPagination
+from AI_generator.pagination import CoverLetterCursorPagination
 from django.conf import settings
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
@@ -238,9 +238,9 @@ class GetCoverLetters(APIView):
         cover_letters = CoverLetter.objects.filter(user=request.user).order_by(
             "-created_at"
         )
-        paginator = CoverLetterPagination()
-        paginated_queryset = paginator.paginate_queryset(cover_letters, request)
-        serializer = CoverLetterSerializer(paginated_queryset, many=True)
+        paginator = CoverLetterCursorPagination()
+        result_page = paginator.paginate_queryset(cover_letters, request)
+        serializer = CoverLetterSerializer(result_page, many=True)
         return paginator.get_paginated_response(serializer.data)
 
 

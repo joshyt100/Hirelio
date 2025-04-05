@@ -1,15 +1,18 @@
 import axios from "axios";
 import { getCookie } from "../utils/csrfUtils";
 import { CoverLetterData, CoverLetterMetadataResponse } from "../types/types";
-import { PaginatedResponse } from "../types/types";
 
-const API_URL = "http://127.0.0.1:8000/cover/save-cover-letter/";
-const OTHER_API_URL = "http://127.0.0.1:8000/cover/get-cover-letters/";
+// Define response type for cursor pagination
+interface CursorPaginatedResponse<T> {
+  results: T[];
+  next_cursor: string | null;
+}
 
+const BASE_URL = "http://127.0.0.1:8000/cover";
 
 export const saveCoverLetter = async (coverLetter: CoverLetterData): Promise<void> => {
   try {
-    await axios.post(API_URL, coverLetter, {
+    await axios.post(`${BASE_URL}/save-cover-letter/`, coverLetter, {
       withCredentials: true,
       headers: {
         "Content-Type": "application/json",
@@ -22,15 +25,30 @@ export const saveCoverLetter = async (coverLetter: CoverLetterData): Promise<voi
   }
 };
 
-export const getCoverLetters = async (page: number): Promise<PaginatedResponse<CoverLetterMetadataResponse>> => {
+export const getCoverLetters = async (
+  cursor?: string | null
+): Promise<CursorPaginatedResponse<CoverLetterMetadataResponse>> => {
   try {
-    const response = await axios.get(`${OTHER_API_URL}?page=${page}`, {
+    const url = cursor
+      ? `${BASE_URL}/get-cover-letters/?cursor=${encodeURIComponent(cursor)}`
+      : `${BASE_URL}/get-cover-letters/`;
+
+    const response = await axios.get(url, {
       withCredentials: true,
       headers: {
         "Content-Type": "application/json",
       },
     });
-    return response.data;
+
+    const nextUrl = response.data.next;
+    const nextCursor = nextUrl
+      ? new URL(nextUrl).searchParams.get("cursor")
+      : null;
+
+    return {
+      results: response.data.results,
+      next_cursor: nextCursor,
+    };
   } catch (error) {
     console.error("Error fetching cover letters", error);
     throw new Error("Failed to get cover letters");
@@ -39,16 +57,12 @@ export const getCoverLetters = async (page: number): Promise<PaginatedResponse<C
 
 export const getPresignedUrl = async (id: number): Promise<string> => {
   try {
-    const response = await axios.get(
-      `http://127.0.0.1:8000/cover/get-cover-letter-url/${id}`,
-      {
-        withCredentials: true,
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-    // Extract and return the download URL from the response
+    const response = await axios.get(`${BASE_URL}/get-cover-letter-url/${id}`, {
+      withCredentials: true,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
     return response.data.download_url;
   } catch (error) {
     console.error("Error fetching presigned URL", error);
