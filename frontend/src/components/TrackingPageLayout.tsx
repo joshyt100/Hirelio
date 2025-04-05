@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { getCookie } from "../utils/csrfUtils";
 import {
@@ -17,7 +17,6 @@ import {
 import { Attachment, JobApplication } from "@/types/application";
 
 // ───── CUSTOM LOADER ─────────────────────────────
-// This component creates a solid circle spinner using Tailwind CSS.
 const SolidCircleLoader = ({ className = "w-6 h-6" }: { className?: string }) => (
   <div
     className={`border-4 border-solid border-zinc-300 dark:border-zinc-800 border-t-transparent dark:border-t-transparent rounded-full animate-spin ${className}`}
@@ -25,7 +24,6 @@ const SolidCircleLoader = ({ className = "w-6 h-6" }: { className?: string }) =>
 );
 
 // ───── UI COMPONENTS (DO NOT CHANGE STYLE) ─────────────────────────────
-
 const statusOptions = [
   { value: "saved", label: "Saved" },
   { value: "applied", label: "Applied" },
@@ -305,24 +303,21 @@ const DropdownMenuItem = ({
   </button>
 );
 
-// ───── TRACKING PAGE LAYOUT (API Integration with Backend Querying & Pagination) ─────────────────────────
+// ───── TRACKING PAGE LAYOUT (Infinite Scroll using Cursor Pagination) ─────────────────────────
 
 export default function TrackingPageLayout() {
-  // Pagination and filtering state
+  // Pagination and filtering state using cursors
   const [jobs, setJobs] = useState<JobApplication[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("all");
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [count, setCount] = useState<number>(0);
-  const [nextPageUrl, setNextPageUrl] = useState<string | null>(null);
-  const [prevPageUrl, setPrevPageUrl] = useState<string | null>(null);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
 
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [currentJob, setCurrentJob] = useState<JobApplication | null>(null);
   const [files, setFiles] = useState<File[]>([]);
-  // Use snake_case field names to match your backend and store date_applied as a formatted string
+  // Use snake_case field names to match your backend
   const [formData, setFormData] = useState<Omit<JobApplication, "id" | "attachments">>({
     company: "",
     position: "",
@@ -336,48 +331,68 @@ export default function TrackingPageLayout() {
     url: "",
   });
 
-  // Loading states
+  // Loading state
   const [jobsLoading, setJobsLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
   // IMPORTANT: API_URL now points to "api/job-applications/".
   const API_URL = "http://127.0.0.1:8000/api/job-applications";
 
-  // Fetch job applications from the backend API using query parameters for filtering & pagination
-  const fetchJobs = async (page = 1) => {
-    setJobsLoading(true);
-    try {
-      const params: any = { page };
-      // Prioritize activeTab filter unless it's "all"
-      if (activeTab && activeTab !== "all") {
-        params.status = activeTab;
-      } else if (statusFilter) {
-        params.status = statusFilter;
-      }
-      if (searchTerm) {
-        params.search = searchTerm;
-      }
-      // Make the API call
-      const response = await axios.get(API_URL, {
-        params,
-        withCredentials: true,
-      });
-      // Update state with the fetched data
-      setJobs(response.data.results || []);
-      setCount(response.data.count || 0);
-      setNextPageUrl(response.data.next);
-      setPrevPageUrl(response.data.previous);
-      setCurrentPage(page);
-    } catch (error) {
-      alert("Error fetching job applications");
-    } finally {
-      setJobsLoading(false);
-    }
-  };
+  // Modified fetchJobs function that supports appending results
+  // When filters change, reset job list and fetch from the beginning
 
+  const fetchJobs = useCallback(
+    async (cursor: string | null = null, append = false) => {
+      setJobsLoading(true);
+      try {
+        const params: any = {};
+        // Use activeTab for filtering. When "all" is selected, do not include any status filter.
+        if (activeTab && activeTab !== "all") {
+          params.status = activeTab;
+        }
+        if (searchTerm) {
+          params.search = searchTerm;
+        }
+        if (cursor) {
+          params.cursor = cursor;
+        }
+        const response = await axios.get(API_URL, { params, withCredentials: true });
+        const newJobs = response.data.results || [];
+        if (append) {
+          setJobs((prevJobs) => [...prevJobs, ...newJobs]);
+        } else {
+          setJobs(newJobs);
+        }
+        setNextCursor(
+          response.data.next ? new URL(response.data.next).searchParams.get("cursor") : null
+        );
+      } catch (error) {
+        alert("Error fetching job applications");
+      } finally {
+        setJobsLoading(false);
+      }
+    },
+    [activeTab, searchTerm]
+  );
   useEffect(() => {
-    fetchJobs(1);
-  }, [statusFilter, searchTerm, activeTab]);
+    fetchJobs(null);
+  }, [searchTerm, statusFilter, activeTab, fetchJobs]);
+
+  // Infinite scroll: When the user scrolls near the bottom, fetch more jobs (if available)
+  useEffect(() => {
+    const handleScroll = () => {
+      if (jobsLoading || !nextCursor) return;
+      if (
+        window.innerHeight + window.scrollY >=
+        document.documentElement.offsetHeight - 200
+      ) {
+        fetchJobs(nextCursor, true);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [jobsLoading, nextCursor, fetchJobs]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -416,8 +431,8 @@ export default function TrackingPageLayout() {
         headers: { "X-CSRFToken": csrfToken },
         withCredentials: true,
       });
-      // Refetch page 1 after creation
-      fetchJobs(1);
+      // After adding, refresh the list from the beginning
+      fetchJobs(null);
       resetForm();
       setIsAddDialogOpen(false);
     } catch (error: any) {
@@ -441,7 +456,7 @@ export default function TrackingPageLayout() {
         headers: { "X-CSRFToken": csrfToken },
         withCredentials: true,
       });
-      fetchJobs(currentPage);
+      fetchJobs(null);
       resetForm();
       setIsEditDialogOpen(false);
       setCurrentJob(null);
@@ -461,7 +476,7 @@ export default function TrackingPageLayout() {
         headers: { "X-CSRFToken": csrfToken },
         withCredentials: true,
       });
-      fetchJobs(currentPage);
+      fetchJobs(null);
       alert("Job application deleted.");
     } catch (error: any) {
       alert("Error deleting job application");
@@ -478,7 +493,7 @@ export default function TrackingPageLayout() {
         headers: { "X-CSRFToken": csrfToken },
         withCredentials: true,
       });
-      fetchJobs(currentPage);
+      fetchJobs(null);
       alert("Attachment deleted.");
     } catch (error: any) {
       alert("Error deleting attachment");
@@ -531,8 +546,6 @@ export default function TrackingPageLayout() {
     return <Badge className={color}>{label}</Badge>;
   };
 
-  const totalPages = Math.ceil(count / 12);
-
   return (
     <div className="ml-20 md:ml-20 lg:ml-32 p-4">
       <div className="container mx-auto py-6 max-w-7xl">
@@ -540,7 +553,9 @@ export default function TrackingPageLayout() {
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
           <div className="mb-4 sm:mb-0">
             <h1 className="text-3xl font-bold">Job Application Tracker</h1>
-            <p className="text-muted-foreground mt-4">Track and manage your job applications in one place</p>
+            <p className="text-muted-foreground mt-4">
+              Track and manage your job applications in one place
+            </p>
           </div>
           <Button className="text-black" onClick={() => setIsAddDialogOpen(true)}>
             <Plus className="mr-2 h-4 w-4" /> Add Application
@@ -566,14 +581,19 @@ export default function TrackingPageLayout() {
             ))}
           </Select>
         </div>
-
-        <Tabs defaultValue="all" onValueChange={setActiveTab}>
+        <Tabs defaultValue="all" onValueChange={(value) => {
+          setActiveTab(value);
+          setStatusFilter(null);
+          setNextCursor(null);
+        }}>
           <TabsList>
             <TabsTrigger
               value="all"
               onClick={() => {
                 setActiveTab("all");
                 setStatusFilter(null);
+                setNextCursor(null);
+                setJobs([]);
               }}
               className={activeTab === "all" ? "bg-white dark:bg-black dark:text-white" : ""}
             >
@@ -581,35 +601,60 @@ export default function TrackingPageLayout() {
             </TabsTrigger>
             <TabsTrigger
               value="saved"
-              onClick={() => setActiveTab("saved")}
+              onClick={() => {
+                setActiveTab("saved");
+                setStatusFilter(null);
+                setNextCursor(null);
+                setJobs([]);
+              }}
               className={activeTab === "saved" ? "bg-white dark:bg-black dark:text-white" : ""}
             >
               Saved
             </TabsTrigger>
             <TabsTrigger
               value="applied"
-              onClick={() => setActiveTab("applied")}
+              onClick={() => {
+                setActiveTab("applied");
+                setStatusFilter(null);
+                setNextCursor(null);
+                setJobs([]);
+              }}
               className={activeTab === "applied" ? "bg-white dark:bg-black dark:text-white" : ""}
             >
               Applied
             </TabsTrigger>
             <TabsTrigger
               value="interview"
-              onClick={() => setActiveTab("interview")}
+              onClick={() => {
+                setActiveTab("interview");
+                setStatusFilter(null);
+                setNextCursor(null);
+                setJobs([]);
+              }}
               className={activeTab === "interview" ? "bg-white dark:bg-black dark:text-white" : ""}
             >
               Interviews
             </TabsTrigger>
             <TabsTrigger
               value="offer"
-              onClick={() => setActiveTab("offer")}
+              onClick={() => {
+                setActiveTab("offer");
+                setStatusFilter(null);
+                setNextCursor(null);
+                setJobs([]);
+              }}
               className={activeTab === "offer" ? "bg-white dark:bg-black dark:text-white" : ""}
             >
               Offers
             </TabsTrigger>
             <TabsTrigger
               value="rejected"
-              onClick={() => setActiveTab("rejected")}
+              onClick={() => {
+                setActiveTab("rejected");
+                setStatusFilter(null);
+                setNextCursor(null);
+                setJobs([]);
+              }}
               className={activeTab === "rejected" ? "bg-white dark:bg-black dark:text-white" : ""}
             >
               Rejected
@@ -619,7 +664,7 @@ export default function TrackingPageLayout() {
 
         {/* Job Cards */}
         <div className="mt-6">
-          {jobsLoading ? (
+          {jobsLoading && jobs.length === 0 ? (
             <div className="flex justify-center items-center h-64">
               <SolidCircleLoader className="w-8 h-8" />
             </div>
@@ -697,7 +742,7 @@ export default function TrackingPageLayout() {
                       <div className="mt-3">
                         <h4 className="text-sm font-semibold mb-2">Attachments</h4>
                         <div className="flex flex-wrap gap-2">
-                          {(job.attachments || []).map((attachment) => (
+                          {job.attachments.map((attachment) => (
                             <div key={attachment.id} className="flex items-center bg-secondary rounded-md px-3 py-1.5 text-sm">
                               <Paperclip className="h-3.5 w-3.5 mr-1.5" />
                               <span className="mr-2">{attachment.name}</span>
@@ -732,21 +777,15 @@ export default function TrackingPageLayout() {
               ))}
             </div>
           )}
+          {jobsLoading && jobs.length > 0 && (
+            <div className="flex justify-center items-center py-4">
+              <SolidCircleLoader className="w-8 h-8" />
+            </div>
+          )}
         </div>
-        {/* Pagination Controls */}
-        {jobs.length > 0 && (
-          <div className="flex items-center justify-between mt-4">
-            <Button disabled={jobsLoading || !prevPageUrl} onClick={() => fetchJobs(currentPage - 1)} variant="outline">
-              Previous
-            </Button>
-            <span>
-              Page {currentPage} of {totalPages}
-            </span>
-            <Button disabled={jobsLoading || !nextPageUrl} onClick={() => fetchJobs(currentPage + 1)} variant="outline">
-              Next
-            </Button>
-          </div>
-        )}
+
+        {/* Infinite scroll is handled automatically by the window scroll listener */}
+
         {/* Add Job Dialog */}
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogContent className="w-full max-w-lg">
@@ -855,7 +894,6 @@ export default function TrackingPageLayout() {
               <DialogDescription>Update the details of your job application.</DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
-              {/* Similar form fields for editing... */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="edit-company">Company</Label>
@@ -866,7 +904,6 @@ export default function TrackingPageLayout() {
                   <Input id="edit-position" name="position" placeholder="Job title" value={formData.position} onChange={handleInputChange} required />
                 </div>
               </div>
-              {/* More fields for edit... */}
               {currentJob && currentJob.attachments && currentJob.attachments.length > 0 && (
                 <div className="space-y-2">
                   <Label>Current Attachments</Label>
@@ -888,7 +925,6 @@ export default function TrackingPageLayout() {
                   </div>
                 </div>
               )}
-              {/* File upload for new attachments */}
               <div className="space-y-2">
                 <Label>Add New Attachments</Label>
                 <div className="grid gap-2">
@@ -924,7 +960,7 @@ export default function TrackingPageLayout() {
           </DialogContent>
         </Dialog>
       </div>
-    </div>
+    </div >
   );
 }
 
