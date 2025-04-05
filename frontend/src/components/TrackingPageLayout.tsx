@@ -330,7 +330,7 @@ export default function TrackingPageLayout() {
 
   return (
     <div className="min-h-screen  ">
-      <div className="container pl-24 pr-4 pt-8  mx-auto  max-w-7xl w-full">
+      <div className="container pl-24 pr-4 pt-8  mx-auto  max-w-[96rem] w-full">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3">
           <div className="mb-6 sm:mb-0">
@@ -602,7 +602,7 @@ export default function TrackingPageLayout() {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="text-primary border-primary   "
+                        className="   "
                         onClick={() => window.open(job.url, "_blank")}
                       >
                         <LinkIcon className="h-3.5 w-3.5 mr-1.5" /> View Job
