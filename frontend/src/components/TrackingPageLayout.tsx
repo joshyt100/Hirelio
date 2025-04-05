@@ -1,6 +1,8 @@
-import React, { useState, useEffect, useCallback } from "react";
-import axios from "axios";
-import { getCookie } from "../utils/csrfUtils";
+
+import type React from "react"
+import { useState, useEffect, useCallback } from "react"
+import axios from "axios"
+import { getCookie } from "../utils/csrfUtils"
 import {
   Plus,
   Search,
@@ -12,311 +14,86 @@ import {
   Calendar,
   Building,
   MapPin,
-} from "lucide-react";
+  LinkIcon,
+  Mail,
+  User,
+  Filter,
+  ExternalLink,
+} from "lucide-react"
 
-import { Attachment, JobApplication } from "@/types/application";
+import type { JobApplication } from "@/types/application"
+
+// Import shadcn/ui components
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Separator } from "@/components/ui/separator"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 // ───── CUSTOM LOADER ─────────────────────────────
 const SolidCircleLoader = ({ className = "w-6 h-6" }: { className?: string }) => (
   <div
-    className={`border-4 border-solid border-zinc-300 dark:border-zinc-800 border-t-transparent dark:border-t-transparent rounded-full animate-spin ${className}`}
+    className={`border-4 border-solid border-zinc-200 dark:border-zinc-800 border-t-primary dark:border-t-primary rounded-full animate-spin ${className}`}
   />
-);
+)
 
-// ───── UI COMPONENTS (DO NOT CHANGE STYLE) ─────────────────────────────
 const statusOptions = [
   { value: "saved", label: "Saved" },
   { value: "applied", label: "Applied" },
   { value: "interview", label: "Interview" },
   { value: "offer", label: "Offer" },
   { value: "rejected", label: "Rejected" },
-];
+]
 
 const statusColors: Record<string, string> = {
-  saved: "bg-slate-500 text-white",
-  applied: "bg-blue-500 text-white",
-  interview: "bg-amber-500 text-white",
-  offer: "bg-green-500 text-white",
-  rejected: "bg-red-500 text-white",
-};
+  saved: "bg-slate-500 hover:bg-slate-600",
+  applied: "bg-sky-500 hover:bg-sky-600",
+  interview: "bg-amber-500 hover:bg-amber-600",
+  offer: "bg-emerald-500 hover:bg-emerald-600",
+  rejected: "bg-rose-500 hover:bg-rose-600",
+}
 
-const Button = ({
-  children,
-  variant = "primary",
-  size = "md",
-  className = "",
-  onClick,
-  ...props
-}: {
-  children: React.ReactNode;
-  variant?: "primary" | "outline" | "ghost";
-  size?: "sm" | "md" | "icon";
-  className?: string;
-  onClick?: () => void;
-  [key: string]: any;
-}) => {
-  const baseClasses =
-    "inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50";
-  const variantClasses = {
-    primary: "bg-primary text-white hover:bg-primary/90 shadow",
-    outline:
-      "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
-    ghost: "hover:bg-accent hover:text-accent-foreground",
-  };
-  const sizeClasses = {
-    sm: "h-8 px-3 text-xs",
-    md: "h-10 px-4 py-2",
-    icon: "h-9 w-9",
-  };
-  return (
-    <button
-      className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
-      onClick={onClick}
-      {...props}
-    >
-      {children}
-    </button>
-  );
-};
-
-const Input = ({ className = "", ...props }: React.InputHTMLAttributes<HTMLInputElement>) => (
-  <input
-    className={`flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
-    {...props}
-  />
-);
-
-const Textarea = ({ className = "", ...props }: React.TextareaHTMLAttributes<HTMLTextAreaElement>) => (
-  <textarea
-    className={`flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
-    {...props}
-  />
-);
-
-const Label = ({ htmlFor, children }: { htmlFor?: string; children: React.ReactNode }) => (
-  <label htmlFor={htmlFor} className="text-sm font-medium leading-none">
-    {children}
-  </label>
-);
-
-const Badge = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
-  <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${className}`}>
-    {children}
-  </span>
-);
-
-const Card = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
-  <div className={`rounded-lg border bg-card text-card-foreground shadow-sm ${className}`}>{children}</div>
-);
-
-const CardHeader = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
-  <div className={`flex flex-col space-y-1.5 p-6 ${className}`}>{children}</div>
-);
-
-const CardTitle = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
-  <h3 className={`text-lg font-semibold leading-none tracking-tight ${className}`}>{children}</h3>
-);
-
-const CardDescription = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
-  <p className={`text-sm text-muted-foreground ${className}`}>{children}</p>
-);
-
-const CardContent = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
-  <div className={`p-6 pt-0 ${className}`}>{children}</div>
-);
-
-const CardFooter = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
-  <div className={`flex items-center p-6 pt-0 ${className}`}>{children}</div>
-);
-
-const Dialog = ({
-  open,
-  onOpenChange,
-  children,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  children: React.ReactNode;
-}) => {
-  if (!open) return null;
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="relative bg-background rounded-lg w-full max-w-lg max-h-[90vh] overflow-auto p-6">
-        <button
-          className="absolute right-4 top-4 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring"
-          onClick={() => onOpenChange(false)}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="h-4 w-4"
-          >
-            <line x1="18" y1="6" x2="6" y2="18" />
-            <line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
-          <span className="sr-only">Close</span>
-        </button>
-        {children}
-      </div>
-    </div>
-  );
-};
-
-const DialogContent = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
-  <div className={className}>{children}</div>
-);
-
-const DialogHeader = ({ children }: { children: React.ReactNode }) => (
-  <div className="flex flex-col space-y-1.5 text-left mb-4">{children}</div>
-);
-
-const DialogTitle = ({ children }: { children: React.ReactNode }) => (
-  <h2 className="text-lg font-semibold leading-none tracking-tight">{children}</h2>
-);
-
-const DialogDescription = ({ children }: { children: React.ReactNode }) => (
-  <p className="text-sm text-muted-foreground">{children}</p>
-);
-
-const DialogFooter = ({ children }: { children: React.ReactNode }) => (
-  <div className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 mt-4">{children}</div>
-);
-
-const Select = ({
-  children,
-  value,
-  onValueChange,
-}: {
-  children: React.ReactNode;
-  value?: string;
-  onValueChange: (value: string) => void;
-}) => (
-  <div className="relative">
-    <select
-      value={value}
-      onChange={(e) => onValueChange(e.target.value)}
-      className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-    >
-      {children}
-    </select>
-  </div>
-);
-
-const SelectItem = ({ children, value }: { children: React.ReactNode; value: string }) => (
-  <option value={value}>{children}</option>
-);
-
-const Tabs = ({
-  children,
-  defaultValue,
-  onValueChange,
-}: {
-  children: React.ReactNode;
-  defaultValue: string;
-  onValueChange: (value: string) => void;
-}) => <div className="w-full">{children}</div>;
-
-const TabsList = ({ children }: { children: React.ReactNode }) => (
-  <div className="inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground">
-    {children}
-  </div>
-);
-
-const TabsTrigger = ({
-  children,
-  value,
-  onClick,
-  className = "",
-}: {
-  children: React.ReactNode;
-  value: string;
-  onClick?: () => void;
-  className?: string;
-}) => (
-  <button
-    className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 ${className}`}
-    onClick={onClick}
-  >
-    {children}
-  </button>
-);
-
-const DropdownMenu = ({ children }: { children: React.ReactNode }) => {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="relative">
-      {React.Children.map(children, (child) => {
-        if (React.isValidElement(child) && child.type === DropdownMenuTrigger) {
-          return React.cloneElement(child, { onClick: () => setOpen(!open) });
-        }
-        if (React.isValidElement(child) && child.type === DropdownMenuContent) {
-          return open ? child : null;
-        }
-        return child;
-      })}
-    </div>
-  );
-};
-
-const DropdownMenuTrigger = ({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) => (
-  <div onClick={onClick}>{children}</div>
-);
-
-const DropdownMenuContent = ({
-  children,
-  align = "center",
-}: {
-  children: React.ReactNode;
-  align?: "start" | "center" | "end";
-}) => {
-  const alignClasses = { start: "left-0", center: "left-1/2 -translate-x-1/2", end: "right-0" };
-  return (
-    <div
-      className={`absolute z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md animate-in mt-1 ${alignClasses[align]}`}
-    >
-      {children}
-    </div>
-  );
-};
-
-const DropdownMenuItem = ({
-  children,
-  className = "",
-  onClick,
-}: {
-  children: React.ReactNode;
-  className?: string;
-  onClick?: () => void;
-}) => (
-  <button
-    className={`relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm text-left transition-colors focus:bg-accent focus:text-accent-foreground hover:bg-accent hover:text-accent-foreground ${className}`}
-    onClick={onClick}
-  >
-    {children}
-  </button>
-);
-
-// ───── TRACKING PAGE LAYOUT (Infinite Scroll using Cursor Pagination) ─────────────────────────
+const statusIcons: Record<string, React.ReactNode> = {
+  saved: <Paperclip className="h-3.5 w-3.5" />,
+  applied: <FileText className="h-3.5 w-3.5" />,
+  interview: <Calendar className="h-3.5 w-3.5" />,
+  offer: <FileText className="h-3.5 w-3.5" />,
+  rejected: <FileText className="h-3.5 w-3.5" />,
+}
 
 export default function TrackingPageLayout() {
   // Pagination and filtering state using cursors
-  const [jobs, setJobs] = useState<JobApplication[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState("all");
-  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [jobs, setJobs] = useState<JobApplication[]>([])
+  const [searchTerm, setSearchTerm] = useState("")
+  const [statusFilter, setStatusFilter] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState("all")
+  const [nextCursor, setNextCursor] = useState<string | null>(null)
 
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [currentJob, setCurrentJob] = useState<JobApplication | null>(null);
-  const [files, setFiles] = useState<File[]>([]);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [currentJob, setCurrentJob] = useState<JobApplication | null>(null)
+  const [files, setFiles] = useState<File[]>([])
   // Use snake_case field names to match your backend
   const [formData, setFormData] = useState<Omit<JobApplication, "id" | "attachments">>({
     company: "",
@@ -329,181 +106,175 @@ export default function TrackingPageLayout() {
     contact_person: "",
     contact_email: "",
     url: "",
-  });
+  })
 
   // Loading state
-  const [jobsLoading, setJobsLoading] = useState(false);
-  const [actionLoading, setActionLoading] = useState(false);
+  const [jobsLoading, setJobsLoading] = useState(false)
+  const [actionLoading, setActionLoading] = useState(false)
 
   // IMPORTANT: API_URL now points to "api/job-applications/".
-  const API_URL = "http://127.0.0.1:8000/api/job-applications";
+  const API_URL = "http://127.0.0.1:8000/api/job-applications"
 
-  // Modified fetchJobs function that supports appending results
-  // When filters change, reset job list and fetch from the beginning
-
+  // Fetch jobs function supporting pagination
   const fetchJobs = useCallback(
     async (cursor: string | null = null, append = false) => {
-      setJobsLoading(true);
+      setJobsLoading(true)
       try {
-        const params: any = {};
-        // Use activeTab for filtering. When "all" is selected, do not include any status filter.
+        const params: any = {}
         if (activeTab && activeTab !== "all") {
-          params.status = activeTab;
+          params.status = activeTab
         }
         if (searchTerm) {
-          params.search = searchTerm;
+          params.search = searchTerm
         }
         if (cursor) {
-          params.cursor = cursor;
+          params.cursor = cursor
         }
-        const response = await axios.get(API_URL, { params, withCredentials: true });
-        const newJobs = response.data.results || [];
+        const response = await axios.get(API_URL, { params, withCredentials: true })
+        const newJobs = response.data.results || []
         if (append) {
-          setJobs((prevJobs) => [...prevJobs, ...newJobs]);
+          setJobs((prevJobs) => [...prevJobs, ...newJobs])
         } else {
-          setJobs(newJobs);
+          setJobs(newJobs)
         }
-        setNextCursor(
-          response.data.next ? new URL(response.data.next).searchParams.get("cursor") : null
-        );
+        setNextCursor(response.data.next ? new URL(response.data.next).searchParams.get("cursor") : null)
       } catch (error) {
-        alert("Error fetching job applications");
+        alert("Error fetching job applications")
       } finally {
-        setJobsLoading(false);
+        setJobsLoading(false)
       }
     },
-    [activeTab, searchTerm]
-  );
-  useEffect(() => {
-    fetchJobs(null);
-  }, [searchTerm, statusFilter, activeTab, fetchJobs]);
+    [activeTab, searchTerm],
+  )
 
-  // Infinite scroll: When the user scrolls near the bottom, fetch more jobs (if available)
+  useEffect(() => {
+    fetchJobs(null)
+  }, [searchTerm, statusFilter, activeTab, fetchJobs])
+
+  // Infinite scroll to fetch more jobs
   useEffect(() => {
     const handleScroll = () => {
-      if (jobsLoading || !nextCursor) return;
-      if (
-        window.innerHeight + window.scrollY >=
-        document.documentElement.offsetHeight - 200
-      ) {
-        fetchJobs(nextCursor, true);
+      if (jobsLoading || !nextCursor) return
+      if (window.innerHeight + window.scrollY >= document.documentElement.offsetHeight - 200) {
+        fetchJobs(nextCursor, true)
       }
-    };
+    }
 
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [jobsLoading, nextCursor, fetchJobs]);
+    window.addEventListener("scroll", handleScroll)
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [jobsLoading, nextCursor, fetchJobs])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
+  }
 
   const handleStatusChange = (value: string) => {
-    setFormData((prev) => ({ ...prev, status: value }));
-  };
+    setFormData((prev) => ({ ...prev, status: value }))
+  }
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prev) => ({ ...prev, date_applied: e.target.value }));
-  };
+    setFormData((prev) => ({ ...prev, date_applied: e.target.value }))
+  }
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      const newFiles = Array.from(e.target.files);
-      setFiles((prev) => [...prev, ...newFiles]);
+      const newFiles = Array.from(e.target.files)
+      setFiles((prev) => [...prev, ...newFiles])
     }
-  };
+  }
 
   const removeFile = (index: number) => {
-    setFiles((prev) => prev.filter((_, i) => i !== index));
-  };
+    setFiles((prev) => prev.filter((_, i) => i !== index))
+  }
 
   const addJobApplication = async () => {
-    setActionLoading(true);
+    setActionLoading(true)
     try {
-      const form = new FormData();
+      const form = new FormData()
       for (const key in formData) {
-        form.append(key, formData[key as keyof typeof formData]);
+        form.append(key, formData[key as keyof typeof formData])
       }
-      files.forEach((file) => form.append("attachments", file));
-      const csrfToken = getCookie("csrftoken");
+      files.forEach((file) => form.append("attachments", file))
+      const csrfToken = getCookie("csrftoken")
       await axios.post(API_URL + "/", form, {
         headers: { "X-CSRFToken": csrfToken },
         withCredentials: true,
-      });
-      // After adding, refresh the list from the beginning
-      fetchJobs(null);
-      resetForm();
-      setIsAddDialogOpen(false);
+      })
+      fetchJobs(null)
+      resetForm()
+      setIsAddDialogOpen(false)
     } catch (error: any) {
-      alert("Error adding job application");
+      alert("Error adding job application")
     } finally {
-      setActionLoading(false);
+      setActionLoading(false)
     }
-  };
+  }
 
   const updateJobApplication = async () => {
-    if (!currentJob) return;
-    setActionLoading(true);
+    if (!currentJob) return
+    setActionLoading(true)
     try {
-      const form = new FormData();
+      const form = new FormData()
       for (const key in formData) {
-        form.append(key, formData[key as keyof typeof formData]);
+        form.append(key, formData[key as keyof typeof formData])
       }
-      files.forEach((file) => form.append("attachments", file));
-      const csrfToken = getCookie("csrftoken");
+      files.forEach((file) => form.append("attachments", file))
+      const csrfToken = getCookie("csrftoken")
       await axios.put(`${API_URL}/${currentJob.id}/`, form, {
         headers: { "X-CSRFToken": csrfToken },
         withCredentials: true,
-      });
-      fetchJobs(null);
-      resetForm();
-      setIsEditDialogOpen(false);
-      setCurrentJob(null);
-      alert("Job application updated.");
+      })
+      fetchJobs(null)
+      resetForm()
+      setIsEditDialogOpen(false)
+      setCurrentJob(null)
+      alert("Job application updated.")
     } catch (error: any) {
-      alert("Error updating job application");
+      alert("Error updating job application")
     } finally {
-      setActionLoading(false);
+      setActionLoading(false)
     }
-  };
+  }
 
   const deleteJobApplication = async (id: string) => {
-    setActionLoading(true);
-    try {
-      const csrfToken = getCookie("csrftoken");
-      await axios.delete(`${API_URL}/${id}/`, {
-        headers: { "X-CSRFToken": csrfToken },
-        withCredentials: true,
-      });
-      fetchJobs(null);
-      alert("Job application deleted.");
-    } catch (error: any) {
-      alert("Error deleting job application");
-    } finally {
-      setActionLoading(false);
+    if (confirm("Are you sure you want to delete this job application?")) {
+      setActionLoading(true)
+      try {
+        const csrfToken = getCookie("csrftoken")
+        await axios.delete(`${API_URL}/${id}/`, {
+          headers: { "X-CSRFToken": csrfToken },
+          withCredentials: true,
+        })
+        fetchJobs(null)
+      } catch (error: any) {
+        alert("Error deleting job application")
+      } finally {
+        setActionLoading(false)
+      }
     }
-  };
+  }
 
   const deleteAttachment = async (jobId: string, attachmentId: string) => {
-    setActionLoading(true);
-    try {
-      const csrfToken = getCookie("csrftoken");
-      await axios.delete(`${API_URL}/${jobId}/attachments/${attachmentId}/`, {
-        headers: { "X-CSRFToken": csrfToken },
-        withCredentials: true,
-      });
-      fetchJobs(null);
-      alert("Attachment deleted.");
-    } catch (error: any) {
-      alert("Error deleting attachment");
-    } finally {
-      setActionLoading(false);
+    if (confirm("Are you sure you want to delete this attachment?")) {
+      setActionLoading(true)
+      try {
+        const csrfToken = getCookie("csrftoken")
+        await axios.delete(`${API_URL}/${jobId}/attachments/${attachmentId}/`, {
+          headers: { "X-CSRFToken": csrfToken },
+          withCredentials: true,
+        })
+        fetchJobs(null)
+      } catch (error: any) {
+        alert("Error deleting attachment")
+      } finally {
+        setActionLoading(false)
+      }
     }
-  };
+  }
 
   const editJobApplication = (job: JobApplication) => {
-    setCurrentJob(job);
+    setCurrentJob(job)
     setFormData({
       company: job.company,
       position: job.position,
@@ -515,10 +286,10 @@ export default function TrackingPageLayout() {
       contact_person: job.contact_person || "",
       contact_email: job.contact_email || "",
       url: job.url || "",
-    });
-    setFiles([]);
-    setIsEditDialogOpen(true);
-  };
+    })
+    setFiles([])
+    setIsEditDialogOpen(true)
+  }
 
   const resetForm = () => {
     setFormData({
@@ -532,130 +303,146 @@ export default function TrackingPageLayout() {
       contact_person: "",
       contact_email: "",
       url: "",
-    });
-    setFiles([]);
-  };
+    })
+    setFiles([])
+  }
 
   const formatDate = (date: string) =>
-    new Date(date).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
-  const formatDateForInput = (date: string) => date;
+    new Date(date).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })
+  const formatDateForInput = (date: string) => date
 
   const getStatusBadge = (status: string) => {
-    const color = statusColors[status] || "bg-slate-500 text-white";
-    const label = statusOptions.find((opt) => opt.value === status)?.label || "Unknown";
-    return <Badge className={color}>{label}</Badge>;
-  };
+    const color = statusColors[status] || "bg-slate-500 hover:bg-slate-600"
+    const label = statusOptions.find((opt) => opt.value === status)?.label || "Unknown"
+    const icon = statusIcons[status]
+
+    return (
+      <Badge className={`${color} text-white flex items-center gap-1.5 px-2.5 py-1 font-medium`}>
+        {icon}
+        {label}
+      </Badge>
+    )
+  }
+
+  const getStatusCount = (status: string) => {
+    return jobs.filter((job) => job.status === status).length
+  }
 
   return (
-    <div className="ml-20 md:ml-20 lg:ml-32 p-4">
-      <div className="container mx-auto py-6 max-w-7xl">
+    <div className="min-h-screen  ">
+      <div className="container pl-24 pr-4 pt-8  mx-auto  max-w-7xl w-full">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
-          <div className="mb-4 sm:mb-0">
-            <h1 className="text-3xl font-bold">Job Application Tracker</h1>
-            <p className="text-muted-foreground mt-4">
-              Track and manage your job applications in one place
-            </p>
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3">
+          <div className="mb-6 sm:mb-0">
+            <h1 className="text-4xl font-bold  bg-clip-text ">
+              Job Application Tracker
+            </h1>
+            <p className="text-muted-foreground mt-2 text-lg">Track and manage your job applications in one place</p>
           </div>
-          <Button className="text-black" onClick={() => setIsAddDialogOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" /> Add Application
+          <Button
+            onClick={() => setIsAddDialogOpen(true)}
+            className="   shadow-md  transition-all"
+            size="lg"
+          >
+            <Plus className="mr-2 h-5 w-5" /> Add Application
           </Button>
         </div>
-        {/* Filters */}
-        <div className="flex flex-col md:flex-row gap-4 mb-6">
-          <div className="relative flex-1">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search by company, position, or location..."
-              className="pl-8"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-          <Select onValueChange={(value) => setStatusFilter(value || null)}>
-            <SelectItem value="">All Statuses</SelectItem>
-            {statusOptions.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </Select>
-        </div>
-        <Tabs defaultValue="all" onValueChange={(value) => {
-          setActiveTab(value);
-          setStatusFilter(null);
-          setNextCursor(null);
-        }}>
-          <TabsList>
-            <TabsTrigger
-              value="all"
+
+        {/* Search and Filters */}
+        <div className="  rounded-xl shadow-none p-2 mb-2">
+          <div className="flex flex-col md:flex-row gap-4 items-end">
+            <div className="relative flex-1">
+              <Label htmlFor="search" className="text-sm font-medium mb-1.5 block">
+                Search Applications
+              </Label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="search"
+                  placeholder="Search by company, position, or location..."
+                  className="pl-9 bg-background"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="w-full md:w-64">
+              <Label htmlFor="status-filter" className="text-sm font-medium mb-1.5 block">
+                Filter by Status
+              </Label>
+              <Select
+                value={statusFilter ?? "all"}
+                onValueChange={(value) => setStatusFilter(value === "all" ? null : value)}
+              >
+                <SelectTrigger id="status-filter" className="w-full bg-background">
+                  <SelectValue placeholder="All Statuses" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  {statusOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button
+              variant="outline"
+              className="h-10 px-4 md:self-end"
               onClick={() => {
-                setActiveTab("all");
-                setStatusFilter(null);
-                setNextCursor(null);
-                setJobs([]);
+                setSearchTerm("")
+                setStatusFilter(null)
               }}
-              className={activeTab === "all" ? "bg-white dark:bg-black dark:text-white" : ""}
             >
+              <Filter className="h-4 w-4 mr-2" /> Reset Filters
+            </Button>
+          </div>
+        </div>
+
+        {/* Status Tabs */}
+        <Tabs
+          defaultValue="all"
+          value={activeTab}
+          onValueChange={(value) => {
+            setActiveTab(value)
+            setStatusFilter(null)
+            setNextCursor(null)
+            setJobs([])
+          }}
+          className="mb-8"
+        >
+          <TabsList>
+            <TabsTrigger value="all" className={activeTab === "all" ? " dark:bg-black dark:text-white" : ""}>
               All
             </TabsTrigger>
             <TabsTrigger
               value="saved"
-              onClick={() => {
-                setActiveTab("saved");
-                setStatusFilter(null);
-                setNextCursor(null);
-                setJobs([]);
-              }}
-              className={activeTab === "saved" ? "bg-white dark:bg-black dark:text-white" : ""}
+              className={activeTab === "saved" ? " dark:bg-black dark:text-white" : ""}
             >
               Saved
             </TabsTrigger>
             <TabsTrigger
               value="applied"
-              onClick={() => {
-                setActiveTab("applied");
-                setStatusFilter(null);
-                setNextCursor(null);
-                setJobs([]);
-              }}
-              className={activeTab === "applied" ? "bg-white dark:bg-black dark:text-white" : ""}
+              className={activeTab === "applied" ? " dark:bg-black dark:text-white" : ""}
             >
               Applied
             </TabsTrigger>
             <TabsTrigger
               value="interview"
-              onClick={() => {
-                setActiveTab("interview");
-                setStatusFilter(null);
-                setNextCursor(null);
-                setJobs([]);
-              }}
-              className={activeTab === "interview" ? "bg-white dark:bg-black dark:text-white" : ""}
+              className={activeTab === "interview" ? " dark:bg-black dark:text-white" : ""}
             >
               Interviews
             </TabsTrigger>
             <TabsTrigger
               value="offer"
-              onClick={() => {
-                setActiveTab("offer");
-                setStatusFilter(null);
-                setNextCursor(null);
-                setJobs([]);
-              }}
-              className={activeTab === "offer" ? "bg-white dark:bg-black dark:text-white" : ""}
+              className={activeTab === "offer" ? " dark:bg-black dark:text-white" : ""}
             >
               Offers
             </TabsTrigger>
             <TabsTrigger
               value="rejected"
-              onClick={() => {
-                setActiveTab("rejected");
-                setStatusFilter(null);
-                setNextCursor(null);
-                setJobs([]);
-              }}
-              className={activeTab === "rejected" ? "bg-white dark:bg-black dark:text-white" : ""}
+              className={activeTab === "rejected" ? " dark:bg-black dark:text-white" : ""}
             >
               Rejected
             </TabsTrigger>
@@ -666,65 +453,90 @@ export default function TrackingPageLayout() {
         <div className="mt-6">
           {jobsLoading && jobs.length === 0 ? (
             <div className="flex justify-center items-center h-64">
-              <SolidCircleLoader className="w-8 h-8" />
+              <SolidCircleLoader className="w-10 h-10" />
             </div>
           ) : jobs.length === 0 ? (
-            <Card className="w-full p-12 flex flex-col items-center justify-center text-center">
-              <FileText className="h-12 w-12 text-muted-foreground mb-4" />
+            <Card className="w-full p-12 flex flex-col items-center justify-center text-center ">
+              <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-4">
+                <FileText className="h-8 w-8 text-emerald-500" />
+              </div>
               <h3 className="text-xl font-semibold mb-2">No job applications found</h3>
-              <p className="text-muted-foreground mb-4">
+              <p className="text-muted-foreground mb-6 max-w-md">
                 {searchTerm || statusFilter
                   ? "Try adjusting your search or filters to find what you're looking for."
-                  : "Start by adding your first job application to track."}
+                  : "Start by adding your first job application to track your job search journey."}
               </p>
-              <Button onClick={() => setIsAddDialogOpen(true)}>
-                <Plus className="mr-2 h-4 w-4" /> Add Application
+              <Button
+                onClick={() => setIsAddDialogOpen(true)}
+                className=" "
+              >
+                <Plus className="mr-2 h-4 w-4" /> Add Your First Application
               </Button>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {jobs.map((job) => (
-                <Card key={job.id} className="overflow-hidden">
-                  <CardHeader className="pb-3">
+                <Card
+                  key={job.id}
+                  className="overflow-hidden     transition-shadow"
+                >
+                  <CardHeader className="pb-2">
                     <div className="flex justify-between items-start">
-                      <div>
-                        <CardTitle>{job.position}</CardTitle>
-                        <CardDescription className="flex items-center mt-1">
-                          <Building className="h-4 w-4 mr-1" />
-                          {job.company}
-                          {job.location && (
-                            <>
-                              <span className="mx-2">•</span>
-                              <MapPin className="h-4 w-4 mr-1" />
-                              {job.location}
-                            </>
-                          )}
+                      <div className="space-y-1.5">
+                        <CardTitle className="text-xl font-bold line-clamp-1">{job.position}</CardTitle>
+                        <CardDescription className="flex items-center text-sm">
+                          <Building className="h-3.5 w-3.5 mr-1.5 flex-shrink-0" />
+                          <span className="font-medium text-gray-700 dark:text-gray-300">{job.company}</span>
                         </CardDescription>
+                        {job.location && (
+                          <CardDescription className="flex items-center text-sm">
+                            <MapPin className="h-3.5 w-3.5 mr-1.5 flex-shrink-0" />
+                            <span>{job.location}</span>
+                          </CardDescription>
+                        )}
                       </div>
                       <div className="flex items-center gap-2">
-                        {getStatusBadge(job.status)}
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div>{getStatusBadge(job.status)}</div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Application Status</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                         <DropdownMenu>
-                          <DropdownMenuTrigger>
-                            <Button variant="ghost" size="icon">
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
                               <MoreHorizontal className="h-4 w-4" />
                               <span className="sr-only">Actions</span>
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
+                          <DropdownMenuContent align="end" className="w-48">
                             <DropdownMenuItem onClick={() => editJobApplication(job)}>
-                              <Edit className="h-4 w-4 mr-2" /> Edit
+                              <Edit className="h-4 w-4 mr-2" /> Edit Application
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="text-red-600" onClick={() => deleteJobApplication(job.id)}>
-                              <Trash2 className="h-4 w-4 mr-2" /> Delete
+                            {job.url && (
+                              <DropdownMenuItem onClick={() => window.open(job.url, "_blank")}>
+                                <ExternalLink className="h-4 w-4 mr-2" /> View Job Posting
+                              </DropdownMenuItem>
+                            )}
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              className="text-rose-600 focus:text-rose-600 dark:text-rose-500 dark:focus:text-rose-500"
+                              onClick={() => deleteJobApplication(job.id)}
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" /> Delete Application
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="pb-3">
+                  <CardContent className="pb-3 pt-2">
                     <div className="flex items-center text-sm text-muted-foreground mb-3">
-                      <Calendar className="h-4 w-4 mr-1" />
+                      <Calendar className="h-3.5 w-3.5 mr-1.5 flex-shrink-0" />
                       <span>Applied: {formatDate(job.date_applied)}</span>
                       {job.salary && (
                         <>
@@ -733,26 +545,46 @@ export default function TrackingPageLayout() {
                         </>
                       )}
                     </div>
-                    {job.notes && (
-                      <div className="mb-3">
-                        <p className="text-sm">{job.notes}</p>
+
+                    {job.contact_person && (
+                      <div className="flex items-center text-sm text-muted-foreground mb-3">
+                        <User className="h-3.5 w-3.5 mr-1.5 flex-shrink-0" />
+                        <span>Contact: {job.contact_person}</span>
+                        {job.contact_email && (
+                          <>
+                            <span className="mx-1">•</span>
+                            <Mail className="h-3.5 w-3.5 mx-1 flex-shrink-0" />
+                            <span className="truncate">{job.contact_email}</span>
+                          </>
+                        )}
                       </div>
                     )}
+
+                    {job.notes && (
+                      <div className="mb-3 mt-4">
+                        <h4 className="text-sm font-medium mb-1.5">Notes</h4>
+                        <p className="text-sm text-muted-foreground line-clamp-3">{job.notes}</p>
+                      </div>
+                    )}
+
                     {job.attachments && job.attachments.length > 0 && (
-                      <div className="mt-3">
-                        <h4 className="text-sm font-semibold mb-2">Attachments</h4>
+                      <div className="mt-4">
+                        <h4 className="text-sm font-medium mb-2">Attachments</h4>
                         <div className="flex flex-wrap gap-2">
                           {job.attachments.map((attachment) => (
-                            <div key={attachment.id} className="flex items-center bg-secondary rounded-md px-3 py-1.5 text-sm">
-                              <Paperclip className="h-3.5 w-3.5 mr-1.5" />
-                              <span className="mr-2">{attachment.name}</span>
+                            <div
+                              key={attachment.id}
+                              className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-md px-3 py-1.5 text-sm group"
+                            >
+                              <Paperclip className="h-3.5 w-3.5 mr-1.5 text-emerald-500" />
+                              <span className="mr-2 truncate max-w-[120px]">{attachment.name}</span>
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-5 w-5 ml-1 hover:bg-destructive/20"
+                                className="h-5 w-5 ml-1 opacity-0 group-hover:opacity-100 transition-opacity"
                                 onClick={() => deleteAttachment(job.id, attachment.id)}
                               >
-                                <Trash2 className="h-3 w-3" />
+                                <Trash2 className="h-3 w-3 text-rose-500" />
                                 <span className="sr-only">Delete attachment</span>
                               </Button>
                             </div>
@@ -761,162 +593,371 @@ export default function TrackingPageLayout() {
                       </div>
                     )}
                   </CardContent>
-                  <CardFooter className="pt-0">
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm" onClick={() => editJobApplication(job)}>
-                        <Edit className="h-3.5 w-3.5 mr-1.5" /> Edit
+                  <Separator className="my-1" />
+                  <CardFooter className="pt-3 pb-4 flex justify-between">
+                    <Button variant="outline" size="sm" onClick={() => editJobApplication(job)}>
+                      <Edit className="h-3.5 w-3.5 mr-1.5" /> Edit Details
+                    </Button>
+                    {job.url && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-primary border-primary   "
+                        onClick={() => window.open(job.url, "_blank")}
+                      >
+                        <LinkIcon className="h-3.5 w-3.5 mr-1.5" /> View Job
                       </Button>
-                      {job.url && (
-                        <Button variant="outline" size="sm" onClick={() => window.open(job.url, "_blank")}>
-                          View Job
-                        </Button>
-                      )}
-                    </div>
+                    )}
                   </CardFooter>
                 </Card>
               ))}
             </div>
           )}
           {jobsLoading && jobs.length > 0 && (
-            <div className="flex justify-center items-center py-4">
+            <div className="flex justify-center items-center py-8">
               <SolidCircleLoader className="w-8 h-8" />
             </div>
           )}
         </div>
 
-        {/* Infinite scroll is handled automatically by the window scroll listener */}
-
         {/* Add Job Dialog */}
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogContent className="w-full max-w-lg">
+          <DialogContent className="w-full max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Add New Job Application</DialogTitle>
+              <DialogTitle className="text-2xl font-bold">Add New Job Application</DialogTitle>
               <DialogDescription>
-                Enter the details of the job you're applying for to keep track of your application.
+                Enter the details of the job you're applying for to keep track of your application
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
-              {/* Form fields for job application */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="company">Company</Label>
-                  <Input id="company" name="company" placeholder="Company name" value={formData.company} onChange={handleInputChange} required />
+                  <Input
+                    id="company"
+                    name="company"
+                    placeholder="Company name"
+                    value={formData.company}
+                    onChange={handleInputChange}
+                    required
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="position">Position</Label>
-                  <Input id="position" name="position" placeholder="Job title" value={formData.position} onChange={handleInputChange} required />
+                  <Input
+                    id="position"
+                    name="position"
+                    placeholder="Job title"
+                    value={formData.position}
+                    onChange={handleInputChange}
+                    required
+                  />
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="location">Location</Label>
-                  <Input id="location" name="location" placeholder="City, State or Remote" value={formData.location} onChange={handleInputChange} />
+                  <Input
+                    id="location"
+                    name="location"
+                    placeholder="City, State or Remote"
+                    value={formData.location}
+                    onChange={handleInputChange}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="salary">Salary Range (Optional)</Label>
-                  <Input id="salary" name="salary" placeholder="e.g. $80,000 - $100,000" value={formData.salary} onChange={handleInputChange} />
+                  <Input
+                    id="salary"
+                    name="salary"
+                    placeholder="e.g. $80,000 - $100,000"
+                    value={formData.salary}
+                    onChange={handleInputChange}
+                  />
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="status">Application Status</Label>
                   <Select value={formData.status} onValueChange={handleStatusChange}>
-                    {statusOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
+                    <SelectTrigger id="status" className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {statusOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="date_applied">Date Applied</Label>
-                  <Input id="date_applied" name="date_applied" type="date" value={formatDateForInput(formData.date_applied)} onChange={handleDateChange} />
+                  <Input
+                    id="date_applied"
+                    name="date_applied"
+                    type="date"
+                    value={formatDateForInput(formData.date_applied)}
+                    onChange={handleDateChange}
+                  />
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="contact_person">Contact Person (Optional)</Label>
-                  <Input id="contact_person" name="contact_person" placeholder="Recruiter or hiring manager" value={formData.contact_person} onChange={handleInputChange} />
+                  <Input
+                    id="contact_person"
+                    name="contact_person"
+                    placeholder="Recruiter or hiring manager"
+                    value={formData.contact_person}
+                    onChange={handleInputChange}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="contact_email">Contact Email (Optional)</Label>
-                  <Input id="contact_email" name="contact_email" type="email" placeholder="contact@company.com" value={formData.contact_email} onChange={handleInputChange} />
+                  <Input
+                    id="contact_email"
+                    name="contact_email"
+                    type="email"
+                    placeholder="contact@company.com"
+                    value={formData.contact_email}
+                    onChange={handleInputChange}
+                  />
                 </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="url">Job URL (Optional)</Label>
-                <Input id="url" name="url" placeholder="https://company.com/jobs/position" value={formData.url} onChange={handleInputChange} />
+                <Input
+                  id="url"
+                  name="url"
+                  placeholder="https://company.com/jobs/position"
+                  value={formData.url}
+                  onChange={handleInputChange}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="notes">Notes</Label>
-                <Textarea id="notes" name="notes" placeholder="Add any notes about this application" value={formData.notes} onChange={handleInputChange} className="min-h-[100px]" />
+                <Textarea
+                  id="notes"
+                  name="notes"
+                  placeholder="Add any notes about this application"
+                  value={formData.notes}
+                  onChange={handleInputChange}
+                  className="min-h-[100px]"
+                />
               </div>
               <div className="space-y-2">
                 <Label>Attachments</Label>
                 <div className="grid gap-2">
-                  <Input id="attachments" type="file" multiple onChange={handleFileUpload} accept=".pdf,.doc,.docx" />
+                  <div className="  p-4 bg-gray-50 dark:bg-gray-900">
+                    <Input
+                      id="attachments"
+                      type="file"
+                      multiple
+                      onChange={handleFileUpload}
+                      accept=".pdf,.doc,.docx"
+                      className="cursor-pointer"
+                    />
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Upload resume, cover letter, or other relevant documents
+                    </p>
+                  </div>
                   {files.length > 0 && (
-                    <div className="border rounded-md p-3 mt-2">
+                    <div className=" p-3 mt-2 bg-gray-50 dark:bg-gray-900">
                       <h4 className="text-sm font-medium mb-2">Files to upload:</h4>
-                      <div className="space-y-2">
-                        {files.map((file, index) => (
-                          <div key={index} className="flex items-center justify-between text-sm">
-                            <div className="flex items-center">
-                              <Paperclip className="h-4 w-4 mr-2" />
-                              <span>{file.name}</span>
+                      <ScrollArea className="h-[120px]">
+                        <div className="space-y-2">
+                          {files.map((file, index) => (
+                            <div
+                              key={index}
+                              className="flex items-center justify-between text-sm   p-2 "
+                            >
+                              <div className="flex items-center">
+                                <Paperclip className="h-4 w-4 mr-2 text-emerald-500" />
+                                <span className="truncate max-w-[200px]">{file.name}</span>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6 hover:bg-rose-100 dark:hover:bg-rose-900 "
+                                onClick={() => removeFile(index)}
+                              >
+                                <Trash2 className="h-3.5 w-3.5 text-rose-500" />
+                                <span className="sr-only">Remove file</span>
+                              </Button>
                             </div>
-                            <Button variant="ghost" size="icon" className="h-6 w-6 hover:bg-destructive/20" onClick={() => removeFile(index)}>
-                              <Trash2 className="h-4 w-4" />
-                              <span className="sr-only">Remove file</span>
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
+                          ))}
+                        </div>
+                      </ScrollArea>
                     </div>
                   )}
                 </div>
               </div>
             </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>Cancel</Button>
-              <Button onClick={addJobApplication} disabled={actionLoading}>
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={addJobApplication}
+                disabled={actionLoading}
+                className=""
+              >
                 {actionLoading ? <SolidCircleLoader className="w-4 h-4 mr-2" /> : <Plus className="mr-2 h-4 w-4" />}
                 Add Application
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
         {/* Edit Job Dialog */}
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent className="w-full max-w-lg">
+          <DialogContent className="w-full max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Edit Job Application</DialogTitle>
-              <DialogDescription>Update the details of your job application.</DialogDescription>
+              <DialogTitle className="text-2xl font-bold">Edit Job Application</DialogTitle>
+              <DialogDescription>Update the details of your job application</DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="edit-company">Company</Label>
-                  <Input id="edit-company" name="company" placeholder="Company name" value={formData.company} onChange={handleInputChange} required />
+                  <Input
+                    id="edit-company"
+                    name="company"
+                    placeholder="Company name"
+                    value={formData.company}
+                    onChange={handleInputChange}
+                    required
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="edit-position">Position</Label>
-                  <Input id="edit-position" name="position" placeholder="Job title" value={formData.position} onChange={handleInputChange} required />
+                  <Input
+                    id="edit-position"
+                    name="position"
+                    placeholder="Job title"
+                    value={formData.position}
+                    onChange={handleInputChange}
+                    required
+                  />
                 </div>
               </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-location">Location</Label>
+                  <Input
+                    id="edit-location"
+                    name="location"
+                    placeholder="City, State or Remote"
+                    value={formData.location}
+                    onChange={handleInputChange}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-salary">Salary Range</Label>
+                  <Input
+                    id="edit-salary"
+                    name="salary"
+                    placeholder="e.g. $80,000 - $100,000"
+                    value={formData.salary}
+                    onChange={handleInputChange}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-status">Application Status</Label>
+                  <Select value={formData.status} onValueChange={handleStatusChange}>
+                    <SelectTrigger id="edit-status">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {statusOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-date">Date Applied</Label>
+                  <Input
+                    id="edit-date"
+                    name="date_applied"
+                    type="date"
+                    value={formatDateForInput(formData.date_applied)}
+                    onChange={handleDateChange}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-contact">Contact Person</Label>
+                  <Input
+                    id="edit-contact"
+                    name="contact_person"
+                    placeholder="Recruiter or hiring manager"
+                    value={formData.contact_person}
+                    onChange={handleInputChange}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-email">Contact Email</Label>
+                  <Input
+                    id="edit-email"
+                    name="contact_email"
+                    type="email"
+                    placeholder="contact@company.com"
+                    value={formData.contact_email}
+                    onChange={handleInputChange}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-url">Job URL</Label>
+                <Input
+                  id="edit-url"
+                  name="url"
+                  placeholder="https://company.com/jobs/position"
+                  value={formData.url}
+                  onChange={handleInputChange}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-notes">Notes</Label>
+                <Textarea
+                  id="edit-notes"
+                  name="notes"
+                  placeholder="Add any notes about this application"
+                  value={formData.notes}
+                  onChange={handleInputChange}
+                  className="min-h-[100px]"
+                />
+              </div>
+
               {currentJob && currentJob.attachments && currentJob.attachments.length > 0 && (
                 <div className="space-y-2">
                   <Label>Current Attachments</Label>
-                  <div className="border rounded-md p-3">
+                  <div className=" p-3 bg-gray-50 dark:bg-gray-900">
                     <div className="space-y-2">
                       {currentJob.attachments.map((attachment) => (
-                        <div key={attachment.id} className="flex items-center justify-between text-sm">
+                        <div
+                          key={attachment.id}
+                          className="flex items-center justify-between text-sm   p-2 "
+                        >
                           <div className="flex items-center">
-                            <Paperclip className="h-4 w-4 mr-2" />
-                            <span>{attachment.name}</span>
+                            <Paperclip className="h-4 w-4 mr-2 text-emerald-500" />
+                            <span className="truncate max-w-[200px]">{attachment.name}</span>
                           </div>
-                          <Button variant="ghost" size="icon" className="h-6 w-6 hover:bg-destructive/20" onClick={() => deleteAttachment(currentJob.id, attachment.id)}>
-                            <Trash2 className="h-4 w-4" />
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 hover:bg-rose-100 dark:hover:bg-rose-900"
+                            onClick={() => deleteAttachment(currentJob.id, attachment.id)}
+                          >
+                            <Trash2 className="h-3.5 w-3.5 text-rose-500" />
                             <span className="sr-only">Remove attachment</span>
                           </Button>
                         </div>
@@ -925,42 +966,68 @@ export default function TrackingPageLayout() {
                   </div>
                 </div>
               )}
+
               <div className="space-y-2">
                 <Label>Add New Attachments</Label>
-                <div className="grid gap-2">
-                  <Input id="edit-attachments" type="file" multiple onChange={handleFileUpload} accept=".pdf,.doc,.docx" />
-                  {files.length > 0 && (
-                    <div className="border rounded-md p-3 mt-2">
-                      <h4 className="text-sm font-medium mb-2">Files to upload:</h4>
+                <div className=" p-4 bg-gray-50 dark:bg-gray-900">
+                  <Input
+                    id="edit-attachments"
+                    type="file"
+                    multiple
+                    onChange={handleFileUpload}
+                    accept=".pdf,.doc,.docx"
+                    className="cursor-pointer"
+                  />
+                </div>
+                {files.length > 0 && (
+                  <div className=" p-3 bg-gray-50 dark:bg-gray-900">
+                    <h4 className="text-sm font-medium mb-2">Files to upload:</h4>
+                    <ScrollArea className="h-[120px]">
                       <div className="space-y-2">
                         {files.map((file, index) => (
-                          <div key={index} className="flex items-center justify-between text-sm">
+                          <div
+                            key={index}
+                            className="flex items-center justify-between text-sm   p-2 "
+                          >
                             <div className="flex items-center">
-                              <Paperclip className="h-4 w-4 mr-2" />
-                              <span>{file.name}</span>
+                              <Paperclip className="h-4 w-4 mr-2 text-primary" />
+                              <span className="truncate max-w-[200px]">{file.name}</span>
                             </div>
-                            <Button variant="ghost" size="icon" className="h-6 w-6 hover:bg-destructive/20" onClick={() => removeFile(index)}>
-                              <Trash2 className="h-4 w-4" />
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 hover:bg-rose-100 dark:hover:bg-rose-900 "
+                              onClick={() => removeFile(index)}
+                            >
+                              <Trash2 className="h-3.5 w-3.5 text-rose-500" />
                               <span className="sr-only">Remove file</span>
                             </Button>
                           </div>
                         ))}
                       </div>
-                    </div>
-                  )}
-                </div>
+                    </ScrollArea>
+                  </div>
+                )}
               </div>
             </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>Cancel</Button>
-              <Button onClick={updateJobApplication} disabled={actionLoading}>
-                {actionLoading ? <SolidCircleLoader className="w-4 h-4 mr-2" /> : "Update Application"}
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={updateJobApplication}
+                disabled={actionLoading}
+                className=""
+              >
+                {actionLoading ? <SolidCircleLoader className="w-4 h-4 mr-2" /> : null}
+                Update Application
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
-    </div >
-  );
+    </div>
+  )
 }
+
 

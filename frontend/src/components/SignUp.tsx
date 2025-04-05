@@ -14,36 +14,37 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import CSRFToken from "./csrftoken";
 import { useNavigate } from 'react-router-dom';
-
+// ...imports remain the same
 export function SignUpForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+  const [confirmPassword, setConfirmPassword] = useState<string>("");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  // to submit form <information></information>
-
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    const data = { email, password }
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    const data = { email, password };
 
     try {
-      const response = await registerUser(data)
-      setMessage(response.message)
-      navigate("/generate")
+      const response = await registerUser(data);
+      setMessage(response.message);
+      navigate("/generate");
+    } catch (err: any) {
+      console.log(err);
+      setError(err.message || "Error occurred during registration");
     }
-    catch (err) {
-      console.log(err)
-      setError(err.message || "Error occured during registry process")
-
-    }
-  }
-
+  };
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -69,10 +70,22 @@ export function SignUpForm({
                 />
               </div>
               <div className="grid gap-2">
-                <div className="flex items-center">
-                  <Label htmlFor="password">Password</Label>
-                </div>
-                <Input id="password" type="password" onChange={(e) => setPassword(e.target.value)} required />
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                />
               </div>
               <Button type="submit" className="w-full">
                 Register
@@ -81,14 +94,16 @@ export function SignUpForm({
               <Button
                 variant="outline"
                 className="w-full"
-                onClick={() => window.location.href = "http://127.0.0.1:8000/google/login/google-oauth2/"}
+                onClick={() =>
+                (window.location.href =
+                  "http://127.0.0.1:8000/google/login/google-oauth2/")
+                }
               >
                 Register with Google
               </Button>
-
             </div>
             <div className="mt-4 text-center text-sm">
-              Already have an account? {"  "}
+              Already have an account?{" "}
               <a href="/login" className="underline underline-offset-4">
                 Login
               </a>
@@ -99,5 +114,6 @@ export function SignUpForm({
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
+

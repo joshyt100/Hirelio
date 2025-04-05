@@ -162,13 +162,13 @@ export const CoverLetterGenerator: React.FC = () => {
                 <Textarea
                   placeholder=""
                   value={coverLetter}
-                  className="w-full sm:w flex-1 min-h-[750px] bg-zinc-100 border border-border    dark:bg-zinc-900 resize-none mb-4"
+                  className="w-full sm:w flex-1 min-h-[750px] bg-zinc-100 border border-border    dark:bg-zinc-950 resize-none mb-4"
                   readOnly
                 />
 
                 <Dialog open={isEditing} onOpenChange={setIsEditing}>
                   <DialogTrigger asChild>
-                    <button className="absolute top-3 right-3 bg-black text-white p-2 rounded-md hover:bg-gray-700 transition flex items-center justify-center">
+                    <button className="absolute top-3 right-3 bg-gray-700 text-white p-2 rounded-md hover:bg-gray-700 transition flex items-center justify-center">
                       <CiEdit />
                     </button>
                   </DialogTrigger>
