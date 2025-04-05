@@ -9,7 +9,7 @@ import LandingPage from "./components/LandingPage";
 import { ThemeProvider } from "./components/theme-provider";
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
-import TrackingPageLayout from "./components/TrackingPageLayout";
+import JobApplicationsPage from "./components/jobapplications/JobApplicationsPage";
 import DashboardLayout from "./components/DashboardLayout";
 import ContactLayout from "./components/ContactLayout";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -64,7 +64,7 @@ function App() {
                     </div>
                   }
                 />
-                <Route path="/job-application-tracker" element={<TrackingPageLayout />} />
+                <Route path="/job-application-tracker" element={<JobApplicationsPage />} />
                 <Route path="/dashboard" element={<DashboardLayout />} />
                 <Route path="/contacts-tracker" element={<ContactLayout />} />
               </Routes>
