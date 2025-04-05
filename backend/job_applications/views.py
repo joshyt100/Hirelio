@@ -28,7 +28,6 @@ class JobApplicationListCreateView(APIView):
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
 
-    @method_decorator(cache_page(60 * 10))
     def get(self, request):
         # Get optional query parameters
         status_filter = request.query_params.get("status")

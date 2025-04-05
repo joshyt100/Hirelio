@@ -61,10 +61,13 @@ INSTALLED_APPS = [
     "corsheaders",
     "AI_generator",
     "job_applications",
+    "debug_toolbar",
 ]
 
 STATIC_URL = "static/"
 MEDIA_URL = "media/"
+# new
+INTERNAL_IPS = ["127.0.0.1"]
 
 # authentication Backends
 AUTHENTICATION_BACKENDS = [
@@ -82,6 +85,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "social_django.middleware.SocialAuthExceptionMiddleware",
+    "debug_toolbar.middleware.DebugToolbarMiddleware",  # new
 ]
 
 ROOT_URLCONF = "cover_backend.urls"
@@ -139,6 +143,21 @@ WSGI_APPLICATION = "cover_backend.wsgi.application"
 #         "PORT": os.environ["DATABASE_PORT"],
 #     }
 # }
+# new for logging
+# LOGGING = {
+#     "version": 1,
+#     "disable_existing_loggers": False,
+#     "handlers": {
+#         "console": {"class": "logging.StreamHandler"},
+#     },
+#     "loggers": {
+#         "django.db.backends": {
+#             "level": "DEBUG",
+#             "handlers": ["console"],
+#         },
+#     },
+# }
+
 
 # prod
 DATABASES = {
