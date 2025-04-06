@@ -230,7 +230,7 @@ class GetCoverLetterURL(APIView):
             )
 
 
-@method_decorator(cache_page(60), name="dispatch")
+# @method_decorator(cache_page(60), name="dispatch")
 class GetCoverLetters(APIView):
     permission_classes = [IsAuthenticated]
 
