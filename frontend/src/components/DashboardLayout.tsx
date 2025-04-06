@@ -518,7 +518,7 @@ export default function DashboardLayout() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-          <TabsList>
+          <TabsList className="dark:bg-zinc-850">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="timeline">Timeline</TabsTrigger>
             <TabsTrigger value="insights">Insights</TabsTrigger>

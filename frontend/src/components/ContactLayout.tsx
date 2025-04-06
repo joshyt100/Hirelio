@@ -488,7 +488,7 @@ export default function ContactLayout() {
         </div>
 
         <Tabs defaultValue="all" onValueChange={setActiveTab} className="mb-6">
-          <TabsList>
+          <TabsList className="dark:bg-zinc-850">
             <TabsTrigger value="all">All Contacts</TabsTrigger>
             <TabsTrigger value="favorites">Favorites</TabsTrigger>
           </TabsList>

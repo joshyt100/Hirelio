@@ -331,9 +331,9 @@ export default function JobApplicationsPage() {
             setNextCursor(null);
             setJobs([]);
           }}
-          className="mb-8"
+          className=" mb-4"
         >
-          <TabsList>
+          <TabsList className="dark:bg-zinc-850 ">
             <TabsTrigger value="all">All</TabsTrigger>
             <TabsTrigger value="saved">Saved</TabsTrigger>
             <TabsTrigger value="applied">Applied</TabsTrigger>
@@ -344,7 +344,7 @@ export default function JobApplicationsPage() {
         </Tabs>
 
         {/* Job Cards List */}
-        <div className="mt-6">
+        <div className="mt-0">
           {jobsLoading && jobs.length === 0 ? (
             <div className="flex justify-center items-center h-64">
               <SolidCircleLoader className="w-10 h-10" />

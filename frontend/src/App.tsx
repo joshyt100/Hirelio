@@ -2,7 +2,7 @@ import React from "react";
 import { LoginForm } from "./components/login-form";
 import { SignUpForm } from "./components/SignUp";
 import { CoverLetterGenerator } from "./components/CoverLetterGenerator";
-import { SavedCoverLetters } from "./components/SavedCoverLetters";
+import { SavedCoverLetters } from "./components/saved-cover-letters/SavedCoverLetters";
 import ForgotPasswordComponent from "./components/ForgotPasswordComponent";
 import Navbar from "./components/Navbar";
 import LandingPage from "./components/LandingPage";
