@@ -1,5 +1,5 @@
 import React from "react";
-import type { JobApplication } from "@/types/application";
+import { JobApplication, JobCardProps } from "@/types/JobApplicationTypes";
 import {
   Calendar,
   Building,
@@ -21,18 +21,12 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuIte
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Separator } from "@/components/ui/separator";
 
-interface JobCardProps {
-  job: JobApplication;
-  onEdit: () => void;
-  onDelete: () => void;
-  onDeleteAttachment: (jobId: string, attachmentId: string) => void;
-}
 
 const statusColors: Record<string, string> = {
-  saved: "bg-purple-400 hover:bg-slate-600",
+  saved: "bg-purple-500 hover:bg-slate-600",
   applied: "bg-sky-500 hover:bg-sky-600",
   interview: "bg-pink-500 hover:bg-amber-600",
-  offer: "bg-emerald-600 hover:bg-emerald-500",
+  offer: "bg-emerald-500 hover:bg-emerald-400",
   rejected: "bg-rose-500 hover:bg-rose-600",
 };
 

@@ -3,7 +3,7 @@ import { CoverLetterForm } from "./CoverLetterForm";
 import { CoverLetterResult } from "./CoverLetterResult";
 import { generateCoverLetter } from "@/api/generate";
 import { saveCoverLetter } from "@/api/save";
-import { CoverLetterData } from "@/types/types";
+import { CoverLetterData } from "@/types/CoverLetterTypes";
 
 export const CoverLetterGenerator: React.FC = () => {
   const [jobDescription, setJobDescription] = useState(() => localStorage.getItem("jobDescription") || "");

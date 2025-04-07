@@ -8,7 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { getCoverLetters, getPresignedUrl } from "@/api/save";
-import { CoverLetterMetadataResponse } from "@/types/types";
+import { CoverLetterMetadataResponse } from "@/types/CoverLetterTypes";
 import { CoverLetterRow } from "./CoverLetterRow";
 import { TableSkeleton } from "./TableSkeleton";
 import { NoDataRow } from "./NoDataRow";

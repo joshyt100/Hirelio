@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Plus, Paperclip, Trash2 } from "lucide-react";
-import { AddJobDialogProps } from "@/types/application";
+import { AddJobDialogProps } from "@/types/JobApplicationTypes";
 
 
 const statusOptions = [

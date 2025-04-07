@@ -1,6 +1,6 @@
 import React from "react";
 import { FaRegCopy } from "react-icons/fa";
-import { CoverLetterMetadataResponse } from "@/types/types";
+import { CoverLetterMetadataResponse } from "@/types/CoverLetterTypes";
 import { TableCell, TableRow } from "@/components/ui/table";
 
 interface Props {

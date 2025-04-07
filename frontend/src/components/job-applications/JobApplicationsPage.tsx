@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import type { JobApplication } from "@/types/application";
+import type { JobApplication } from "@/types/JobApplicationTypes";
 import { getCookie } from "@/utils/csrfUtils";
 import {
   fetchJobApplications,
@@ -259,8 +259,8 @@ export default function JobApplicationsPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3">
           <div className="mb-6 sm:mb-0">
-            <h1 className="text-4xl font-bold bg-clip-text">Job Application Tracker</h1>
-            <p className="text-muted-foreground mt-2 text-lg">
+            <h1 className="text-3xl font-bold bg-clip-text">Job Application Tracker</h1>
+            <p className="text-muted-foreground mt-2">
               Track and manage your job applications in one place
             </p>
           </div>

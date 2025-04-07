@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { JobApplication } from "@/types/application";
+import type { JobApplication } from "@/types/JobApplicationTypes";
 import type { AxiosResponse } from "axios";
 
 const API_URL = "http://127.0.0.1:8000/api/job-applications";
