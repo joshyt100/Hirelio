@@ -9,7 +9,10 @@ User = get_user_model()
 
 class JobApplication(models.Model):
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="job_applications"
+        User,
+        on_delete=models.CASCADE,
+        related_name="job_applications",
+        db_index=True,
     )
     company = models.CharField(max_length=255, db_index=True)
     position = models.CharField(max_length=255, db_index=True)

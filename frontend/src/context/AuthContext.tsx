@@ -1,18 +1,7 @@
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import { AuthContextType } from '@/types/AuthContextTypes';
 import axios from 'axios';
 
-interface User {
-  email: string;
-}
-
-interface AuthContextType {
-  user: User | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  login: (user: User) => void;
-  logout: () => void;
-  checkAuthStatus: () => Promise<void>;
-}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 

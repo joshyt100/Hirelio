@@ -16,17 +16,13 @@ from .models import JobApplication, Attachment
 from .serializers import JobApplicationSerializer
 from django.core.cache import cache
 from rest_framework.pagination import CursorPagination
+from job_applications.pagination import JobApplicationCursorPagination
 
 logger = logging.getLogger(__name__)
 
 LIST_CACHE_TIMEOUT = 60 * 15  # 15 minutes
 DETAIL_CACHE_TIMEOUT = 60 * 30  # 30 minutes
 CACHE_VERSION = 1  # Bump this to invalidate old caches when models change
-
-
-class JobApplicationCursorPagination(CursorPagination):
-    page_size = 12
-    ordering = ["-date_applied", "-id"]
 
 
 def generate_cache_key(user_id, query_params=None, detail_id=None):

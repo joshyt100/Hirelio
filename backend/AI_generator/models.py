@@ -8,7 +8,10 @@ from django.db import models
 
 class CoverLetter(models.Model):
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="cover_letters"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="cover_letters",
+        db_index=True,
     )
     job_title = models.CharField(max_length=255)
     company_name = models.CharField(max_length=255)
