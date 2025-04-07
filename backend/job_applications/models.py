@@ -27,10 +27,14 @@ class JobApplication(models.Model):
 
     class Meta:
         indexes = [
-            Index(fields=["-date_applied", "-id"]),  # match your pagination ordering
             Index(
-                fields=["status", "-date_applied", "-id"]
+                fields=["user", "-date_applied", "-id"]
             ),  # match your pagination ordering
+            Index(fields=["user", "status", "-date_applied", "-id"]),
+            Index(fields=["user", "status", "position", "-date_applied", "-id"]),
+            Index(fields=["user", "status", "company", "-date_applied", "-id"]),
+            # Index(fields=["user", "status", "location", "-date_applied", "-id"]),
+            # match your pagination ordering
         ]
 
     def __str__(self):

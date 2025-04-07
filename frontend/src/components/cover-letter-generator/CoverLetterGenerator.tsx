@@ -72,28 +72,33 @@ export const CoverLetterGenerator: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center">
-      <div className="w-11/12 sm:max-w-xl md:max-w-4xl lg:max-w-6xl 2xl:max-w-8xl h-full flex flex-col items-center justify-center ml-28 max-w-lg md:flex-row">
-        <CoverLetterForm
-          jobDescription={jobDescription}
-          setJobDescription={setJobDescription}
-          jobName={jobName}
-          setJobName={setJobName}
-          companyName={companyName}
-          setCompanyName={setCompanyName}
-          resume={resume}
-          setResume={setResume}
-          onGenerate={handleGenerateCoverLetter}
-          loading={loading}
-        />
-        <CoverLetterResult
-          coverLetter={coverLetter}
-          setCoverLetter={setCoverLetter}
-          onSave={handleSave}
-          isSaved={isSaved}
-          error={error}
-          loading={loading}
-        />
+    <div className="flex flex-col items-center justify-center w-full ml-16 xl:ml-0">
+      <div className="w-11/12 sm:max-w-xl md:max-w-4xl lg:max-w-6xl 2xl:max-w-8xl flex flex-col md:flex-row items-start ">
+        <div className="flex-1 w-full">
+          <h1 className="text-3xl mt-10 font-bold mb-4">Cover Letter Generator</h1>
+          <CoverLetterForm
+            jobDescription={jobDescription}
+            setJobDescription={setJobDescription}
+            jobName={jobName}
+            setJobName={setJobName}
+            companyName={companyName}
+            setCompanyName={setCompanyName}
+            resume={resume}
+            setResume={setResume}
+            onGenerate={handleGenerateCoverLetter}
+            loading={loading}
+          />
+        </div>
+        <div className="flex-1 w-full">
+          <CoverLetterResult
+            coverLetter={coverLetter}
+            setCoverLetter={setCoverLetter}
+            onSave={handleSave}
+            isSaved={isSaved}
+            error={error}
+            loading={loading}
+          />
+        </div>
       </div>
     </div>
   );
