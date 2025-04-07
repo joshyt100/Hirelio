@@ -2,6 +2,7 @@
 
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.db.models import Index, F
 
 User = get_user_model()
 
@@ -12,7 +13,7 @@ class JobApplication(models.Model):
     )
     company = models.CharField(max_length=255, db_index=True)
     position = models.CharField(max_length=255, db_index=True)
-    location = models.CharField(max_length=255, blank=True)
+    location = models.CharField(max_length=255, blank=True, db_index=True)
     status = models.CharField(max_length=50, db_index=True)
     date_applied = models.DateField()
     notes = models.TextField(blank=True)
@@ -20,6 +21,14 @@ class JobApplication(models.Model):
     contact_person = models.CharField(max_length=255, blank=True)
     contact_email = models.EmailField(blank=True)
     url = models.URLField(blank=True)
+
+    class Meta:
+        indexes = [
+            Index(fields=["-date_applied", "-id"]),  # match your pagination ordering
+            Index(
+                fields=["status", "-date_applied", "-id"]
+            ),  # match your pagination ordering
+        ]
 
     def __str__(self):
         return f"{self.position} at {self.company}"

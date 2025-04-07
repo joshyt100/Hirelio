@@ -7,31 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Plus, Paperclip, Trash2 } from "lucide-react";
+import { AddJobDialogProps } from "@/types/application";
 
-interface AddJobDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  formData: {
-    company: string;
-    position: string;
-    location: string;
-    status: string;
-    date_applied: string;
-    notes: string;
-    salary: string;
-    contact_person: string;
-    contact_email: string;
-    url: string;
-  };
-  onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-  handleStatusChange: (value: string) => void;
-  handleDateChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  files: File[];
-  handleFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  removeFile: (index: number) => void;
-  onSubmit: () => void;
-  actionLoading: boolean;
-}
 
 const statusOptions = [
   { value: "saved", label: "Saved" },
@@ -191,7 +168,7 @@ const AddJobDialog: React.FC<AddJobDialogProps> = ({
           <div className="space-y-2">
             <Label>Attachments</Label>
             <div className="grid gap-2">
-              <div className="p-4 bg-gray-50 dark:bg-gray-900">
+              <div className="p-4 ">
                 <Input
                   id="attachments"
                   type="file"

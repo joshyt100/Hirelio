@@ -29,10 +29,10 @@ interface JobCardProps {
 }
 
 const statusColors: Record<string, string> = {
-  saved: "bg-slate-500 hover:bg-slate-600",
+  saved: "bg-purple-400 hover:bg-slate-600",
   applied: "bg-sky-500 hover:bg-sky-600",
-  interview: "bg-amber-500 hover:bg-amber-600",
-  offer: "bg-emerald-500 hover:bg-emerald-600",
+  interview: "bg-pink-500 hover:bg-amber-600",
+  offer: "bg-emerald-600 hover:bg-emerald-500",
   rejected: "bg-rose-500 hover:bg-rose-600",
 };
 

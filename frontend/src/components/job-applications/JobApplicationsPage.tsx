@@ -264,8 +264,10 @@ export default function JobApplicationsPage() {
               Track and manage your job applications in one place
             </p>
           </div>
-          <Button onClick={() => setIsAddDialogOpen(true)} className="shadow-md transition-all" size="lg">
-            <Plus className="mr-2 h-5 w-5" /> Add Application
+          <Button onClick={() => setIsAddDialogOpen(true)} type="submit">
+            <Plus className="mr-2 h-5 w-5" />
+            Add Application
+
           </Button>
         </div>
 

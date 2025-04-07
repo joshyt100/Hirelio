@@ -3,7 +3,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { resetPassword } from "@/api/auth";
-import CSRFToken from "./csrftoken";
+import CSRFToken from "../csrf-token/csrftoken"
 
 const ForgotPasswordComponent: React.FC = () => {
   const [email, setEmail] = useState<string>("");

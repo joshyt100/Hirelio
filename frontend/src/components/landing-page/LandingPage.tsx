@@ -3,7 +3,7 @@ import { Link } from "react-router-dom"
 import { ArrowRight, FileText, Briefcase, Building, Sparkles, Moon, Sun, Check, Clock, Award, Zap, PenTool, Save, BarChart2, FolderPlus, FileUp, ListChecks, LineChart, Calendar, Search, Bell } from 'lucide-react'
 
 import { Button } from "@/components/ui/button"
-import { useTheme } from "@/components/theme-provider"
+import { useTheme } from "@/components/theme-provider/theme-provider"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 
 export default function LandingPage() {

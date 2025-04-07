@@ -1,17 +1,17 @@
 import React from "react";
-import { LoginForm } from "./components/login-form";
-import { SignUpForm } from "./components/SignUp";
-import { CoverLetterGenerator } from "./components/CoverLetterGenerator";
+import { LoginForm } from "./components/login/login-form";
+import { SignUpForm } from "./components/sign-up/SignUp";
+import { CoverLetterGenerator } from "./components/cover-letter-generator/CoverLetterGenerator";
 import { SavedCoverLetters } from "./components/saved-cover-letters/SavedCoverLetters";
-import ForgotPasswordComponent from "./components/ForgotPasswordComponent";
-import Navbar from "./components/Navbar";
-import LandingPage from "./components/LandingPage";
-import { ThemeProvider } from "./components/theme-provider";
+import ForgotPasswordComponent from "./components/forgot-password/ForgotPasswordComponent";
+import Navbar from "./components/navbar/Navbar";
+import LandingPage from "./components/landing-page/LandingPage";
+import { ThemeProvider } from "./components/theme-provider/theme-provider";
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import JobApplicationsPage from "./components/job-applications/JobApplicationsPage";
-import DashboardLayout from "./components/DashboardLayout";
-import ContactLayout from "./components/ContactLayout";
+import DashboardLayout from "./components/dashboard/DashboardLayout";
+import ContactLayout from "./components/contact/ContactLayout";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 // Create a QueryClient instance

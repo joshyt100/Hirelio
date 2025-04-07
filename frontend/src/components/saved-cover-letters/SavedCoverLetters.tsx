@@ -71,10 +71,10 @@ export const SavedCoverLetters: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen transition-all duration-300 pl-[5.5rem] mx-auto  pr-4">
-      <div className="w-full flex justify-center mt-12 mb-12">
+      <div className="w-full flex justify-center mt-12 mb-8">
         <h1 className="text-3xl font-bold text-center">Saved Cover Letters</h1>
       </div>
-      <div className="w-full max-w-5xl mx-auto bg-zinc-50 dark:bg-zinc-950">
+      <div className="w-full max-w-5xl mx-auto  dark:bg-zinc-950">
         <div className="rounded-md border">
           <Table>
             <TableHeader>

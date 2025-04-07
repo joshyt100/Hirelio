@@ -11,6 +11,7 @@ urlpatterns = [
     path("api/job-applications/", include("job_applications.urls")),
     path("google/", include("social_django.urls", namespace="social")),
     path("cover/", include("AI_generator.urls")),
+    # path("silk/", include("silk.urls", namespace="silk")),
 ]
 
 
@@ -18,3 +19,9 @@ if settings.DEBUG:
     import debug_toolbar
 
     urlpatterns = [path("__debug__/", include(debug_toolbar.urls))] + urlpatterns
+
+
+from django.conf import settings
+from django.conf.urls.static import static
+
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

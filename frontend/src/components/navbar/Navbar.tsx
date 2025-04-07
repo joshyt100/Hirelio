@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { useTheme } from "@/components/theme-provider";
+import { useTheme } from "@/components/theme-provider/theme-provider";
 import { Button } from "@/components/ui/button";
 import { FileText, ChartLine, Moon, ChartBarBig, CircleUserRound, Sun, LogOut, FilePlus, Save, Briefcase } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";

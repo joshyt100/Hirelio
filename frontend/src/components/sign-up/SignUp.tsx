@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import CSRFToken from "./csrftoken";
+import CSRFToken from "../csrf-token/csrftoken";
 import { useNavigate } from 'react-router-dom';
 // ...imports remain the same
 export function SignUpForm({

@@ -61,10 +61,13 @@ INSTALLED_APPS = [
     "corsheaders",
     "AI_generator",
     "job_applications",
-    "debug_toolbar",
+    # "debug_toolbar",
+    # "silk",
 ]
 
 STATIC_URL = "static/"
+
+STATIC_ROOT = BASE_DIR / "staticfiles"  # required for collectstatic
 MEDIA_URL = "media/"
 # new
 INTERNAL_IPS = ["127.0.0.1"]
@@ -76,6 +79,7 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 MIDDLEWARE = [
+    # new middleware -> silk
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -85,8 +89,18 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "social_django.middleware.SocialAuthExceptionMiddleware",
-    "debug_toolbar.middleware.DebugToolbarMiddleware",  # new
+    # "debug_toolbar.middleware.DebugToolbarMiddleware",  # new
+    # "silk.middleware.SilkyMiddleware",
 ]
+
+
+# silk config
+
+# SILKY_PYTHON_PROFILER = True  # Enables Python function-level profiling
+# # SILKY_PYTHON_PROFILER_BINARY = True  # Stores binary .prof files
+# SILKY_AUTHENTICATION = False  # Use your auth system
+# SILKY_AUTHORISATION = False  # Use your permission system
+
 
 ROOT_URLCONF = "cover_backend.urls"
 
@@ -107,6 +121,21 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "cover_backend.wsgi.application"
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "loggers": {
+        "django.db.backends": {
+            "level": "DEBUG",  # Log all SQL
+            "handlers": ["console"],
+        },
+    },
+}
 
 
 # Database
@@ -211,7 +240,6 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = "static/"
 #
 # # Default primary key field type
 # # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -243,15 +271,29 @@ CSRF_USE_SESSIONS = False
 # LOGIN_URL = "/google/login/google-oauth2/"
 # SESSION_COOKIE_SAMESITE = "Lax"
 
-STORAGES = {
-    "default": {
-        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
-    },
-    "staticfiles": {
-        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
-    },
-}
 
+if DEBUG:
+    STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
+else:
+    STORAGES = {
+        "default": {
+            "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+        },
+        "staticfiles": {
+            "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+        },
+    }
+
+# prev with s3
+# STORAGES = {
+#     "default": {
+#         "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+#     },
+#     "staticfiles": {
+#         "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+#     },
+# }
+#
 # cache
 CACHES = {
     "default": {

@@ -220,7 +220,7 @@ const EditJobDialog: React.FC<EditJobDialogProps> = ({
           {/* New Attachments */}
           <div className="space-y-2">
             <Label>Add New Attachments</Label>
-            <div className="p-4 bg-gray-50 dark:bg-gray-900">
+            <div className="p-4 ">
               <Input
                 id="edit-attachments"
                 type="file"

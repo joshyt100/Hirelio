@@ -12,7 +12,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { loginUser } from "@/api/auth"
-import CSRFToken from "./csrftoken"
+import CSRFToken from "../csrf-token/csrftoken"
 import { useAuth } from "@/context/AuthContext"
 
 export function LoginForm({
