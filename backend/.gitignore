@@ -6,6 +6,10 @@ __pycache__/
 *.py[cod]
 *.so
 
+
+
+source/
+
 venv/
 env/
 ENV/
