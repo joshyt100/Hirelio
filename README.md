@@ -1,1 +1,1 @@
-AI Cover Letter Generator
+Job APP Tracker + Analytics + Tools
