@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "AI_generator",
     "job_applications",
+    "contacts",
     # "debug_toolbar",
     # "silk",
 ]
