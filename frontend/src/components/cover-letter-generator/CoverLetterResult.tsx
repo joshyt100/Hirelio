@@ -12,7 +12,7 @@ export const CoverLetterResult = ({ coverLetter, setCoverLetter, onSave, isSaved
         </div>
       ) : coverLetter ? (
         <div className="w-full relative">
-          <h2 className="text-lg font-semibold mt-10 mb-4">Generated Cover Letter</h2>
+          <h2 className="text-xl font-semibold mt-10 mb-4">Generated Cover Letter</h2>
           <div className="relative">
             <Textarea
               value={coverLetter}

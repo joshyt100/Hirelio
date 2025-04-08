@@ -1,4 +1,3 @@
-"use client"
 
 import type React from "react"
 
@@ -44,15 +43,15 @@ export const CoverLetterForm = ({
   }
 
   return (
-    <Card className=" w-full border dark:border-zinc-700 ">
-      <CardHeader className="pb-4 border-b dark:border-zinc-700">
+    <Card className=" w-full  border dark:border-zinc-700 ">
+      <CardHeader className="pb-4 border-b  dark:border-zinc-700">
         <CardTitle className="flex items-center text-2xl">
-          <FileText className="mr-2 h-6 w-6 text-zinc-700 dark:text-zinc-300" />
+          <FileText className="mr-2 h-6 w-6 text-primary " />
           Job Details
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-6">
-        <div className="space-y-6">
+        <div className="space-y-3">
           <div className="space-y-2">
             <Label htmlFor="job-name" className="text-sm font-medium flex items-center">
               <Briefcase className="mr-2 h-4 w-4 " />
@@ -109,7 +108,7 @@ export const CoverLetterForm = ({
                 htmlFor="resume"
                 className="relative cursor-pointer bg-zinc-100 dark:bg-zinc-800 rounded-md font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-500 dark:hover:text-zinc-400 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-zinc-500 dark:focus-within:ring-zinc-400 flex-1"
               >
-                <div className="px-4 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md flex items-center justify-center">
+                <div className="px-3 py-1 border border-zinc-300 dark:border-zinc-700 rounded-md flex items-center justify-center">
                   <span>{fileName || "Select PDF file"}</span>
                   <Input id="resume" type="file" accept=".pdf" onChange={handleFileChange} className="sr-only" />
                 </div>
@@ -123,7 +122,8 @@ export const CoverLetterForm = ({
           <Button
             onClick={onGenerate}
             disabled={loading}
-            className="w-full py-6 text-base font-medium "
+            className="w-full py-3 text-base font-medium "
+            size="lg"
           >
             {loading ? (
               <>
