@@ -64,6 +64,12 @@ docker-compose up --build
 docker-compose up --build
 ```
 ## Manual Backend Setup (Without Docker)
+
+### Clone Repo
+```bash
+git clone https://github.com/yourusername/hiremind.git
+cd hiremind
+```
 ```bash
 # Navigate to backend folder
 cd backend
