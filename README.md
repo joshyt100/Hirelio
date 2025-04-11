@@ -91,27 +91,15 @@ python manage.py runserver
 
 ## Manual Frontend Setup (Without Docker)
 ```bash
-# Navigate to backend folder
-cd backend
+# Navigate to frontend folder
+cd frontend
 
-# Create and activate virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+# Install Node dependencies
+npm install
 
-# Install dependencies
-pip install -r requirements.txt
+# Create environment file
+cp .env.example .env  # configure backend API URL if needed
 
-# Create a .env file
-cp .env.example .env  # and fill in DB credentials, S3, Gemini key, etc.
-
-# Run migrations
-python manage.py migrate
-
-# Create a superuser
-python manage.py createsuperuser
-
-# Run the server
-python manage.py runserver
-
-
+# Start the development server
+npm run dev
 ```
