@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     "AI_generator",
     "job_applications",
     "contacts",
+    "dashboard",
     # "debug_toolbar",
     # "silk",
 ]
