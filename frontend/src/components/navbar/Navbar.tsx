@@ -5,13 +5,16 @@ import { Button } from "@/components/ui/button";
 import { FileText, ChartLine, Moon, ChartBarBig, CircleUserRound, Sun, LogOut, FilePlus, Save, Briefcase } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { LogoutConfirm } from "./LogoutConfirm";
+//import { SidebarProvider } from "@/context/SideBarContext";
+import { useSidebar } from "@/context/SideBarContext";
 
 const Navbar: React.FC = () => {
   const { theme, setTheme } = useTheme();
   const { isAuthenticated, isLoading, logout } = useAuth();
   const [logoutModal, setLogoutModal] = useState(false);
   const [authStatus, setAuthStatus] = useState(isAuthenticated);
-  const [collapsed, setCollapsed] = useState(true);
+  //const [collapsed, setCollapsed] = useState(true);
+  const { collapsed, toggleCollapsed } = useSidebar();
 
   useEffect(() => {
     setAuthStatus(isAuthenticated);
@@ -90,9 +93,11 @@ const Navbar: React.FC = () => {
             )
           )}
 
-          <Button variant="outline" size="icon" onClick={() => setCollapsed(!collapsed)} className="mt-auto">
+          <Button variant="outline" size="icon" onClick={toggleCollapsed} className="mt-auto">
             {collapsed ? ">" : "<"}
           </Button>
+
+
         </div>
       </div>
 

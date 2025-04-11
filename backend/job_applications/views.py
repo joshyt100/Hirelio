@@ -28,18 +28,18 @@ CACHE_VERSION = 1  # Bump this to invalidate old caches when models change
 def generate_cache_key(user_id, query_params=None, detail_id=None):
     """
     Generate a unique cache key based on user ID, query parameters,
-    and optionally a detail ID.
+    and optionally a detail ID. Now includes sortOrder.
     """
     if detail_id:
         return f"jad:{user_id}:{detail_id}:v{CACHE_VERSION}"
 
     base_key = f"jal:{user_id}:v{CACHE_VERSION}"
     if query_params:
-        # Only include specific parameters
+        # Include sortOrder among the allowed keys.
         filtered = {
             k: v
             for k, v in query_params.items()
-            if k in ("status", "search", "cursor") and v
+            if k in ("status", "search", "sortOrder", "cursor") and v
         }
         if filtered:
             param_str = "&".join(f"{k}={v}" for k, v in sorted(filtered.items()))
@@ -50,9 +50,7 @@ def generate_cache_key(user_id, query_params=None, detail_id=None):
 
 def invalidate_user_caches(user_id):
     """
-    Invalidate all cache entries for the given user. In a production system,
-    you might want to track individual cache keys (for example, in a Redis set)
-    for even more efficient deletion.
+    Invalidate all cache entries for the given user.
     """
     try:
         cache.delete_pattern(f"jal:{user_id}:*")
@@ -66,8 +64,7 @@ def invalidate_user_caches(user_id):
 
 def cached_response(timeout):
     """
-    Decorator for caching GET responses. It computes a cache key based on the request,
-    returns cached data if available, and caches the response data if the view is successful.
+    Decorator for caching GET responses.
     """
 
     def decorator(view_func):
@@ -75,26 +72,24 @@ def cached_response(timeout):
         def wrapper(self, request, *args, **kwargs):
             if request.method != "GET":
                 return view_func(self, request, *args, **kwargs)
-
             if "pk" in kwargs:
                 # Detail view caching
                 cache_key = generate_cache_key(request.user.id, detail_id=kwargs["pk"])
                 current_timeout = DETAIL_CACHE_TIMEOUT
             else:
-                # List view caching using relevant query parameters
+                # Include sortOrder in caching
                 params = {
                     "status": request.query_params.get("status", ""),
                     "search": request.query_params.get("search", ""),
                     "cursor": request.query_params.get("cursor", ""),
+                    "sortOrder": request.query_params.get("sortOrder", ""),
                 }
                 cache_key = generate_cache_key(request.user.id, params)
                 current_timeout = timeout
-
             cached_data = cache.get(cache_key)
             if cached_data:
                 logger.info(f"Cache hit for key: {cache_key}")
                 return Response(cached_data)
-
             response = view_func(self, request, *args, **kwargs)
             if response.status_code in (200, 201):
                 cache.set(cache_key, response.data, current_timeout)
@@ -125,9 +120,12 @@ class JobApplicationListCreateView(APIView):
     def get(self, request):
         total_start = time.time()
 
-        # Filter setup
+        # Get query parameters
         status_filter = request.query_params.get("status")
         search = request.query_params.get("search")
+        sort_order = request.query_params.get(
+            "sortOrder", "desc"
+        )  # default to descending
         t1 = time.time()
         job_apps = JobApplication.objects.filter(user=request.user)
         if status_filter:
@@ -140,15 +138,21 @@ class JobApplicationListCreateView(APIView):
             job_apps = job_apps.filter(query)
         t2 = time.time()
 
-        # Optimize queryset joins after filtering
+        # Determine ordering based on sortOrder parameter.
+        if sort_order == "asc":
+            order_by_fields = ("date_applied", "id")
+        else:
+            order_by_fields = ("-date_applied", "-id")
+
+        # Apply ordering and prefetch/join optimizations.
         job_apps = (
             job_apps.select_related("user")
             .prefetch_related("attachments")
-            .order_by("-date_applied", "-id")
+            .order_by(*order_by_fields)
         )
         t3 = time.time()
 
-        # Pagination and serialization
+        # Pagination using cursor pagination.
         paginator = JobApplicationCursorPagination()
         page = paginator.paginate_queryset(job_apps, request)
         t4 = time.time()
@@ -157,13 +161,12 @@ class JobApplicationListCreateView(APIView):
         response = paginator.get_paginated_response(serializer.data)
         total_end = time.time()
 
-        # Log detailed performance metrics
+        # Log performance metrics.
         logger.debug(f"[Timer] Filtering: {(t2 - t1):.3f}s")
         logger.debug(f"[Timer] Prefetch/order: {(t3 - t2):.3f}s")
         logger.debug(f"[Timer] Pagination: {(t4 - t3):.3f}s")
         logger.debug(f"[Timer] Serialization: {(t5 - t4):.3f}s")
         logger.debug(f"[Timer] Total view time: {(total_end - total_start):.3f}s")
-
         return response
 
     def post(self, request):
@@ -199,8 +202,6 @@ class JobApplicationListCreateView(APIView):
                     )
                 if attachment_objects:
                     Attachment.objects.bulk_create(attachment_objects)
-
-            # Invalidate caches related to the user
             invalidate_user_caches(request.user.id)
             end_time = time.time()
             logger.debug(
@@ -209,7 +210,6 @@ class JobApplicationListCreateView(APIView):
             return Response(
                 JobApplicationSerializer(job_app).data, status=status.HTTP_201_CREATED
             )
-
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -273,8 +273,6 @@ class JobApplicationDetailView(APIView):
                     )
                 if attachment_objects:
                     Attachment.objects.bulk_create(attachment_objects)
-
-            # Invalidate caches for both detail and list views
             cache.delete(generate_cache_key(request.user.id, detail_id=pk))
             invalidate_user_caches(request.user.id)
             end_time = time.time()
@@ -284,7 +282,6 @@ class JobApplicationDetailView(APIView):
             return Response(
                 JobApplicationSerializer(job_app).data, status=status.HTTP_200_OK
             )
-
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):
@@ -294,7 +291,6 @@ class JobApplicationDetailView(APIView):
             return Response(
                 {"error": "Job application not found"}, status=status.HTTP_404_NOT_FOUND
             )
-
         attachments = list(job_app.attachments.all())
         if attachments:
             s3 = get_s3_client()
@@ -310,12 +306,10 @@ class JobApplicationDetailView(APIView):
                 for att in attachments:
                     try:
                         s3.delete_object(
-                            Bucket=settings.AWS_STORAGE_BUCKET_NAME,
-                            Key=att.file_url,
+                            Bucket=settings.AWS_STORAGE_BUCKET_NAME, Key=att.file_url
                         )
                     except Exception as ex:
                         logger.error("Error deleting file from S3: %s", str(ex))
-
         job_app.delete()
         cache.delete(generate_cache_key(request.user.id, detail_id=pk))
         invalidate_user_caches(request.user.id)
@@ -339,7 +333,6 @@ class DeleteAttachmentView(APIView):
             return Response(
                 {"error": "Job application not found"}, status=status.HTTP_404_NOT_FOUND
             )
-
         try:
             attachment = Attachment.objects.get(
                 pk=attachment_id, job_application=job_app
@@ -348,7 +341,6 @@ class DeleteAttachmentView(APIView):
             return Response(
                 {"error": "Attachment not found"}, status=status.HTTP_404_NOT_FOUND
             )
-
         s3 = get_s3_client()
         try:
             s3.delete_object(
@@ -356,7 +348,6 @@ class DeleteAttachmentView(APIView):
             )
         except Exception as e:
             logger.error("Error deleting file from S3: %s", str(e))
-
         attachment.delete()
         cache.delete(generate_cache_key(request.user.id, detail_id=job_id))
         end_time = time.time()

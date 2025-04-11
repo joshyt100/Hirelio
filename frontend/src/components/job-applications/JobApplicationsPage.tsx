@@ -17,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Filter, Plus, Search } from "lucide-react";
 import { Card, CardTitle } from "@/components/ui/card";
+import { useSidebar } from "@/context/SideBarContext";
 
 // Import child components
 import JobCard from "./JobCard";
@@ -42,8 +43,9 @@ export default function JobApplicationsPage() {
   // States for jobs and filters
   const [jobs, setJobs] = useState<JobApplication[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("all");
+  // sortOrder state: "desc" for newest first, "asc" for oldest first.
+  const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
   const [nextCursor, setNextCursor] = useState<string | null>(null);
 
   // Dialog and edit states
@@ -67,8 +69,18 @@ export default function JobApplicationsPage() {
   // Loading states
   const [jobsLoading, setJobsLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+  const { collapsed } = useSidebar();
+  const leftPadding = collapsed ? "pl-24" : "pl-[16.5625rem]";
 
-  // Fetch jobs function supporting pagination
+  // Reset pagination state when filters or sort order changes.
+  const resetPagination = () => {
+    setNextCursor(null);
+    setJobs([]);
+  };
+
+  // When search, activeTab or sortOrder changes, reset pagination.
+  //
+  // Fixed fetchJobs function for proper handling of axios responses
   const fetchJobs = useCallback(
     async (cursor: string | null = null, append = false) => {
       setJobsLoading(true);
@@ -80,29 +92,61 @@ export default function JobApplicationsPage() {
         if (searchTerm) {
           params.search = searchTerm;
         }
+        // Include sortOrder in parameters so backend can order accordingly
+        params.sortOrder = sortOrder;
         if (cursor) {
           params.cursor = cursor;
         }
+
+        // Make API call with axios
         const response = await fetchJobApplications(params);
-        const newJobs = response.data.results || [];
+
+        // With axios, the response data is in response.data
+        const responseData = response.data;
+        const newJobs = responseData.results || [];
+
         if (append) {
-          setJobs((prevJobs) => [...prevJobs, ...newJobs]);
+          setJobs((prev) => [...prev, ...newJobs]);
         } else {
           setJobs(newJobs);
         }
-        setNextCursor(response.data.next ? new URL(response.data.next).searchParams.get("cursor") : null);
+
+        // Extract cursor from next URL if available
+        const nextUrl = responseData.next;
+        if (nextUrl) {
+          // Parse the URL to get the cursor parameter
+          const url = new URL(nextUrl);
+          setNextCursor(url.searchParams.get("cursor"));
+        } else {
+          setNextCursor(null);
+        }
       } catch (error) {
+        console.error("Error fetching job applications:", error);
         alert("Error fetching job applications");
       } finally {
         setJobsLoading(false);
       }
     },
-    [activeTab, searchTerm],
+    [activeTab, searchTerm, sortOrder],
   );
 
+
+  const handleSortOrderChange = (value: "desc" | "asc") => {
+    console.log(`Changing sort order to: ${value}`);
+    setSortOrder(value);
+    resetPagination();
+
+    // Force refetch with new sort order
+    setTimeout(() => {
+      console.log(`Fetching jobs with sort order: ${value}`);
+      fetchJobs(null, false);
+    }, 0);
+  };
+
   useEffect(() => {
+    resetPagination();
     fetchJobs(null);
-  }, [searchTerm, statusFilter, activeTab, fetchJobs]);
+  }, [searchTerm, activeTab, sortOrder, fetchJobs]);
 
   // Infinite scroll to fetch more jobs
   useEffect(() => {
@@ -112,7 +156,6 @@ export default function JobApplicationsPage() {
         fetchJobs(nextCursor, true);
       }
     };
-
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [jobsLoading, nextCursor, fetchJobs]);
@@ -153,6 +196,7 @@ export default function JobApplicationsPage() {
       files.forEach((file) => form.append("attachments", file));
       const csrfToken = getCookie("csrftoken");
       await createJobApplication(form, csrfToken);
+      resetPagination();
       fetchJobs(null);
       resetForm();
       setIsAddDialogOpen(false);
@@ -175,6 +219,7 @@ export default function JobApplicationsPage() {
       files.forEach((file) => form.append("attachments", file));
       const csrfToken = getCookie("csrftoken");
       await updateJobApplicationAPI(currentJob.id, form, csrfToken);
+      resetPagination();
       fetchJobs(null);
       resetForm();
       setIsEditDialogOpen(false);
@@ -194,6 +239,7 @@ export default function JobApplicationsPage() {
       try {
         const csrfToken = getCookie("csrftoken");
         await deleteJobApplicationAPI(id, csrfToken);
+        resetPagination();
         fetchJobs(null);
       } catch (error: any) {
         alert("Error deleting job application");
@@ -210,6 +256,7 @@ export default function JobApplicationsPage() {
       try {
         const csrfToken = getCookie("csrftoken");
         await deleteAttachmentAPI(jobId, attachmentId, csrfToken);
+        resetPagination();
         fetchJobs(null);
       } catch (error: any) {
         alert("Error deleting attachment");
@@ -253,9 +300,16 @@ export default function JobApplicationsPage() {
     setFiles([]);
   };
 
+  // Handler to change sort order and reset pagination
+  //const handleSortOrderChange = (value: "desc" | "asc") => {
+  //  setSortOrder(value);
+  //  resetPagination();
+  //};
+
   return (
     <div className="min-h-screen">
-      <div className="container pl-24 pr-4 pt-8 mx-auto max-w-[96rem] w-full">
+      <div className={`container ${leftPadding} pr-4 pt-8 mx-auto max-w-[96rem] w-full transition-all duration-300`}>
+
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3">
           <div className="mb-6 sm:mb-0">
@@ -267,11 +321,10 @@ export default function JobApplicationsPage() {
           <Button onClick={() => setIsAddDialogOpen(true)} type="submit">
             <Plus className="mr-2 h-5 w-5" />
             Add Application
-
           </Button>
         </div>
 
-        {/* Search and Filters */}
+        {/* Search and Controls */}
         <div className="rounded-xl shadow-none p-2 mb-2">
           <div className="flex flex-col md:flex-row gap-4 items-end">
             <div className="relative flex-1">
@@ -289,24 +342,21 @@ export default function JobApplicationsPage() {
                 />
               </div>
             </div>
+            {/* Dropdown now controls sort order */}
             <div className="w-full md:w-64">
-              <Label htmlFor="status-filter" className="text-sm font-medium mb-1.5 block">
-                Filter by Status
+              <Label htmlFor="sort-order" className="text-sm font-medium mb-1.5 block">
+                Sort by Date
               </Label>
               <Select
-                value={statusFilter ?? "all"}
-                onValueChange={(value) => setStatusFilter(value === "all" ? null : value)}
+                value={sortOrder}
+                onValueChange={(value) => handleSortOrderChange(value as "desc" | "asc")}
               >
-                <SelectTrigger id="status-filter" className="w-full bg-background">
-                  <SelectValue placeholder="All Statuses" />
+                <SelectTrigger id="sort-order" className="w-full bg-background">
+                  <SelectValue placeholder="Sort by Date" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  {statusOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="desc">Newest First</SelectItem>
+                  <SelectItem value="asc">Oldest First</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -315,7 +365,7 @@ export default function JobApplicationsPage() {
               className="h-10 px-4 md:self-end"
               onClick={() => {
                 setSearchTerm("");
-                setStatusFilter(null);
+                handleSortOrderChange("desc");
               }}
             >
               <Filter className="h-4 w-4 mr-2" /> Reset Filters
@@ -329,13 +379,11 @@ export default function JobApplicationsPage() {
           value={activeTab}
           onValueChange={(value) => {
             setActiveTab(value);
-            setStatusFilter(null);
-            setNextCursor(null);
-            setJobs([]);
+            resetPagination();
           }}
-          className=" mb-4"
+          className="mb-4"
         >
-          <TabsList className="dark:bg-zinc-850 ">
+          <TabsList className="dark:bg-zinc-850">
             <TabsTrigger value="all">All</TabsTrigger>
             <TabsTrigger value="saved">Saved</TabsTrigger>
             <TabsTrigger value="applied">Applied</TabsTrigger>
@@ -358,7 +406,7 @@ export default function JobApplicationsPage() {
               </div>
               <h3 className="text-xl font-semibold mb-2">No job applications found</h3>
               <p className="text-muted-foreground mb-6 max-w-md">
-                {searchTerm || statusFilter
+                {searchTerm || activeTab !== "all"
                   ? "Try adjusting your search or filters to find what you're looking for."
                   : "Start by adding your first job application to track your job search journey."}
               </p>

@@ -13,6 +13,7 @@ import JobApplicationsPage from "./components/job-applications/JobApplicationsPa
 import DashboardLayout from "./components/dashboard/DashboardLayout";
 import ContactLayout from "./components/contact/ContactLayout";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { SidebarProvider } from "./context/SideBarContext";
 
 // Create a QueryClient instance
 const queryClient = new QueryClient();
@@ -31,48 +32,50 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-          <Router>
-            <Layout>
-              <Routes>
-                <Route path="/" element={<LandingPage />} />
-                <Route
-                  path="/login"
-                  element={
-                    <div className="min-h-screen flex items-center justify-center">
-                      <LoginForm />
-                    </div>
-                  }
-                />
-                <Route path="/forgot-password" element={<ForgotPasswordComponent />} />
-                <Route path="/saved" element={<SavedCoverLetters />} />
-                <Route
-                  path="/sign-up"
-                  element={
-                    <div className="min-h-screen flex items-center justify-center">
-                      <SignUpForm />
-                    </div>
-                  }
-                />
-                <Route
-                  path="/generate"
-                  element={
-                    <div>
-                      <CoverLetterGenerator />
-                    </div>
-                  }
-                />
-                <Route path="/job-application-tracker" element={<JobApplicationsPage />} />
-                <Route path="/dashboard" element={<DashboardLayout />} />
-                <Route path="/contacts-tracker" element={<ContactLayout />} />
-              </Routes>
-            </Layout>
-          </Router>
-        </ThemeProvider>
-      </AuthProvider>
-    </QueryClientProvider>
+    <SidebarProvider>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+            <Router>
+              <Layout>
+                <Routes>
+                  <Route path="/" element={<LandingPage />} />
+                  <Route
+                    path="/login"
+                    element={
+                      <div className="min-h-screen flex items-center justify-center">
+                        <LoginForm />
+                      </div>
+                    }
+                  />
+                  <Route path="/forgot-password" element={<ForgotPasswordComponent />} />
+                  <Route path="/saved" element={<SavedCoverLetters />} />
+                  <Route
+                    path="/sign-up"
+                    element={
+                      <div className="min-h-screen flex items-center justify-center">
+                        <SignUpForm />
+                      </div>
+                    }
+                  />
+                  <Route
+                    path="/generate"
+                    element={
+                      <div>
+                        <CoverLetterGenerator />
+                      </div>
+                    }
+                  />
+                  <Route path="/job-application-tracker" element={<JobApplicationsPage />} />
+                  <Route path="/dashboard" element={<DashboardLayout />} />
+                  <Route path="/contacts-tracker" element={<ContactLayout />} />
+                </Routes>
+              </Layout>
+            </Router>
+          </ThemeProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+    </SidebarProvider>
   );
 }
 

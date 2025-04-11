@@ -4,6 +4,7 @@ import { CoverLetterResult } from "./CoverLetterResult";
 import { generateCoverLetter } from "@/api/generate";
 import { saveCoverLetter } from "@/api/save";
 import { CoverLetterData } from "@/types/CoverLetterTypes";
+import { useSidebar } from "@/context/SideBarContext";
 
 export const CoverLetterGenerator: React.FC = () => {
   const [jobDescription, setJobDescription] = useState(() => localStorage.getItem("jobDescription") || "");
@@ -14,6 +15,8 @@ export const CoverLetterGenerator: React.FC = () => {
   const [isSaved, setIsSaved] = useState(() => localStorage.getItem("isSaved") === "true");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { collapsed } = useSidebar();
+  const leftPadding = collapsed ? "pl-24" : "pl-64";
 
   useEffect(() => {
     localStorage.setItem("jobDescription", jobDescription);
@@ -72,10 +75,10 @@ export const CoverLetterGenerator: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center w-full ml-16 xl:ml-0">
-      <div className="w-11/12 sm:max-w-xl md:max-w-4xl lg:max-w-6xl 2xl:max-w-8xl flex flex-col md:flex-row items-start ">
-        <div className="flex-1 w-full">
-          <h1 className="text-3xl mt-10 font-bold mb-4">Cover Letter Generator</h1>
+    <div className={`w-full min-h-screen transition-all duration-300  ${leftPadding}`}>
+      <div className="max-w-7xl px-4 py-8 mx-auto flex flex-col md:flex-row gap-8">
+        <div className="flex-1">
+          <h1 className="text-3xl font-bold mb-6">Cover Letter Generator</h1>
           <CoverLetterForm
             jobDescription={jobDescription}
             setJobDescription={setJobDescription}
@@ -89,7 +92,7 @@ export const CoverLetterGenerator: React.FC = () => {
             loading={loading}
           />
         </div>
-        <div className="flex-1 w-full">
+        <div className="flex-1">
           <CoverLetterResult
             coverLetter={coverLetter}
             setCoverLetter={setCoverLetter}
@@ -101,6 +104,7 @@ export const CoverLetterGenerator: React.FC = () => {
         </div>
       </div>
     </div>
+
   );
 };
 
