@@ -21,7 +21,7 @@ export const SavedCoverLetters: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [initialLoading, setInitialLoading] = useState<boolean>(true);
   const { collapsed } = useSidebar();
-  const leftPadding = collapsed ? "pl-0" : "pl-72";
+  const leftPadding = collapsed ? "pl-24" : "pl-64";
 
   const fetchCoverLetters = useCallback(
     async (cursor: string | null = null, append = false) => {

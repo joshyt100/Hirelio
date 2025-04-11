@@ -18,7 +18,7 @@ export const EditCoverLetterDialog = ({ coverLetter, setCoverLetter }: any) => {
   return (
     <Dialog open={isEditing} onOpenChange={setIsEditing}>
       <DialogTrigger asChild>
-        <button className="absolute top-3 right-3 bg-black dark:bg-gray-700 text-white p-2 rounded-md hover:bg-gray-700 transition flex items-center justify-center">
+        <button className="absolute top-3 right-3 bg-black dark:bg-gray-700  border text-white p-2 rounded-md hover:bg-gray-700 transition flex items-center justify-center">
           <CiEdit />
         </button>
       </DialogTrigger>
