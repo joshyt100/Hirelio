@@ -8,7 +8,7 @@ Built with a full-stack architecture using modern web technologies and best prac
 ## 🛠 Tech Stack
 
 - **Frontend**: React, TypeScript, TailwindCSS, ShadCN UI, React Router
-- **Backend**: Django REST Framework, PostgreSQL, Redis
+- **Backend**: Django REST Framework, Python, PostgreSQL, Redis
 - **Authentication**: Django `session` authentication with CSRF protection
 - **AI**: Google Gemini API for cover letter generation
 - **DevOps**: Docker, Docker Compose, AWS S3 for file storage
