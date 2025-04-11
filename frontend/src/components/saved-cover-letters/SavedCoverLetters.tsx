@@ -13,12 +13,15 @@ import { CoverLetterRow } from "./CoverLetterRow";
 import { TableSkeleton } from "./TableSkeleton";
 import { NoDataRow } from "./NoDataRow";
 import { SolidCircleLoader } from "./SolidCircleLoader";
+import { useSidebar } from "@/context/SideBarContext";
 
 export const SavedCoverLetters: React.FC = () => {
   const [coverLetters, setCoverLetters] = useState<CoverLetterMetadataResponse[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [initialLoading, setInitialLoading] = useState<boolean>(true);
+  const { collapsed } = useSidebar();
+  const leftPadding = collapsed ? "pl-0" : "pl-72";
 
   const fetchCoverLetters = useCallback(
     async (cursor: string | null = null, append = false) => {
@@ -70,7 +73,7 @@ export const SavedCoverLetters: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen transition-all duration-300 pl-[5.5rem] mx-auto  pr-4">
+    <div className={`flex  flex-col min-h-screen ${leftPadding} transition-all duration-300  mx-auto  `}>
       <div className="w-full flex justify-center mt-12 mb-8">
         <h1 className="text-3xl font-bold text-center">Saved Cover Letters</h1>
       </div>

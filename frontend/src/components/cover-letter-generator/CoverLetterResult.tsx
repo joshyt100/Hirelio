@@ -4,7 +4,7 @@ import { EditCoverLetterDialog } from "./EditCoverLetterDialog";
 
 export const CoverLetterResult = ({ coverLetter, setCoverLetter, onSave, isSaved, error, loading }: any) => {
   return (
-    <div className="p-6 w-full sm:w-full rounded-lg flex flex-col justify-center items-center min-h-[300px]">
+    <div className="px-6 w-full sm:w-full rounded-lg flex flex-col justify-center items-center min-h-[300px]">
       {loading ? (
         <div className="flex flex-col items-center">
           <div className="animate-spin h-8 w-8 border-4 border-t-transparent rounded-full"></div>
