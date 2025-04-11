@@ -63,7 +63,7 @@ docker-compose up --build
 # Start everything
 docker-compose up --build
 ```
-## Manual Backend Setup
+## Manual Backend Setup (Without Docker)
 ```bash
 # Navigate to backend folder
 cd backend
@@ -86,5 +86,32 @@ python manage.py createsuperuser
 
 # Run the server
 python manage.py runserver
+
+```
+
+## Manual Frontend Setup (Without Docker)
+```bash
+# Navigate to backend folder
+cd backend
+
+# Create and activate virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Create a .env file
+cp .env.example .env  # and fill in DB credentials, S3, Gemini key, etc.
+
+# Run migrations
+python manage.py migrate
+
+# Create a superuser
+python manage.py createsuperuser
+
+# Run the server
+python manage.py runserver
+
 
 ```
