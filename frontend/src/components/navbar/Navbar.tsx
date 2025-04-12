@@ -2,19 +2,28 @@ import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useTheme } from "@/components/theme-provider/theme-provider";
 import { Button } from "@/components/ui/button";
-import { FileText, ChartLine, Moon, ChartBarBig, CircleUserRound, Sun, LogOut, FilePlus, Save, Briefcase } from "lucide-react";
+import {
+  FileText,
+  ChartLine,
+  Moon,
+  ChartBarBig,
+  CircleUserRound,
+  Sun,
+  LogOut,
+  FilePlus,
+  Save,
+  Briefcase,
+} from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { LogoutConfirm } from "./LogoutConfirm";
-//import { SidebarProvider } from "@/context/SideBarContext";
 import { useSidebar } from "@/context/SideBarContext";
 
-const Navbar: React.FC = () => {
+export function AppSidebar() {
   const { theme, setTheme } = useTheme();
   const { isAuthenticated, isLoading, logout } = useAuth();
+  const { collapsed, toggleCollapsed } = useSidebar();
   const [logoutModal, setLogoutModal] = useState(false);
   const [authStatus, setAuthStatus] = useState(isAuthenticated);
-  //const [collapsed, setCollapsed] = useState(true);
-  const { collapsed, toggleCollapsed } = useSidebar();
 
   useEffect(() => {
     setAuthStatus(isAuthenticated);
@@ -28,58 +37,67 @@ const Navbar: React.FC = () => {
 
   return (
     <>
-      <div className={`fixed top-0 left-0 h-full ${collapsed ? "w-20" : "w-64"} bg-background border-r z-50 p-4 flex flex-col gap-6 shadow-lg transition-all duration-300`}>
-        <div className="flex items-center gap-2">
-          <div className="bg-primary rounded-lg p-1.5">
-            <Briefcase className="h-5 w-5 text-primary-foreground" />
+      <div
+        className={`fixed top-0 left-0 h-full ${collapsed ? "w-20" : "w-64"
+          } bg-zinc-50 dark:bg-zinc-900 border-r z-50 p-4 flex flex-col gap-6 shadow-lg transition-all duration-300`}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="bg-primary rounded-lg p-1.5">
+              <Briefcase className="h-5 w-5 text-primary-foreground" />
+            </div>
+            {!collapsed && (
+              <Link to="/generate" className="text-xl font-bold">
+                HireMind
+              </Link>
+            )}
           </div>
-          {!collapsed && (
-            <Link to="/generate" className="text-xl font-bold">
-              HireMind
-            </Link>
-          )}
         </div>
 
+        {/* Navigation */}
         <div className="flex flex-col gap-4 items-start">
+          {/* Theme Toggle */}
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
             aria-label="Toggle theme"
-            className="rounded-full"
+            className="  border-none dark:border-none rounded-full"
           >
             {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </Button>
-          <Link to="/dashboard" className="w-full">
-            <Button variant="ghost" className="w-full justify-start border border-zinc-300 dark:border-zinc-600">
-              {collapsed ? <ChartLine className="h-5 w-5" /> : "Dashboard"}
-            </Button>
-          </Link>
 
-          <Link to="/job-application-tracker" className="w-full">
-            <Button variant="ghost" className="w-full justify-start border border-zinc-300 dark:border-zinc-600">
-              {collapsed ? <ChartBarBig className="h-5 w-5" /> : "Job Application Tracker"}
-            </Button>
-          </Link>
-          <Link to="/contacts-tracker" className="w-full">
-            <Button variant="ghost" className="w-full justify-start border border-zinc-300 dark:border-zinc-600">
-              {collapsed ? <CircleUserRound className="h-5 w-5" /> : "Contacts"}
-            </Button>
-          </Link>
-          <Link to="/generate" className="w-full">
-            <Button variant="ghost" className="w-full justify-start border border-zinc-300 dark:border-zinc-600">
-              {collapsed ? <FilePlus className="h-5 w-5" /> : "Cover Letter Generator"}
-            </Button>
-          </Link>
+          {collapsed ? (
 
-          <Link to="/saved" className="w-full">
-            <Button variant="ghost" className="w-full justify-start border border-zinc-300 dark:border-zinc-600">
-              {collapsed ? <Save className="h-5 w-5" /> : "Saved Cover Letters"}
-            </Button>
-          </Link>
+            <hr className="w-full border border-gray-300 dark:border-gray-700 my-2" />
+          ) : (
+            <h1 className="text-sm text-muted-foreground">Navigation</h1>
+          )}
 
-          {!isLoading && (
-            authStatus ? (
+
+          {/* Routes */}
+          {[
+            { to: "/dashboard", icon: <ChartLine className="h-5 w-5" />, label: "Dashboard" },
+            { to: "/job-application-tracker", icon: <ChartBarBig className="h-5 w-5" />, label: "Job Application Tracker" },
+            { to: "/contacts-tracker", icon: <CircleUserRound className="h-5 w-5" />, label: "Contacts" },
+            { to: "/generate", icon: <FilePlus className="h-5 w-5" />, label: "Cover Letter Generator" },
+            { to: "/saved", icon: <Save className="h-5 w-5" />, label: "Saved Cover Letters" },
+          ].map(({ to, icon, label }) => (
+            <Link key={to} to={to} className="w-full">
+              <Button variant="ghost" className="w-full justify-start border border-none dark:border-none">
+                <>
+                  {icon}
+                  {!collapsed && <span className="ml-2 text-sm">{label}</span>}
+                </>
+
+              </Button>
+            </Link>
+          ))}
+
+          {/* Auth */}
+          {!isLoading &&
+            (authStatus ? (
               <Button onClick={handleLogoutModal} className="w-full justify-start flex items-center gap-2">
                 <LogOut className="h-4 w-4" />
                 {!collapsed && "Logout"}
@@ -90,21 +108,17 @@ const Navbar: React.FC = () => {
                   {!collapsed ? "Login" : <LogOut className="h-4 w-4" />}
                 </Button>
               </Link>
-            )
-          )}
+            ))}
 
+          {/* Collapse Toggle */}
           <Button variant="outline" size="icon" onClick={toggleCollapsed} className="mt-auto">
             {collapsed ? ">" : "<"}
           </Button>
-
-
         </div>
       </div>
 
       <LogoutConfirm open={logoutModal} onClose={() => setLogoutModal(false)} onConfirm={handleLogout} />
     </>
   );
-};
-
-export default Navbar;
+}
 

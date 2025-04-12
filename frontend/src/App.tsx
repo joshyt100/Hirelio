@@ -4,7 +4,7 @@ import { SignUpForm } from "./components/sign-up/SignUp";
 import { CoverLetterGenerator } from "./components/cover-letter-generator/CoverLetterGenerator";
 import { SavedCoverLetters } from "./components/saved-cover-letters/SavedCoverLetters";
 import ForgotPasswordComponent from "./components/forgot-password/ForgotPasswordComponent";
-import Navbar from "./components/navbar/Navbar";
+import { AppSidebar } from "./components/navbar/Navbar";
 import LandingPage from "./components/landing-page/LandingPage";
 import { ThemeProvider } from "./components/theme-provider/theme-provider";
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
@@ -24,7 +24,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <>
-      {!hideNavbar.includes(location.pathname) && <Navbar />}
+      {!hideNavbar.includes(location.pathname) && <AppSidebar />}
       {children}
     </>
   );
