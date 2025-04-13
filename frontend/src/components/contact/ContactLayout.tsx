@@ -1,7 +1,4 @@
-
-import type React from "react"
-
-import { useState } from "react"
+import React, { useState, useEffect } from "react";
 import {
   Search,
   MoreHorizontal,
@@ -21,17 +18,30 @@ import {
   Clock,
   User,
   Users,
-} from "lucide-react"
+} from "lucide-react";
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -39,118 +49,42 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 // Types
 interface Contact {
-  id: string
-  name: string
-  email: string
-  phone?: string
-  company?: string
-  position?: string
-  relationship: string
-  notes?: string
-  lastContacted?: Date
-  nextFollowUp?: Date
-  linkedinUrl?: string
-  twitterUrl?: string
-  isFavorite: boolean
-  tags: string[]
-  interactions: Interaction[]
-  avatar?: string
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  company?: string;
+  position?: string;
+  relationship: string;
+  notes?: string;
+  lastContacted?: Date;
+  nextFollowUp?: Date;
+  linkedinUrl?: string;
+  twitterUrl?: string;
+  isFavorite: boolean;
+  tags: string[];
+  interactions: Interaction[];
+  avatar?: string;
 }
 
 interface Interaction {
-  id: string
-  date: Date
-  type: "email" | "call" | "meeting" | "message" | "other"
-  notes: string
+  id: string;
+  date: Date;
+  type: "email" | "call" | "meeting" | "message" | "other";
+  notes: string;
 }
 
-// Sample data
-const initialContacts: Contact[] = [
-  {
-    id: "1",
-    name: "Alex Johnson",
-    email: "alex.johnson@techcorp.com",
-    phone: "555-123-4567",
-    company: "TechCorp",
-    position: "Senior Engineering Manager",
-    relationship: "former-colleague",
-    notes: "Worked together at PreviousCo for 2 years. Very supportive of my career growth.",
-    lastContacted: new Date("2023-03-15"),
-    nextFollowUp: new Date("2023-04-01"),
-    linkedinUrl: "https://linkedin.com/in/alexjohnson",
-    isFavorite: true,
-    tags: ["tech", "engineering", "referral"],
-    interactions: [
-      {
-        id: "i1",
-        date: new Date("2023-03-15"),
-        type: "email",
-        notes:
-          "Asked about potential openings at TechCorp. Alex offered to refer me for the Senior Developer position.",
-      },
-      {
-        id: "i2",
-        date: new Date("2023-03-10"),
-        type: "call",
-        notes: "Caught up after 6 months. Discussed my job search and career goals.",
-      },
-    ],
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "2",
-    name: "Sarah Williams",
-    email: "sarah.w@innovateinc.com",
-    phone: "555-987-6543",
-    company: "Innovate Inc",
-    position: "Technical Recruiter",
-    relationship: "recruiter",
-    notes: "Met at a networking event last year. Has been helpful in providing industry insights.",
-    lastContacted: new Date("2023-02-28"),
-    linkedinUrl: "https://linkedin.com/in/sarahwilliams",
-    isFavorite: false,
-    tags: ["recruiter", "hiring"],
-    interactions: [
-      {
-        id: "i3",
-        date: new Date("2023-02-28"),
-        type: "meeting",
-        notes: "Coffee meeting to discuss current job market. She mentioned Innovate Inc might be hiring soon.",
-      },
-    ],
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "3",
-    name: "Michael Chen",
-    email: "mchen@startupxyz.com",
-    company: "StartupXYZ",
-    position: "CTO",
-    relationship: "mentor",
-    notes: "My mentor from the tech bootcamp. Always willing to provide advice and connections.",
-    lastContacted: new Date("2023-03-05"),
-    nextFollowUp: new Date("2023-03-25"),
-    linkedinUrl: "https://linkedin.com/in/michaelchen",
-    twitterUrl: "https://twitter.com/mchen",
-    isFavorite: true,
-    tags: ["mentor", "startup", "technical"],
-    interactions: [
-      {
-        id: "i4",
-        date: new Date("2023-03-05"),
-        type: "call",
-        notes: "Monthly mentorship call. Discussed my portfolio and got feedback on projects.",
-      },
-    ],
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-]
-
+// Options for relationship, interaction types, and tags.
 const relationshipOptions = [
   { value: "former-colleague", label: "Former Colleague" },
   { value: "current-colleague", label: "Current Colleague" },
@@ -161,7 +95,7 @@ const relationshipOptions = [
   { value: "manager", label: "Manager" },
   { value: "industry-contact", label: "Industry Contact" },
   { value: "other", label: "Other" },
-]
+];
 
 const interactionTypes = [
   { value: "email", label: "Email", icon: Mail },
@@ -169,7 +103,7 @@ const interactionTypes = [
   { value: "meeting", label: "Meeting", icon: Users },
   { value: "message", label: "Message", icon: MessageSquare },
   { value: "other", label: "Other", icon: Calendar },
-]
+];
 
 const tagOptions = [
   "tech",
@@ -186,24 +120,36 @@ const tagOptions = [
   "technical",
   "management",
   "networking",
-]
+];
+
+// Helper to read csrf token from cookies
+const getCSRFToken = (): string => {
+  let csrfToken = "";
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; csrftoken=`);
+  if (parts.length === 2) {
+    csrfToken = parts.pop()?.split(";").shift() || "";
+  }
+  return csrfToken;
+};
 
 export default function ContactLayout() {
-  const [contacts, setContacts] = useState<Contact[]>(initialContacts)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [relationshipFilter, setRelationshipFilter] = useState<string | null>(null)
-  const [tagFilter, setTagFilter] = useState<string | null>(null)
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
-  const [isInteractionDialogOpen, setIsInteractionDialogOpen] = useState(false)
-  const [currentContact, setCurrentContact] = useState<Contact | null>(null)
-  const [activeTab, setActiveTab] = useState("all")
-  const [selectedTags, setSelectedTags] = useState<string[]>([])
+  // State declarations
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [relationshipFilter, setRelationshipFilter] = useState<string | null>(null);
+  const [tagFilter, setTagFilter] = useState<string | null>(null);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isInteractionDialogOpen, setIsInteractionDialogOpen] = useState(false);
+  const [currentContact, setCurrentContact] = useState<Contact | null>(null);
+  const [activeTab, setActiveTab] = useState("all");
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [newInteraction, setNewInteraction] = useState<Omit<Interaction, "id">>({
     date: new Date(),
     type: "email",
     notes: "",
-  })
+  });
 
   const [formData, setFormData] = useState<Omit<Contact, "id" | "interactions" | "isFavorite" | "tags">>({
     name: "",
@@ -217,158 +163,171 @@ export default function ContactLayout() {
     nextFollowUp: undefined,
     linkedinUrl: "",
     twitterUrl: "",
-  })
+  });
 
-  // Filter contacts based on search, relationship, and tags
-  const filteredContacts = contacts.filter((contact) => {
-    const matchesSearch =
-      contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      contact.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (contact.company && contact.company.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (contact.position && contact.position.toLowerCase().includes(searchTerm.toLowerCase()))
+  // Fetch contacts from the backend on component mount
+  useEffect(() => {
+    fetchContacts();
+  }, []);
 
-    const matchesRelationship = relationshipFilter ? contact.relationship === relationshipFilter : true
-    const matchesTag = tagFilter ? contact.tags.includes(tagFilter) : true
-    const matchesFavorite = activeTab === "favorites" ? contact.isFavorite : true
-    const matchesTab = activeTab === "all" || activeTab === "favorites" ? true : false
-
-    return matchesSearch && matchesRelationship && matchesTag && matchesFavorite && matchesTab
-  })
+  const fetchContacts = async () => {
+    try {
+      const response = await fetch("http://127.0.0.1:8000/api/contacts/", {
+        method: "GET",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!response.ok) {
+        throw new Error("Failed to fetch contacts");
+      }
+      const data = await response.json();
+      // Assuming your paginated response returns { results: [...] }
+      setContacts(data.results || []);
+    } catch (error) {
+      console.error("Error fetching contacts:", error);
+    }
+  };
 
   // Form handlers
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleRelationshipChange = (value: string) => {
-    setFormData((prev) => ({ ...prev, relationship: value }))
-  }
+    setFormData((prev) => ({ ...prev, relationship: value }));
+  };
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>, field: "lastContacted" | "nextFollowUp") => {
-    setFormData((prev) => ({ ...prev, [field]: e.target.value ? new Date(e.target.value) : undefined }))
-  }
+    setFormData((prev) => ({ ...prev, [field]: e.target.value ? new Date(e.target.value) : undefined }));
+  };
 
   const handleTagSelect = (tag: string) => {
     if (selectedTags.includes(tag)) {
-      setSelectedTags(selectedTags.filter((t) => t !== tag))
+      setSelectedTags(selectedTags.filter((t) => t !== tag));
     } else {
-      setSelectedTags([...selectedTags, tag])
+      setSelectedTags([...selectedTags, tag]);
     }
-  }
+  };
 
   const handleInteractionInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setNewInteraction((prev) => ({ ...prev, [name]: value }))
-  }
+    const { name, value } = e.target;
+    setNewInteraction((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleInteractionTypeChange = (value: string) => {
-    setNewInteraction((prev) => ({ ...prev, type: value as Interaction["type"] }))
-  }
+    setNewInteraction((prev) => ({ ...prev, type: value as Interaction["type"] }));
+  };
 
   const handleInteractionDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNewInteraction((prev) => ({ ...prev, date: new Date(e.target.value) }))
-  }
+    setNewInteraction((prev) => ({ ...prev, date: new Date(e.target.value) }));
+  };
 
-  // CRUD operations
-  const addContact = () => {
-    const newContact: Contact = {
-      ...formData,
-      id: Date.now().toString(),
-      isFavorite: false,
-      tags: selectedTags,
-      interactions: [],
-      avatar: "/placeholder.svg?height=40&width=40",
+  // CRUD operations using endpoints
+
+  const addContact = async () => {
+    try {
+      const response = await fetch("http://127.0.0.1:8000/api/contacts/", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCSRFToken(),
+        },
+        body: JSON.stringify({ ...formData, tags: selectedTags }),
+      });
+      if (!response.ok) {
+        throw new Error("Error creating contact");
+      }
+      const newContact = await response.json();
+      setContacts((prev) => [newContact, ...prev]);
+      resetForm();
+      setIsAddDialogOpen(false);
+    } catch (error) {
+      console.error("Add contact error:", error);
     }
-    setContacts((prev) => [newContact, ...prev])
-    resetForm()
-    setIsAddDialogOpen(false)
-  }
+  };
 
-  const updateContact = () => {
-    if (!currentContact) return
-
-    const updatedContact: Contact = {
-      ...currentContact,
-      ...formData,
-      tags: selectedTags,
+  const updateContact = async () => {
+    if (!currentContact) return;
+    try {
+      const response = await fetch(`http://127.0.0.1:8000/api/contacts/${currentContact.id}/`, {
+        method: "PUT",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCSRFToken(),
+        },
+        body: JSON.stringify({ ...formData, tags: selectedTags }),
+      });
+      if (!response.ok) {
+        throw new Error("Error updating contact");
+      }
+      const updatedContact = await response.json();
+      setContacts((prev) =>
+        prev.map((contact) => (contact.id === currentContact.id ? updatedContact : contact))
+      );
+      resetForm();
+      setIsEditDialogOpen(false);
+      setCurrentContact(null);
+    } catch (error) {
+      console.error("Update contact error:", error);
     }
+  };
 
-    setContacts((prev) => prev.map((contact) => (contact.id === currentContact.id ? updatedContact : contact)))
-    resetForm()
-    setIsEditDialogOpen(false)
-    setCurrentContact(null)
-  }
-
-  const deleteContact = (id: string) => {
-    setContacts((prev) => prev.filter((contact) => contact.id !== id))
-  }
-
-  const toggleFavorite = (id: string) => {
-    setContacts((prev) =>
-      prev.map((contact) => (contact.id === id ? { ...contact, isFavorite: !contact.isFavorite } : contact)),
-    )
-  }
-
-  const addInteraction = () => {
-    if (!currentContact) return
-
-    const interaction: Interaction = {
-      ...newInteraction,
-      id: Date.now().toString(),
+  const deleteContact = async (id: string) => {
+    try {
+      const response = await fetch(`http://127.0.0.1:8000/api/contacts/${id}/`, {
+        method: "DELETE",
+        credentials: "include",
+        headers: {
+          "X-CSRFToken": getCSRFToken(),
+        },
+      });
+      if (!response.ok) {
+        throw new Error("Error deleting contact");
+      }
+      setContacts((prev) => prev.filter((contact) => contact.id !== id));
+    } catch (error) {
+      console.error("Delete contact error:", error);
     }
+  };
 
-    const updatedContact: Contact = {
-      ...currentContact,
-      interactions: [interaction, ...currentContact.interactions],
-      lastContacted: new Date(),
+  const addInteraction = async () => {
+    if (!currentContact) return;
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:8000/api/contacts/${currentContact.id}/interactions/`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCSRFToken(),
+          },
+          body: JSON.stringify(newInteraction),
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Error creating interaction");
+      }
+      const interaction = await response.json();
+      const updatedContact = {
+        ...currentContact,
+        interactions: [interaction, ...currentContact.interactions],
+        lastContacted: new Date(),
+      };
+      setContacts((prev) =>
+        prev.map((contact) => (contact.id === currentContact.id ? updatedContact : contact))
+      );
+      setNewInteraction({ date: new Date(), type: "email", notes: "" });
+      setIsInteractionDialogOpen(false);
+    } catch (error) {
+      console.error("Add interaction error:", error);
     }
+  };
 
-    setContacts((prev) => prev.map((contact) => (contact.id === currentContact.id ? updatedContact : contact)))
-
-    setNewInteraction({
-      date: new Date(),
-      type: "email",
-      notes: "",
-    })
-
-    setIsInteractionDialogOpen(false)
-  }
-
-  const deleteInteraction = (contactId: string, interactionId: string) => {
-    setContacts((prev) =>
-      prev.map((contact) =>
-        contact.id === contactId
-          ? { ...contact, interactions: contact.interactions.filter((i) => i.id !== interactionId) }
-          : contact,
-      ),
-    )
-  }
-
-  const editContact = (contact: Contact) => {
-    setCurrentContact(contact)
-    setFormData({
-      name: contact.name,
-      email: contact.email,
-      phone: contact.phone || "",
-      company: contact.company || "",
-      position: contact.position || "",
-      relationship: contact.relationship,
-      notes: contact.notes || "",
-      lastContacted: contact.lastContacted,
-      nextFollowUp: contact.nextFollowUp,
-      linkedinUrl: contact.linkedinUrl || "",
-      twitterUrl: contact.twitterUrl || "",
-    })
-    setSelectedTags(contact.tags)
-    setIsEditDialogOpen(true)
-  }
-
-  const openAddInteractionDialog = (contact: Contact) => {
-    setCurrentContact(contact)
-    setIsInteractionDialogOpen(true)
-  }
-
+  // Local helper to reset the form state
   const resetForm = () => {
     setFormData({
       name: "",
@@ -382,24 +341,24 @@ export default function ContactLayout() {
       nextFollowUp: undefined,
       linkedinUrl: "",
       twitterUrl: "",
-    })
-    setSelectedTags([])
-  }
+    });
+    setSelectedTags([]);
+  };
 
   // Utility functions
   const formatDate = (date: Date) =>
-    new Date(date).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })
+    new Date(date).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
 
-  const formatDateForInput = (date?: Date) => (date ? new Date(date).toISOString().split("T")[0] : "")
+  const formatDateForInput = (date?: Date) => (date ? new Date(date).toISOString().split("T")[0] : "");
 
   const getRelationshipLabel = (value: string) =>
-    relationshipOptions.find((opt) => opt.value === value)?.label || "Unknown"
+    relationshipOptions.find((opt) => opt.value === value)?.label || "Unknown";
 
   const getInteractionTypeIcon = (type: string) => {
-    const interactionType = interactionTypes.find((t) => t.value === type)
-    const Icon = interactionType?.icon || Calendar
-    return <Icon className="h-4 w-4" />
-  }
+    const interactionType = interactionTypes.find((t) => t.value === type);
+    const Icon = interactionType?.icon || Calendar;
+    return <Icon className="h-4 w-4" />;
+  };
 
   const getInitials = (name: string) => {
     return name
@@ -407,20 +366,34 @@ export default function ContactLayout() {
       .map((part) => part[0])
       .join("")
       .toUpperCase()
-      .substring(0, 2)
-  }
+      .substring(0, 2);
+  };
 
   const getTimeAgo = (date?: Date) => {
-    if (!date) return ""
-    const now = new Date()
-    const diffInDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24))
-    if (diffInDays === 0) return "Today"
-    if (diffInDays === 1) return "Yesterday"
-    if (diffInDays < 7) return `${diffInDays} days ago`
-    if (diffInDays < 30) return `${Math.floor(diffInDays / 7)} weeks ago`
-    if (diffInDays < 365) return `${Math.floor(diffInDays / 30)} months ago`
-    return `${Math.floor(diffInDays / 365)} years ago`
-  }
+    if (!date) return "";
+    const now = new Date();
+    const diffInDays = Math.floor((now.getTime() - new Date(date).getTime()) / (1000 * 60 * 60 * 24));
+    if (diffInDays === 0) return "Today";
+    if (diffInDays === 1) return "Yesterday";
+    if (diffInDays < 7) return `${diffInDays} days ago`;
+    if (diffInDays < 30) return `${Math.floor(diffInDays / 7)} weeks ago`;
+    if (diffInDays < 365) return `${Math.floor(diffInDays / 30)} months ago`;
+    return `${Math.floor(diffInDays / 365)} years ago`;
+  };
+
+  // Filter contacts based on search, relationship and tags
+  const filteredContacts = contacts.filter((contact) => {
+    const matchesSearch =
+      contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      contact.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (contact.company && contact.company.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (contact.position && contact.position.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesRelationship = relationshipFilter ? contact.relationship === relationshipFilter : true;
+    const matchesTag = tagFilter ? contact.tags.includes(tagFilter) : true;
+    const matchesFavorite = activeTab === "favorites" ? contact.isFavorite : true;
+    const matchesTab = activeTab === "all" || activeTab === "favorites" ? true : false;
+    return matchesSearch && matchesRelationship && matchesTag && matchesFavorite && matchesTab;
+  });
 
   return (
     <div className="ml-20 md:ml-20 lg:ml-32 p-4">
@@ -428,7 +401,9 @@ export default function ContactLayout() {
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
           <div className="mb-4 sm:mb-0">
             <h1 className="text-3xl font-bold">Network Contacts</h1>
-            <p className="text-muted-foreground mt-1">Manage your professional connections and referral sources</p>
+            <p className="text-muted-foreground mt-1">
+              Manage your professional connections and referral sources
+            </p>
           </div>
           <Button onClick={() => setIsAddDialogOpen(true)}>
             <UserPlus className="mr-2 h-4 w-4" /> Add Contact
@@ -574,19 +549,16 @@ export default function ContactLayout() {
                           </span>
                         </div>
                       )}
-
                       <div className="flex items-center text-sm">
                         <Briefcase className="h-4 w-4 mr-1.5 text-muted-foreground" />
                         <span>{getRelationshipLabel(contact.relationship)}</span>
                       </div>
-
                       {contact.lastContacted && (
                         <div className="flex items-center text-sm">
                           <Clock className="h-4 w-4 mr-1.5 text-muted-foreground" />
                           <span>Last contacted: {getTimeAgo(contact.lastContacted)}</span>
                         </div>
                       )}
-
                       {contact.tags.length > 0 && (
                         <div className="flex flex-wrap gap-1.5 mt-2">
                           {contact.tags.map((tag) => (
@@ -596,13 +568,11 @@ export default function ContactLayout() {
                           ))}
                         </div>
                       )}
-
                       {contact.notes && (
                         <div className="mt-3 text-sm">
                           <p className="line-clamp-2">{contact.notes}</p>
                         </div>
                       )}
-
                       {contact.interactions.length > 0 && (
                         <div className="mt-4">
                           <h4 className="text-sm font-medium mb-2">Recent Interactions</h4>
@@ -617,7 +587,7 @@ export default function ContactLayout() {
                                   <div className="flex justify-between">
                                     <span className="font-medium capitalize">{interaction.type}</span>
                                     <span className="text-xs text-muted-foreground">
-                                      {formatDate(interaction.date)}
+                                      {formatDate(new Date(interaction.date))}
                                     </span>
                                   </div>
                                   <p className="text-xs mt-1 line-clamp-2">{interaction.notes}</p>
@@ -700,7 +670,6 @@ export default function ContactLayout() {
                   />
                 </div>
               </div>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="phone">Phone (Optional)</Label>
@@ -728,7 +697,6 @@ export default function ContactLayout() {
                   </Select>
                 </div>
               </div>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="company">Company (Optional)</Label>
@@ -751,7 +719,6 @@ export default function ContactLayout() {
                   />
                 </div>
               </div>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="lastContacted">Last Contacted (Optional)</Label>
@@ -774,7 +741,6 @@ export default function ContactLayout() {
                   />
                 </div>
               </div>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="linkedinUrl">LinkedIn URL (Optional)</Label>
@@ -797,7 +763,6 @@ export default function ContactLayout() {
                   />
                 </div>
               </div>
-
               <div className="space-y-2">
                 <Label>Tags</Label>
                 <div className="flex flex-wrap gap-2 p-2 border rounded-md">
@@ -813,7 +778,6 @@ export default function ContactLayout() {
                   ))}
                 </div>
               </div>
-
               <div className="space-y-2">
                 <Label htmlFor="notes">Notes</Label>
                 <Textarea
@@ -868,7 +832,6 @@ export default function ContactLayout() {
                   />
                 </div>
               </div>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="edit-phone">Phone (Optional)</Label>
@@ -896,7 +859,6 @@ export default function ContactLayout() {
                   </Select>
                 </div>
               </div>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="edit-company">Company (Optional)</Label>
@@ -919,7 +881,6 @@ export default function ContactLayout() {
                   />
                 </div>
               </div>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="edit-lastContacted">Last Contacted (Optional)</Label>
@@ -942,7 +903,6 @@ export default function ContactLayout() {
                   />
                 </div>
               </div>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="edit-linkedinUrl">LinkedIn URL (Optional)</Label>
@@ -965,7 +925,6 @@ export default function ContactLayout() {
                   />
                 </div>
               </div>
-
               <div className="space-y-2">
                 <Label>Tags</Label>
                 <div className="flex flex-wrap gap-2 p-2 border rounded-md">
@@ -981,7 +940,6 @@ export default function ContactLayout() {
                   ))}
                 </div>
               </div>
-
               <div className="space-y-2">
                 <Label htmlFor="edit-notes">Notes</Label>
                 <Textarea
@@ -1038,7 +996,6 @@ export default function ContactLayout() {
                   />
                 </div>
               </div>
-
               <div className="space-y-2">
                 <Label htmlFor="interaction-notes">Notes</Label>
                 <Textarea
@@ -1061,6 +1018,6 @@ export default function ContactLayout() {
         </Dialog>
       </div>
     </div>
-  )
+  );
 }
 
