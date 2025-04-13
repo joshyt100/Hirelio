@@ -1,4 +1,6 @@
+
 import type React from "react"
+
 import { useState } from "react"
 import {
   Search,
@@ -203,9 +205,7 @@ export default function ContactLayout() {
     notes: "",
   })
 
-  const [formData, setFormData] = useState<
-    Omit<Contact, "id" | "interactions" | "isFavorite" | "tags">
-  >({
+  const [formData, setFormData] = useState<Omit<Contact, "id" | "interactions" | "isFavorite" | "tags">>({
     name: "",
     email: "",
     phone: "",
@@ -245,10 +245,7 @@ export default function ContactLayout() {
     setFormData((prev) => ({ ...prev, relationship: value }))
   }
 
-  const handleDateChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    field: "lastContacted" | "nextFollowUp",
-  ) => {
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>, field: "lastContacted" | "nextFollowUp") => {
     setFormData((prev) => ({ ...prev, [field]: e.target.value ? new Date(e.target.value) : undefined }))
   }
 
@@ -327,9 +324,7 @@ export default function ContactLayout() {
       lastContacted: new Date(),
     }
 
-    setContacts((prev) =>
-      prev.map((contact) => (contact.id === currentContact.id ? updatedContact : contact)),
-    )
+    setContacts((prev) => prev.map((contact) => (contact.id === currentContact.id ? updatedContact : contact)))
 
     setNewInteraction({
       date: new Date(),
@@ -433,9 +428,7 @@ export default function ContactLayout() {
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
           <div className="mb-4 sm:mb-0">
             <h1 className="text-3xl font-bold">Network Contacts</h1>
-            <p className="text-muted-foreground mt-1">
-              Manage your professional connections and referral sources
-            </p>
+            <p className="text-muted-foreground mt-1">Manage your professional connections and referral sources</p>
           </div>
           <Button onClick={() => setIsAddDialogOpen(true)}>
             <UserPlus className="mr-2 h-4 w-4" /> Add Contact
@@ -453,11 +446,7 @@ export default function ContactLayout() {
             />
           </div>
           <div className="flex gap-2">
-            <Select
-              onValueChange={(value) =>
-                setRelationshipFilter(value === "all-relationships" ? null : value)
-              }
-            >
+            <Select onValueChange={(value) => setRelationshipFilter(value === "all-relationships" ? null : value)}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Relationship" />
               </SelectTrigger>
@@ -516,7 +505,7 @@ export default function ContactLayout() {
                     <div className="flex justify-between items-start">
                       <div className="flex items-start gap-3">
                         <Avatar className="h-10 w-10">
-                          <AvatarImage src={contact.avatar} alt={contact.name} />
+                          <AvatarImage src={contact.avatar || "/placeholder.svg"} alt={contact.name} />
                           <AvatarFallback>{getInitials(contact.name)}</AvatarFallback>
                         </Avatar>
                         <div>
@@ -566,10 +555,7 @@ export default function ContactLayout() {
                           <DropdownMenuItem onClick={() => openAddInteractionDialog(contact)}>
                             <MessageSquare className="h-4 w-4 mr-2" /> Log Interaction
                           </DropdownMenuItem>
-                          <DropdownMenuItem
-                            className="text-red-600"
-                            onClick={() => deleteContact(contact.id)}
-                          >
+                          <DropdownMenuItem className="text-red-600" onClick={() => deleteContact(contact.id)}>
                             <Trash2 className="h-4 w-4 mr-2" /> Delete Contact
                           </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -626,21 +612,15 @@ export default function ContactLayout() {
                                 key={interaction.id}
                                 className="flex gap-2 text-sm border-l-2 border-muted pl-3 py-1"
                               >
-                                <div className="flex-shrink-0 mt-0.5">
-                                  {getInteractionTypeIcon(interaction.type)}
-                                </div>
+                                <div className="flex-shrink-0 mt-0.5">{getInteractionTypeIcon(interaction.type)}</div>
                                 <div className="flex-1">
                                   <div className="flex justify-between">
-                                    <span className="font-medium capitalize">
-                                      {interaction.type}
-                                    </span>
+                                    <span className="font-medium capitalize">{interaction.type}</span>
                                     <span className="text-xs text-muted-foreground">
                                       {formatDate(interaction.date)}
                                     </span>
                                   </div>
-                                  <p className="text-xs mt-1 line-clamp-2">
-                                    {interaction.notes}
-                                  </p>
+                                  <p className="text-xs mt-1 line-clamp-2">{interaction.notes}</p>
                                 </div>
                               </div>
                             ))}
@@ -735,11 +715,16 @@ export default function ContactLayout() {
                 <div className="space-y-2">
                   <Label htmlFor="relationship">Relationship</Label>
                   <Select value={formData.relationship} onValueChange={handleRelationshipChange}>
-                    {relationshipOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
+                    <SelectContent>
+                      {relationshipOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                    <SelectTrigger id="relationship">
+                      <SelectValue placeholder="Select relationship" />
+                    </SelectTrigger>
                   </Select>
                 </div>
               </div>
@@ -898,11 +883,16 @@ export default function ContactLayout() {
                 <div className="space-y-2">
                   <Label htmlFor="edit-relationship">Relationship</Label>
                   <Select value={formData.relationship} onValueChange={handleRelationshipChange}>
-                    {relationshipOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
+                    <SelectContent>
+                      {relationshipOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                    <SelectTrigger id="edit-relationship">
+                      <SelectValue placeholder="Select relationship" />
+                    </SelectTrigger>
                   </Select>
                 </div>
               </div>
@@ -1025,11 +1015,16 @@ export default function ContactLayout() {
                 <div className="space-y-2">
                   <Label htmlFor="interaction-type">Interaction Type</Label>
                   <Select value={newInteraction.type} onValueChange={handleInteractionTypeChange}>
-                    {interactionTypes.map((type) => (
-                      <SelectItem key={type.value} value={type.value}>
-                        {type.label}
-                      </SelectItem>
-                    ))}
+                    <SelectContent>
+                      {interactionTypes.map((type) => (
+                        <SelectItem key={type.value} value={type.value}>
+                          {type.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                    <SelectTrigger id="interaction-type">
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
                   </Select>
                 </div>
                 <div className="space-y-2">
