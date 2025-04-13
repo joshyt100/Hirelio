@@ -12,7 +12,7 @@ import { CoverLetterMetadataResponse } from "@/types/CoverLetterTypes";
 import { CoverLetterRow } from "./CoverLetterRow";
 import { TableSkeleton } from "./TableSkeleton";
 import { NoDataRow } from "./NoDataRow";
-import { SolidCircleLoader } from "./SolidCircleLoader";
+import { SolidCircleLoader } from "../loader/SolidCircleLoader";
 import { useSidebar } from "@/context/SideBarContext";
 
 export const SavedCoverLetters: React.FC = () => {

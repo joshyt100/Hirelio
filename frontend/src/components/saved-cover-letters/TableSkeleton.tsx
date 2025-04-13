@@ -1,6 +1,6 @@
 import React from "react";
 import { TableCell, TableRow } from "@/components/ui/table";
-import { SolidCircleLoader } from "./SolidCircleLoader";
+import { SolidCircleLoader } from "../loader/SolidCircleLoader";
 
 export const TableSkeleton: React.FC = () => (
   <TableRow>

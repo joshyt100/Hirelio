@@ -1,13 +1,16 @@
-import React, { useState, useEffect, useCallback } from "react";
+// src/pages/JobApplicationsPage.tsx
+import React, { useState, useEffect } from "react";
 import type { JobApplication } from "@/types/JobApplicationTypes";
 import { getCookie } from "@/utils/csrfUtils";
 import {
-  fetchJobApplications,
   createJobApplication,
   updateJobApplicationAPI,
   deleteJobApplicationAPI,
   deleteAttachmentAPI,
 } from "@/api/jobApplications";
+
+// Import the custom query hook
+import { useJobApplications } from "@/hooks/queries/useJobApplications";
 
 // Import shadcn/ui components and icons
 import { Button } from "@/components/ui/button";
@@ -23,13 +26,9 @@ import { useSidebar } from "@/context/SideBarContext";
 import JobCard from "./JobCard";
 import AddJobDialog from "./AddJobDialog";
 import EditJobDialog from "./EditJobDialog";
+import { SolidCircleLoader } from "../loader/SolidCircleLoader";
 
 // ───── CUSTOM LOADER ─────────────────────────────
-const SolidCircleLoader = ({ className = "w-6 h-6" }: { className?: string }) => (
-  <div
-    className={`border-4 border-solid border-zinc-200 dark:border-zinc-800 border-t-primary dark:border-t-primary rounded-full animate-spin ${className}`}
-  />
-);
 
 const statusOptions = [
   { value: "saved", label: "Saved" },
@@ -40,13 +39,10 @@ const statusOptions = [
 ];
 
 export default function JobApplicationsPage() {
-  // States for jobs and filters
-  const [jobs, setJobs] = useState<JobApplication[]>([]);
+  // States for search and filters
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("all");
-  // sortOrder state: "desc" for newest first, "asc" for oldest first.
   const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
-  const [nextCursor, setNextCursor] = useState<string | null>(null);
 
   // Dialog and edit states
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -66,101 +62,37 @@ export default function JobApplicationsPage() {
     url: "",
   });
 
-  // Loading states
-  const [jobsLoading, setJobsLoading] = useState(false);
+  // Loading state for actions
   const [actionLoading, setActionLoading] = useState(false);
   const { collapsed } = useSidebar();
   const leftPadding = collapsed ? "pl-24" : "pl-[16.5625rem]";
 
-  // Reset pagination state when filters or sort order changes.
-  const resetPagination = () => {
-    setNextCursor(null);
-    setJobs([]);
-  };
+  // Use the custom TanStack Query hook
+  const {
+    data,
+    isLoading,
+    isFetchingNextPage,
+    fetchNextPage,
+    refetch,
+    hasNextPage,
+  } = useJobApplications({ activeTab, searchTerm, sortOrder });
 
-  // When search, activeTab or sortOrder changes, reset pagination.
-  //
-  // Fixed fetchJobs function for proper handling of axios responses
-  const fetchJobs = useCallback(
-    async (cursor: string | null = null, append = false) => {
-      setJobsLoading(true);
-      try {
-        const params: Record<string, any> = {};
-        if (activeTab && activeTab !== "all") {
-          params.status = activeTab;
-        }
-        if (searchTerm) {
-          params.search = searchTerm;
-        }
-        // Include sortOrder in parameters so backend can order accordingly
-        params.sortOrder = sortOrder;
-        if (cursor) {
-          params.cursor = cursor;
-        }
+  // Flatten paginated data into a jobs array
+  const jobs = data ? data.pages.flatMap((page) => page.results) : [];
 
-        // Make API call with axios
-        const response = await fetchJobApplications(params);
-
-        // With axios, the response data is in response.data
-        const responseData = response.data;
-        const newJobs = responseData.results || [];
-
-        if (append) {
-          setJobs((prev) => [...prev, ...newJobs]);
-        } else {
-          setJobs(newJobs);
-        }
-
-        // Extract cursor from next URL if available
-        const nextUrl = responseData.next;
-        if (nextUrl) {
-          // Parse the URL to get the cursor parameter
-          const url = new URL(nextUrl);
-          setNextCursor(url.searchParams.get("cursor"));
-        } else {
-          setNextCursor(null);
-        }
-      } catch (error) {
-        console.error("Error fetching job applications:", error);
-        alert("Error fetching job applications");
-      } finally {
-        setJobsLoading(false);
-      }
-    },
-    [activeTab, searchTerm, sortOrder],
-  );
-
-
-  const handleSortOrderChange = (value: "desc" | "asc") => {
-    console.log(`Changing sort order to: ${value}`);
-    setSortOrder(value);
-    resetPagination();
-
-    // Force refetch with new sort order
-    setTimeout(() => {
-      console.log(`Fetching jobs with sort order: ${value}`);
-      fetchJobs(null, false);
-    }, 0);
-  };
-
-  useEffect(() => {
-    resetPagination();
-    fetchJobs(null);
-  }, [searchTerm, activeTab, sortOrder, fetchJobs]);
-
-  // Infinite scroll to fetch more jobs
+  // Infinite scroll: fetch next page when near bottom
   useEffect(() => {
     const handleScroll = () => {
-      if (jobsLoading || !nextCursor) return;
+      if (isLoading || !hasNextPage) return;
       if (window.innerHeight + window.scrollY >= document.documentElement.offsetHeight - 200) {
-        fetchJobs(nextCursor, true);
+        fetchNextPage();
       }
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [jobsLoading, nextCursor, fetchJobs]);
+  }, [isLoading, hasNextPage, fetchNextPage]);
 
-  // Handlers for form and file uploads
+  // Handlers for form inputs
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -185,7 +117,7 @@ export default function JobApplicationsPage() {
     setFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // Add job application handler
+  // Add job application handler using mutation logic
   const addJobApplication = async () => {
     setActionLoading(true);
     try {
@@ -196,8 +128,7 @@ export default function JobApplicationsPage() {
       files.forEach((file) => form.append("attachments", file));
       const csrfToken = getCookie("csrftoken");
       await createJobApplication(form, csrfToken);
-      resetPagination();
-      fetchJobs(null);
+      refetch(); // Refresh query data
       resetForm();
       setIsAddDialogOpen(false);
     } catch (error: any) {
@@ -207,7 +138,7 @@ export default function JobApplicationsPage() {
     }
   };
 
-  // Update job application handler
+  // Update job application handler using mutation logic
   const updateJobApplication = async () => {
     if (!currentJob) return;
     setActionLoading(true);
@@ -219,8 +150,7 @@ export default function JobApplicationsPage() {
       files.forEach((file) => form.append("attachments", file));
       const csrfToken = getCookie("csrftoken");
       await updateJobApplicationAPI(currentJob.id, form, csrfToken);
-      resetPagination();
-      fetchJobs(null);
+      refetch();
       resetForm();
       setIsEditDialogOpen(false);
       setCurrentJob(null);
@@ -232,15 +162,14 @@ export default function JobApplicationsPage() {
     }
   };
 
-  // Delete job application handler
+  // Delete job application handler using mutation logic
   const deleteJobApplication = async (id: string) => {
     if (confirm("Are you sure you want to delete this job application?")) {
       setActionLoading(true);
       try {
         const csrfToken = getCookie("csrftoken");
         await deleteJobApplicationAPI(id, csrfToken);
-        resetPagination();
-        fetchJobs(null);
+        refetch();
       } catch (error: any) {
         alert("Error deleting job application");
       } finally {
@@ -256,8 +185,7 @@ export default function JobApplicationsPage() {
       try {
         const csrfToken = getCookie("csrftoken");
         await deleteAttachmentAPI(jobId, attachmentId, csrfToken);
-        resetPagination();
-        fetchJobs(null);
+        refetch();
       } catch (error: any) {
         alert("Error deleting attachment");
       } finally {
@@ -300,16 +228,13 @@ export default function JobApplicationsPage() {
     setFiles([]);
   };
 
-  // Handler to change sort order and reset pagination
-  //const handleSortOrderChange = (value: "desc" | "asc") => {
-  //  setSortOrder(value);
-  //  resetPagination();
-  //};
+  const handleSortOrderChange = (value: "desc" | "asc") => {
+    setSortOrder(value);
+  };
 
   return (
     <div className="min-h-screen">
       <div className={`container ${leftPadding} pr-4 pt-8 mx-auto max-w-[96rem] w-full transition-all duration-300`}>
-
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3">
           <div className="mb-6 sm:mb-0">
@@ -318,7 +243,7 @@ export default function JobApplicationsPage() {
               Track and manage your job applications in one place
             </p>
           </div>
-          <Button onClick={() => setIsAddDialogOpen(true)} type="submit">
+          <Button onClick={() => setIsAddDialogOpen(true)} type="button">
             <Plus className="mr-2 h-5 w-5" />
             Add Application
           </Button>
@@ -377,10 +302,7 @@ export default function JobApplicationsPage() {
         <Tabs
           defaultValue="all"
           value={activeTab}
-          onValueChange={(value) => {
-            setActiveTab(value);
-            resetPagination();
-          }}
+          onValueChange={(value) => setActiveTab(value)}
           className="mb-4"
         >
           <TabsList className="dark:bg-zinc-850">
@@ -395,7 +317,7 @@ export default function JobApplicationsPage() {
 
         {/* Job Cards List */}
         <div className="mt-0">
-          {jobsLoading && jobs.length === 0 ? (
+          {isLoading && jobs.length === 0 ? (
             <div className="flex justify-center items-center h-64">
               <SolidCircleLoader className="w-10 h-10" />
             </div>
@@ -427,7 +349,7 @@ export default function JobApplicationsPage() {
               ))}
             </div>
           )}
-          {jobsLoading && jobs.length > 0 && (
+          {isFetchingNextPage && jobs.length > 0 && (
             <div className="flex justify-center items-center py-8">
               <SolidCircleLoader className="w-8 h-8" />
             </div>

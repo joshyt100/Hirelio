@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useSidebar } from '@/context/SideBarContext';
 import {
   Search,
   MoreHorizontal,
@@ -169,6 +170,10 @@ export default function ContactLayout() {
   useEffect(() => {
     fetchContacts();
   }, []);
+
+  // handle sidebar toggle
+  const { collapsed } = useSidebar();
+  const leftPadding = collapsed ? "pl-24" : "pl-64";
 
   const fetchContacts = async () => {
     try {
@@ -396,7 +401,7 @@ export default function ContactLayout() {
   });
 
   return (
-    <div className="ml-20 md:ml-20 lg:ml-32 p-4">
+    <div className={`${leftPadding} transition-all duration-300 p-4`}>
       <div className="container mx-auto py-6 max-w-7xl">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
           <div className="mb-4 sm:mb-0">
