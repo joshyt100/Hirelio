@@ -118,29 +118,29 @@
   }
 }
 
-@layer utilities {
-
-  input:-webkit-autofill,
-  input:-webkit-autofill:hover,
-  input:-webkit-autofill:focus,
-  textarea:-webkit-autofill,
-  select:-webkit-autofill {
-    box-shadow: 0 0 0px 1000px hsl(var(--background)) inset !important;
-    -webkit-text-fill-color: hsl(var(--foreground)) !important;
-    caret-color: hsl(var(--foreground)) !important;
-    color: hsl(var(--foreground)) !important;
-    transition: background-color 5000s ease-in-out 0s;
-  }
-
-  .dark input:-webkit-autofill,
-  .dark input:-webkit-autofill:hover,
-  .dark input:-webkit-autofill:focus,
-  .dark textarea:-webkit-autofill,
-  .dark select:-webkit-autofill {
-    box-shadow: 0 0 0px 1000px hsl(var(--background)) inset !important;
-    -webkit-text-fill-color: hsl(var(--foreground)) !important;
-    caret-color: hsl(var(--foreground)) !important;
-    color: hsl(var(--foreground)) !important;
-    transition: background-color 5000s ease-in-out 0s;
-  }
-}
+/*@layer utilities {*/
+/**/
+/*  input:-webkit-autofill,*/
+/*  input:-webkit-autofill:hover,*/
+/*  input:-webkit-autofill:focus,*/
+/*  textarea:-webkit-autofill,*/
+/*  select:-webkit-autofill {*/
+/*    box-shadow: 0 0 0px 1000px hsl(var(--background)) inset !important;*/
+/*    -webkit-text-fill-color: hsl(var(--foreground)) !important;*/
+/*    caret-color: hsl(var(--foreground)) !important;*/
+/*    color: hsl(var(--foreground)) !important;*/
+/*    transition: background-color 5000s ease-in-out 0s;*/
+/*  }*/
+/**/
+/*  .dark input:-webkit-autofill,*/
+/*  .dark input:-webkit-autofill:hover,*/
+/*  .dark input:-webkit-autofill:focus,*/
+/*  .dark textarea:-webkit-autofill,*/
+/*  .dark select:-webkit-autofill {*/
+/*    box-shadow: 0 0 0px 1000px hsl(var(--background)) inset !important;*/
+/*    -webkit-text-fill-color: hsl(var(--foreground)) !important;*/
+/*    caret-color: hsl(var(--foreground)) !important;*/
+/*    color: hsl(var(--foreground)) !important;*/
+/*    transition: background-color 5000s ease-in-out 0s;*/
+/*  }*/
+/*}*/
