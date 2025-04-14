@@ -7,7 +7,7 @@ from .serializers import ContactSerializer, InteractionSerializer
 
 
 class ContactCursorPagination(CursorPagination):
-    page_size = 10
+    page_size = 12
     ordering = "-id"
 
 
