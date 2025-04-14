@@ -1,4 +1,5 @@
 // contact/ContactTypes.ts
+
 import { Mail, Phone, Users, MessageSquare, Calendar } from "lucide-react";
 
 export interface Interaction {

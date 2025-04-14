@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     "job_applications",
     "contacts",
     "dashboard",
+    "django_filters",
     # "debug_toolbar",
     # "silk",
 ]

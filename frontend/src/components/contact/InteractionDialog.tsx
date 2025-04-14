@@ -58,7 +58,7 @@ export const InteractionDialog: React.FC<InteractionDialogProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="w-full max-w-lg">
         <DialogHeader>
-          <DialogTitle>Log Interaction</DialogTitle>
+          <DialogTitle >Log Interaction</DialogTitle>
           <DialogDescription>Record a new interaction with {contactName}.</DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">

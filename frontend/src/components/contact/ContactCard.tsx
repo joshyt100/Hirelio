@@ -124,7 +124,7 @@ export const ContactCard: React.FC<ContactCardProps> = ({
                 <Edit className="h-4 w-4 mr-2" /> Edit Contact
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onLogInteraction(contact)}>
-                <MessageSquare className="h-4 w-4 mr-2" /> Log Interaction
+                <MessageSquare className="h-4 w-4 mr-2 " /> Log Interaction
               </DropdownMenuItem>
               <DropdownMenuItem className="text-red-600" onClick={() => onDelete(contact.id)}>
                 <Trash2 className="h-4 w-4 mr-2" /> Delete Contact
@@ -200,8 +200,8 @@ export const ContactCard: React.FC<ContactCardProps> = ({
           <Button variant="outline" size="sm" onClick={() => onEdit(contact)}>
             <Edit className="h-3.5 w-3.5 mr-1.5" /> Edit
           </Button>
-          <Button variant="outline" size="sm" onClick={() => onLogInteraction(contact)}>
-            <MessageSquare className="h-3.5 w-3.5 mr-1.5" /> Log Interaction
+          <Button className="text-primary " variant="outline" size="sm" onClick={() => onLogInteraction(contact)}>
+            <MessageSquare className="h-3.5 w-3.5 mr-1.5 " /> Log Interaction
           </Button>
           {contact.linkedinUrl && (
             <Button

@@ -1,4 +1,5 @@
 // contact/ContactLayout.tsx
+
 import React, { useState, useEffect } from "react";
 import { useSidebar } from "@/context/SideBarContext";
 import { Button } from "@/components/ui/button";
@@ -56,30 +57,39 @@ export default function ContactLayout() {
     notes: "",
   });
 
-  // Fetch contacts on mount
-  useEffect(() => {
-    fetchContacts();
-  }, []);
-
   // Sidebar handling
   const { collapsed } = useSidebar();
   const leftPadding = collapsed ? "pl-24" : "pl-64";
 
+  // Fetch contacts from the backend using query parameters for filtering.
   const fetchContacts = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/contacts/", {
+      const params = new URLSearchParams();
+      if (searchTerm) params.append("search", searchTerm);
+      if (relationshipFilter) params.append("relationship", relationshipFilter);
+      if (tagFilter) params.append("tag", tagFilter);
+      if (activeTab === "favorites") {
+        // Note: The backend filter expects "is_favorite" query param.
+        params.append("is_favorite", "true");
+      }
+      const response = await fetch(`http://127.0.0.1:8000/api/contacts/?${params.toString()}`, {
         method: "GET",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
       });
       if (!response.ok) throw new Error("Failed to fetch contacts");
       const data = await response.json();
-      // Assume response returns { results: [...] }
+      // API returns paginated results (assumed to be in data.results)
       setContacts(data.results || []);
     } catch (error) {
       console.error("Error fetching contacts:", error);
     }
   };
+
+  // Fetch contacts when the component mounts and whenever any filter changes.
+  useEffect(() => {
+    fetchContacts();
+  }, [searchTerm, relationshipFilter, tagFilter, activeTab]);
 
   // CRUD Operations
   const addContact = async (data: ContactFormData, tags: string[]) => {
@@ -94,8 +104,8 @@ export default function ContactLayout() {
         body: JSON.stringify({ ...data, tags }),
       });
       if (!response.ok) throw new Error("Error creating contact");
-      const newContact = await response.json();
-      setContacts((prev) => [newContact, ...prev]);
+      // Refresh contact list
+      fetchContacts();
       resetForm();
       setIsAddDialogOpen(false);
     } catch (error) {
@@ -116,10 +126,8 @@ export default function ContactLayout() {
         body: JSON.stringify({ ...data, tags }),
       });
       if (!response.ok) throw new Error("Error updating contact");
-      const updatedContact = await response.json();
-      setContacts((prev) =>
-        prev.map((contact) => (contact.id === currentContact.id ? updatedContact : contact))
-      );
+      // Refresh contact list
+      fetchContacts();
       resetForm();
       setIsEditDialogOpen(false);
       setCurrentContact(null);
@@ -138,7 +146,8 @@ export default function ContactLayout() {
         },
       });
       if (!response.ok) throw new Error("Error deleting contact");
-      setContacts((prev) => prev.filter((contact) => contact.id !== id));
+      // Refresh contact list
+      fetchContacts();
     } catch (error) {
       console.error("Delete contact error:", error);
     }
@@ -157,15 +166,8 @@ export default function ContactLayout() {
         body: JSON.stringify(data),
       });
       if (!response.ok) throw new Error("Error creating interaction");
-      const interaction = await response.json();
-      const updatedContact = {
-        ...currentContact,
-        interactions: [interaction, ...currentContact.interactions],
-        lastContacted: new Date(),
-      };
-      setContacts((prev) =>
-        prev.map((contact) => (contact.id === currentContact.id ? updatedContact : contact))
-      );
+      // Refresh contact list to update interactions
+      fetchContacts();
       setInteractionFormData({ date: new Date(), type: "email", notes: "" });
       setIsInteractionDialogOpen(false);
     } catch (error) {
@@ -191,24 +193,9 @@ export default function ContactLayout() {
     setSelectedTags([]);
   };
 
-  // Utility: filter contacts based on search/filters/tabs
-  const filteredContacts = contacts.filter((contact) => {
-    const matchesSearch =
-      contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      contact.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (contact.company && contact.company.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (contact.position && contact.position.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesRelationship = relationshipFilter ? contact.relationship === relationshipFilter : true;
-    const matchesTag = tagFilter ? contact.tags.includes(tagFilter) : true;
-    const matchesFavorite = activeTab === "favorites" ? contact.isFavorite : true;
-    // For tabs "all" and "favorites"
-    return matchesSearch && matchesRelationship && matchesTag && matchesFavorite;
-  });
-
-  // Functions to handle dialogs from a child (ContactCard)
+  // Handlers for opening dialogs and setting current contact data.
   const handleEditContact = (contact: Contact) => {
     setCurrentContact(contact);
-    // Set form data from the contact’s data for editing
     setContactFormData({
       name: contact.name,
       email: contact.email,
@@ -231,10 +218,12 @@ export default function ContactLayout() {
     setIsInteractionDialogOpen(true);
   };
 
-  // Dummy toggleFavorite handler (implement your own logic if needed)
+  // Dummy toggleFavorite handler for now.
   const toggleFavorite = (id: string) => {
     setContacts((prev) =>
-      prev.map((contact) => (contact.id === id ? { ...contact, isFavorite: !contact.isFavorite } : contact))
+      prev.map((contact) =>
+        contact.id === id ? { ...contact, isFavorite: !contact.isFavorite } : contact
+      )
     );
   };
 
@@ -272,7 +261,7 @@ export default function ContactLayout() {
         </Tabs>
 
         <div className="mt-6">
-          {filteredContacts.length === 0 ? (
+          {contacts.length === 0 ? (
             <Card className="w-full p-12 flex flex-col items-center justify-center text-center">
               <User className="h-12 w-12 text-muted-foreground mb-4" />
               <h3 className="text-xl font-semibold mb-2">No contacts found</h3>
@@ -287,7 +276,7 @@ export default function ContactLayout() {
             </Card>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-              {filteredContacts.map((contact) => (
+              {contacts.map((contact) => (
                 <ContactCard
                   key={contact.id}
                   contact={contact}

@@ -35,7 +35,6 @@ def generate_cache_key(user_id, query_params=None, detail_id=None):
 
     base_key = f"jal:{user_id}:v{CACHE_VERSION}"
     if query_params:
-        # Include sortOrder among the allowed keys.
         filtered = {
             k: v
             for k, v in query_params.items()
