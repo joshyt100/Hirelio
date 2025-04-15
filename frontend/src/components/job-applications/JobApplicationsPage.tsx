@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import type { JobApplication } from "@/types/JobApplicationTypes";
 import { getCookie } from "@/utils/csrfUtils";
 import {
@@ -12,7 +12,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Filter, Plus, Search } from "lucide-react";
 import { Card, CardTitle } from "@/components/ui/card";
@@ -23,24 +29,60 @@ import JobCard from "./JobCard";
 import AddJobDialog from "./AddJobDialog";
 import EditJobDialog from "./EditJobDialog";
 
+// Import shadcn Pagination components
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
-const statusOptions = [
-  { value: "saved", label: "Saved" },
-  { value: "applied", label: "Applied" },
-  { value: "interview", label: "Interview" },
-  { value: "offer", label: "Offer" },
-  { value: "rejected", label: "Rejected" },
-];
+function getPaginationRange(currentPage: number, totalPages: number): (number | string)[] {
+  const DOTS = "...";
+  const totalPageNumbersToShow = 7;
 
-export default function JobApplicationsPage() {
-  // States for jobs and filters
+  if (totalPages <= totalPageNumbersToShow) {
+    return Array.from({ length: totalPages }, (_, i) => i + 1);
+  }
+
+  const leftSiblingIndex = Math.max(currentPage - 1, 1);
+  const rightSiblingIndex = Math.min(currentPage + 1, totalPages);
+
+  const showLeftDots = leftSiblingIndex > 2;
+  const showRightDots = rightSiblingIndex < totalPages - 1;
+
+  const firstPage = 1;
+  const lastPage = totalPages;
+
+  if (!showLeftDots && showRightDots) {
+    const end = 4;
+    return [...Array.from({ length: end }, (_, i) => i + 1), DOTS, lastPage];
+  } else if (showLeftDots && !showRightDots) {
+    const start = totalPages - 3;
+    return [firstPage, DOTS, ...Array.from({ length: 4 }, (_, i) => start + i)];
+  } else if (showLeftDots && showRightDots) {
+    return [firstPage, DOTS, leftSiblingIndex, currentPage, rightSiblingIndex, DOTS, lastPage];
+  }
+
+  return Array.from({ length: totalPages }, (_, i) => i + 1);
+}
+
+const JobApplicationsPage = () => {
+  // States for job list and filters
   const [jobs, setJobs] = useState<JobApplication[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("all");
-  // sortOrder state: "desc" for newest first, "asc" for oldest first.
+  // "desc" for newest first, "asc" for oldest first.
   const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
-  const [nextCursor, setNextCursor] = useState<string | null>(null);
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  // Dialog & job state
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [currentJob, setCurrentJob] = useState<JobApplication | null>(null);
@@ -64,111 +106,75 @@ export default function JobApplicationsPage() {
   const { collapsed } = useSidebar();
   const leftPadding = collapsed ? "pl-24" : "pl-[16.5625rem]";
 
-  const resetPagination = () => {
-    setNextCursor(null);
-    setJobs([]);
-  };
+  // Reset pagination state
+  const resetPagination = () => setCurrentPage(1);
 
-  const fetchJobs = useCallback(
-    async (cursor: string | null = null, append = false) => {
-      setJobsLoading(true);
-      try {
-        const params: Record<string, any> = {};
-        if (activeTab && activeTab !== "all") {
-          params.status = activeTab;
-        }
-        if (searchTerm) {
-          params.search = searchTerm;
-        }
-        params.sortOrder = sortOrder;
-        if (cursor) {
-          params.cursor = cursor;
-        }
+  // Fetch job applications based on filters and page number
+  const fetchJobs = useCallback(async (page: number = 1) => {
+    setJobsLoading(true);
+    try {
+      const params: Record<string, any> = { page, sortOrder };
+      if (activeTab !== "all") params.status = activeTab;
+      if (searchTerm) params.search = searchTerm;
 
-        const response = await fetchJobApplications(params);
+      const response = await fetchJobApplications(params);
+      const data = response.data;
+      setJobs(data.results || []);
+      // Compute total pages using page size 15 (as defined in backend)
+      const count = data.count || (data.results && data.results.length) || 0;
+      setTotalPages(Math.ceil(count / 15));
+      setCurrentPage(page);
+    } catch (error) {
+      console.error("Error fetching job applications:", error);
+      alert("Error fetching job applications");
+    } finally {
+      setJobsLoading(false);
+    }
+  }, [activeTab, searchTerm, sortOrder]);
 
-        const responseData = response.data;
-        const newJobs = responseData.results || [];
-
-        if (append) {
-          setJobs((prev) => [...prev, ...newJobs]);
-        } else {
-          setJobs(newJobs);
-        }
-
-        const nextUrl = responseData.next;
-        if (nextUrl) {
-          const url = new URL(nextUrl);
-          setNextCursor(url.searchParams.get("cursor"));
-        } else {
-          setNextCursor(null);
-        }
-      } catch (error) {
-        console.error("Error fetching job applications:", error);
-        alert("Error fetching job applications");
-      } finally {
-        setJobsLoading(false);
-      }
-    },
-    [activeTab, searchTerm, sortOrder],
-  );
-
-
-  const handleSortOrderChange = (value: "desc" | "asc") => {
-    console.log(`Changing sort order to: ${value}`);
-    setSortOrder(value);
-    resetPagination();
-
-    setTimeout(() => {
-      console.log(`Fetching jobs with sort order: ${value}`);
-      fetchJobs(null, false);
-    }, 0);
-  };
-
+  // useEffect to call fetchJobs(1) when filters change.
   useEffect(() => {
     resetPagination();
-    fetchJobs(null);
+    fetchJobs(1);
   }, [searchTerm, activeTab, sortOrder, fetchJobs]);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      if (jobsLoading || !nextCursor) return;
-      if (window.innerHeight + window.scrollY >= document.documentElement.offsetHeight - 200) {
-        fetchJobs(nextCursor, true);
-      }
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [jobsLoading, nextCursor, fetchJobs]);
-
-  //Handlers for form and file uploads
+  // Handlers for form changes and file uploads
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleStatusChange = (value: string) => {
-    setFormData((prev) => ({ ...prev, status: value }));
-  };
+  const handleStatusChange = (value: string) => setFormData(prev => ({ ...prev, status: value }));
 
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) =>
+    setFormData(prev => ({ ...prev, date_applied: e.target.value }));
 
-
-
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prev) => ({ ...prev, date_applied: e.target.value }));
-  };
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newFiles = Array.from(e.target.files);
-      setFiles((prev) => [...prev, ...newFiles]);
+      setFiles(prev => [...prev, ...newFiles]);
     }
   };
 
-  const removeFile = (index: number) => {
-    setFiles((prev) => prev.filter((_, i) => i !== index));
+  const removeFile = (index: number) => setFiles(prev => prev.filter((_, i) => i !== index));
+
+  const resetForm = () => {
+    setFormData({
+      company: "",
+      position: "",
+      location: "",
+      status: "saved",
+      date_applied: new Date().toISOString().split("T")[0],
+      notes: "",
+      salary: "",
+      contact_person: "",
+      contact_email: "",
+      url: "",
+    });
+    setFiles([]);
   };
 
-  // Add job application handler
+  // CRUD Actions
   const addJobApplication = async () => {
     setActionLoading(true);
     try {
@@ -176,11 +182,11 @@ export default function JobApplicationsPage() {
       for (const key in formData) {
         form.append(key, formData[key as keyof typeof formData]);
       }
-      files.forEach((file) => form.append("attachments", file));
+      files.forEach(file => form.append("attachments", file));
       const csrfToken = getCookie("csrftoken");
       await createJobApplication(form, csrfToken);
       resetPagination();
-      fetchJobs(null);
+      fetchJobs(1);
       resetForm();
       setIsAddDialogOpen(false);
     } catch (error: any) {
@@ -190,7 +196,6 @@ export default function JobApplicationsPage() {
     }
   };
 
-  // Update job application handler
   const updateJobApplication = async () => {
     if (!currentJob) return;
     setActionLoading(true);
@@ -199,11 +204,11 @@ export default function JobApplicationsPage() {
       for (const key in formData) {
         form.append(key, formData[key as keyof typeof formData]);
       }
-      files.forEach((file) => form.append("attachments", file));
+      files.forEach(file => form.append("attachments", file));
       const csrfToken = getCookie("csrftoken");
       await updateJobApplicationAPI(currentJob.id, form, csrfToken);
       resetPagination();
-      fetchJobs(null);
+      fetchJobs(1);
       resetForm();
       setIsEditDialogOpen(false);
       setCurrentJob(null);
@@ -221,8 +226,10 @@ export default function JobApplicationsPage() {
       try {
         const csrfToken = getCookie("csrftoken");
         await deleteJobApplicationAPI(id, csrfToken);
+        // If deleting leaves the current page empty, go to the previous page (if available)
+        const newPage = currentPage > 1 ? currentPage - 1 : 1;
         resetPagination();
-        fetchJobs(null);
+        fetchJobs(newPage);
       } catch (error: any) {
         alert("Error deleting job application");
       } finally {
@@ -237,8 +244,7 @@ export default function JobApplicationsPage() {
       try {
         const csrfToken = getCookie("csrftoken");
         await deleteAttachmentAPI(jobId, attachmentId, csrfToken);
-        resetPagination();
-        fetchJobs(null);
+        fetchJobs(currentPage);
       } catch (error: any) {
         alert("Error deleting attachment");
       } finally {
@@ -265,32 +271,18 @@ export default function JobApplicationsPage() {
     setIsEditDialogOpen(true);
   };
 
-  const resetForm = () => {
-    setFormData({
-      company: "",
-      position: "",
-      location: "",
-      status: "saved",
-      date_applied: new Date().toISOString().split("T")[0],
-      notes: "",
-      salary: "",
-      contact_person: "",
-      contact_email: "",
-      url: "",
-    });
-    setFiles([]);
+  // Pagination navigation handler
+  const goToPage = (page: number) => {
+    if (page < 1 || page > totalPages) return;
+    fetchJobs(page);
   };
 
-  // Handler to change sort order and reset pagination
-  //const handleSortOrderChange = (value: "desc" | "asc") => {
-  //  setSortOrder(value);
-  //  resetPagination();
-  //};
+  // Memoize the pagination range so it isn’t recalculated on every render
+  const paginationRange = useMemo(() => getPaginationRange(currentPage, totalPages), [currentPage, totalPages]);
 
   return (
     <div className="min-h-screen">
       <div className={`container ${leftPadding} pr-4 pt-8 mx-auto max-w-[96rem] w-full transition-all duration-300`}>
-
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3">
           <div className="mb-6 sm:mb-0">
@@ -299,7 +291,7 @@ export default function JobApplicationsPage() {
               Track and manage your job applications in one place
             </p>
           </div>
-          <Button onClick={() => setIsAddDialogOpen(true)} type="submit">
+          <Button onClick={() => setIsAddDialogOpen(true)} type="button">
             <Plus className="mr-2 h-5 w-5" />
             Add Application
           </Button>
@@ -329,7 +321,10 @@ export default function JobApplicationsPage() {
               </Label>
               <Select
                 value={sortOrder}
-                onValueChange={(value) => handleSortOrderChange(value as "desc" | "asc")}
+                onValueChange={(value) => {
+                  setSortOrder(value as "desc" | "asc");
+                  resetPagination();
+                }}
               >
                 <SelectTrigger id="sort-order" className="w-full bg-background">
                   <SelectValue placeholder="Sort by Date" />
@@ -345,7 +340,9 @@ export default function JobApplicationsPage() {
               className="h-10 px-4 md:self-end"
               onClick={() => {
                 setSearchTerm("");
-                handleSortOrderChange("desc");
+                setSortOrder("desc");
+                resetPagination();
+                fetchJobs(1);
               }}
             >
               <Filter className="h-4 w-4 mr-2" /> Reset Filters
@@ -353,11 +350,11 @@ export default function JobApplicationsPage() {
           </div>
         </div>
 
+        {/* Tabs for Status Filter */}
         <Tabs
-          defaultValue="all"
           value={activeTab}
           onValueChange={(value) => {
-            setActiveTab(value);
+            setActiveTab(value); // Just update the state.
             resetPagination();
           }}
           className="mb-4"
@@ -372,6 +369,7 @@ export default function JobApplicationsPage() {
           </TabsList>
         </Tabs>
 
+        {/* Job Cards */}
         <div className="mt-0">
           {jobsLoading && jobs.length === 0 ? (
             <div className="flex justify-center items-center h-64">
@@ -412,6 +410,54 @@ export default function JobApplicationsPage() {
           )}
         </div>
 
+        {/* Optimized Pagination UI */}
+        {totalPages > 1 && (
+          <div className="mt-8 flex justify-center">
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (currentPage > 1) goToPage(currentPage - 1);
+                    }}
+                  />
+                </PaginationItem>
+                {paginationRange.map((page, index) =>
+                  page === "..." ? (
+                    <PaginationItem key={`ellipsis-${index}`}>
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                  ) : (
+                    <PaginationItem key={page}>
+                      <PaginationLink
+                        href="#"
+                        isActive={page === currentPage}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          goToPage(Number(page));
+                        }}
+                      >
+                        {page}
+                      </PaginationLink>
+                    </PaginationItem>
+                  )
+                )}
+                <PaginationItem>
+                  <PaginationNext
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (currentPage < totalPages) goToPage(currentPage + 1);
+                    }}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        )}
+
         <AddJobDialog
           open={isAddDialogOpen}
           onOpenChange={setIsAddDialogOpen}
@@ -444,5 +490,7 @@ export default function JobApplicationsPage() {
       </div>
     </div>
   );
-}
+};
+
+export default JobApplicationsPage;
 

@@ -15,14 +15,17 @@ from django.conf import settings
 from .models import JobApplication, Attachment
 from .serializers import JobApplicationSerializer
 from django.core.cache import cache
-from rest_framework.pagination import CursorPagination
-from job_applications.pagination import JobApplicationCursorPagination
+from rest_framework.pagination import PageNumberPagination
 
 logger = logging.getLogger(__name__)
 
 LIST_CACHE_TIMEOUT = 60 * 15  # 15 minutes
 DETAIL_CACHE_TIMEOUT = 60 * 30  # 30 minutes
 CACHE_VERSION = 1  # Bump this to invalidate old caches when models change
+
+
+class JobApplicationPageNumberPagination(PageNumberPagination):
+    page_size = 15  # Define 15 items per page
 
 
 def generate_cache_key(user_id, query_params=None, detail_id=None):
@@ -35,10 +38,11 @@ def generate_cache_key(user_id, query_params=None, detail_id=None):
 
     base_key = f"jal:{user_id}:v{CACHE_VERSION}"
     if query_params:
+        # Only include specified keys for caching
         filtered = {
             k: v
             for k, v in query_params.items()
-            if k in ("status", "search", "sortOrder", "cursor") and v
+            if k in ("status", "search", "sortOrder", "page") and v
         }
         if filtered:
             param_str = "&".join(f"{k}={v}" for k, v in sorted(filtered.items()))
@@ -76,11 +80,11 @@ def cached_response(timeout):
                 cache_key = generate_cache_key(request.user.id, detail_id=kwargs["pk"])
                 current_timeout = DETAIL_CACHE_TIMEOUT
             else:
-                # Include sortOrder in caching
+                # Use "page" parameter for list view pagination caching
                 params = {
                     "status": request.query_params.get("status", ""),
                     "search": request.query_params.get("search", ""),
-                    "cursor": request.query_params.get("cursor", ""),
+                    "page": request.query_params.get("page", ""),
                     "sortOrder": request.query_params.get("sortOrder", ""),
                 }
                 cache_key = generate_cache_key(request.user.id, params)
@@ -119,12 +123,10 @@ class JobApplicationListCreateView(APIView):
     def get(self, request):
         total_start = time.time()
 
-        # Get query parameters
+        # Retrieve query parameters
         status_filter = request.query_params.get("status")
         search = request.query_params.get("search")
-        sort_order = request.query_params.get(
-            "sortOrder", "desc"
-        )  # default to descending
+        sort_order = request.query_params.get("sortOrder", "desc")  # default descending
         t1 = time.time()
         job_apps = JobApplication.objects.filter(user=request.user)
         if status_filter:
@@ -143,7 +145,6 @@ class JobApplicationListCreateView(APIView):
         else:
             order_by_fields = ("-date_applied", "-id")
 
-        # Apply ordering and prefetch/join optimizations.
         job_apps = (
             job_apps.select_related("user")
             .prefetch_related("attachments")
@@ -151,8 +152,8 @@ class JobApplicationListCreateView(APIView):
         )
         t3 = time.time()
 
-        # Pagination using cursor pagination.
-        paginator = JobApplicationCursorPagination()
+        # Pagination using the custom page number pagination class
+        paginator = JobApplicationPageNumberPagination()
         page = paginator.paginate_queryset(job_apps, request)
         t4 = time.time()
         serializer = JobApplicationSerializer(page, many=True)
@@ -160,7 +161,7 @@ class JobApplicationListCreateView(APIView):
         response = paginator.get_paginated_response(serializer.data)
         total_end = time.time()
 
-        # Log performance metrics.
+        # Log performance metrics
         logger.debug(f"[Timer] Filtering: {(t2 - t1):.3f}s")
         logger.debug(f"[Timer] Prefetch/order: {(t3 - t2):.3f}s")
         logger.debug(f"[Timer] Pagination: {(t4 - t3):.3f}s")
