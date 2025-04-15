@@ -40,12 +40,21 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 
-// Helper: returns a pagination range as an array of numbers and ellipsis strings ("...")
+// Custom hook for debouncing a value
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedValue(value), delay);
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+  return debouncedValue;
+}
+
+// Helper function: returns a pagination range as an array of numbers and ellipsis strings ("...")
 function getPaginationRange(currentPage: number, totalPages: number): (number | string)[] {
   const DOTS = "...";
   const totalPageNumbersToShow = 7; // Maximum buttons to show (including first and last)
 
-  // If total pages is less than the number to show, display range [1...totalPages]
   if (totalPages <= totalPageNumbersToShow) {
     return Array.from({ length: totalPages }, (_, i) => i + 1);
   }
@@ -76,6 +85,7 @@ const JobApplicationsPage = () => {
   // States for job list and filters
   const [jobs, setJobs] = useState<JobApplication[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
   const [activeTab, setActiveTab] = useState("all");
   const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
 
@@ -111,53 +121,58 @@ const JobApplicationsPage = () => {
   const resetPagination = () => setCurrentPage(1);
 
   // Fetch job applications based on filters and page number
-  const fetchJobs = useCallback(async (page: number = 1) => {
-    setJobsLoading(true);
-    try {
-      const params: Record<string, any> = { page, sortOrder };
-      if (activeTab !== "all") params.status = activeTab;
-      if (searchTerm) params.search = searchTerm;
+  const fetchJobs = useCallback(
+    async (page: number = 1) => {
+      setJobsLoading(true);
+      try {
+        const params: Record<string, any> = { page, sortOrder };
+        if (activeTab !== "all") params.status = activeTab;
+        if (debouncedSearchTerm) params.search = debouncedSearchTerm;
 
-      const response = await fetchJobApplications(params);
-      const data = response.data;
-      setJobs(data.results || []);
-      const count = data.count || (data.results && data.results.length) || 0;
-      setTotalPages(Math.ceil(count / 15));
-      setCurrentPage(page);
-    } catch (error) {
-      console.error("Error fetching job applications:", error);
-      alert("Error fetching job applications");
-    } finally {
-      setJobsLoading(false);
-    }
-  }, [activeTab, searchTerm, sortOrder]);
+        const response = await fetchJobApplications(params);
+        const data = response.data;
+        setJobs(data.results || []);
+        const count = data.count || (data.results && data.results.length) || 0;
+        setTotalPages(Math.ceil(count / 15));
+        setCurrentPage(page);
+      } catch (error) {
+        console.error("Error fetching job applications:", error);
+        alert("Error fetching job applications");
+      } finally {
+        setJobsLoading(false);
+      }
+    },
+    [activeTab, debouncedSearchTerm, sortOrder]
+  );
 
-  // When filters change, clear the job list (to show the loader) then fetch new jobs.
+  // When filters change, reset pagination and fetch new jobs.
   useEffect(() => {
     resetPagination();
-    setJobs([]); // Clear old jobs so that loading appears in the middle.
+    // Do not clear jobs to avoid flickering; they remain visible until new data arrives
     fetchJobs(1);
-  }, [searchTerm, activeTab, sortOrder, fetchJobs]);
+  }, [debouncedSearchTerm, activeTab, sortOrder, fetchJobs]);
 
   // Handlers for form changes and file uploads
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleStatusChange = (value: string) => setFormData(prev => ({ ...prev, status: value }));
+  const handleStatusChange = (value: string) =>
+    setFormData((prev) => ({ ...prev, status: value }));
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) =>
-    setFormData(prev => ({ ...prev, date_applied: e.target.value }));
+    setFormData((prev) => ({ ...prev, date_applied: e.target.value }));
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newFiles = Array.from(e.target.files);
-      setFiles(prev => [...prev, ...newFiles]);
+      setFiles((prev) => [...prev, ...newFiles]);
     }
   };
 
-  const removeFile = (index: number) => setFiles(prev => prev.filter((_, i) => i !== index));
+  const removeFile = (index: number) =>
+    setFiles((prev) => prev.filter((_, i) => i !== index));
 
   const resetForm = () => {
     setFormData({
@@ -183,7 +198,7 @@ const JobApplicationsPage = () => {
       for (const key in formData) {
         form.append(key, formData[key as keyof typeof formData]);
       }
-      files.forEach(file => form.append("attachments", file));
+      files.forEach((file) => form.append("attachments", file));
       const csrfToken = getCookie("csrftoken");
       await createJobApplication(form, csrfToken);
       resetPagination();
@@ -205,7 +220,7 @@ const JobApplicationsPage = () => {
       for (const key in formData) {
         form.append(key, formData[key as keyof typeof formData]);
       }
-      files.forEach(file => form.append("attachments", file));
+      files.forEach((file) => form.append("attachments", file));
       const csrfToken = getCookie("csrftoken");
       await updateJobApplicationAPI(currentJob.id, form, csrfToken);
       resetPagination();
@@ -285,11 +300,15 @@ const JobApplicationsPage = () => {
 
   return (
     <div className="min-h-screen">
-      <div className={`container ${leftPadding} pr-4 pt-8 mx-auto max-w-[96rem] w-full transition-all duration-300`}>
+      <div
+        className={`container ${leftPadding} pr-4 pt-8 mx-auto max-w-[96rem] w-full transition-all duration-300`}
+      >
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3">
           <div className="mb-6 sm:mb-0">
-            <h1 className="text-3xl font-bold bg-clip-text">Job Application Tracker</h1>
+            <h1 className="text-3xl font-bold bg-clip-text">
+              Job Application Tracker
+            </h1>
             <p className="text-muted-foreground mt-2">
               Track and manage your job applications in one place
             </p>
@@ -304,7 +323,10 @@ const JobApplicationsPage = () => {
         <div className="rounded-xl shadow-none p-2 mb-2">
           <div className="flex flex-col md:flex-row gap-4 items-end">
             <div className="relative flex-1">
-              <Label htmlFor="search" className="text-sm font-medium mb-1.5 block">
+              <Label
+                htmlFor="search"
+                className="text-sm font-medium mb-1.5 block"
+              >
                 Search Applications
               </Label>
               <div className="relative">
@@ -319,7 +341,10 @@ const JobApplicationsPage = () => {
               </div>
             </div>
             <div className="w-full md:w-64">
-              <Label htmlFor="sort-order" className="text-sm font-medium mb-1.5 block">
+              <Label
+                htmlFor="sort-order"
+                className="text-sm font-medium mb-1.5 block"
+              >
                 Sort by Date
               </Label>
               <Select
@@ -329,7 +354,10 @@ const JobApplicationsPage = () => {
                   resetPagination();
                 }}
               >
-                <SelectTrigger id="sort-order" className="w-full bg-background">
+                <SelectTrigger
+                  id="sort-order"
+                  className="w-full bg-background"
+                >
                   <SelectValue placeholder="Sort by Date" />
                 </SelectTrigger>
                 <SelectContent>
@@ -372,30 +400,31 @@ const JobApplicationsPage = () => {
           </TabsList>
         </Tabs>
 
-        {/* Job Cards */}
-        <div className="mt-0">
-          {jobsLoading && jobs.length === 0 ? (
-            <div className="flex justify-center items-center h-64">
-              <SolidCircleLoader className="w-10 h-10" />
-            </div>
-          ) : jobs.length === 0 ? (
-            <Card className="w-full p-12 flex flex-col items-center justify-center text-center">
-              <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-4">
-                <CardTitle className="text-emerald-500">No Jobs</CardTitle>
-              </div>
-              <h3 className="text-xl font-semibold mb-2">No job applications found</h3>
-              <p className="text-muted-foreground mb-6 max-w-md">
-                {searchTerm || activeTab !== "all"
-                  ? "Try adjusting your search or filters to find what you're looking for."
-                  : "Start by adding your first job application to track your job search journey."}
-              </p>
-              <Button onClick={() => setIsAddDialogOpen(true)}>
-                <Plus className="mr-2 h-4 w-4" /> Add Your First Application
-              </Button>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {jobs.map((job) => (
+        {/* Job Cards Section */}
+        <div className="relative">
+          <div
+            className={`job-cards grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 transition-opacity duration-300 ${jobsLoading ? "opacity-50" : "opacity-100"
+              }`}
+          >
+            {jobs.length === 0 && !jobsLoading ? (
+              <Card className="w-full p-12 flex flex-col items-center justify-center text-center">
+                <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-4">
+                  <CardTitle className="text-emerald-500">No Jobs</CardTitle>
+                </div>
+                <h3 className="text-xl font-semibold mb-2">
+                  No job applications found
+                </h3>
+                <p className="text-muted-foreground mb-6 max-w-md">
+                  {searchTerm || activeTab !== "all"
+                    ? "Try adjusting your search or filters to find what you're looking for."
+                    : "Start by adding your first job application to track your job search journey."}
+                </p>
+                <Button onClick={() => setIsAddDialogOpen(true)}>
+                  <Plus className="mr-2 h-4 w-4" /> Add Your First Application
+                </Button>
+              </Card>
+            ) : (
+              jobs.map((job) => (
                 <JobCard
                   key={job.id}
                   job={job}
@@ -403,20 +432,20 @@ const JobApplicationsPage = () => {
                   onDelete={() => deleteJobApplication(job.id)}
                   onDeleteAttachment={deleteAttachment}
                 />
-              ))}
-            </div>
-          )}
-          {jobsLoading && jobs.length > 0 && (
-            <div className="flex justify-center items-center py-8">
-              <SolidCircleLoader className="w-8 h-8" />
+              ))
+            )}
+          </div>
+          {jobsLoading && (
+            <div className="absolute inset-0 flex justify-center items-center pointer-events-none">
+              <SolidCircleLoader className="w-10 h-10" />
             </div>
           )}
         </div>
 
-        {/* Optimized Pagination UI: Only show when not loading */}
+        {/* Optimized Pagination UI */}
         {!jobsLoading && totalPages > 1 && (
           <div className="mt-8 flex justify-center">
-            <Pagination>
+            <Pagination className="mb-7">
               <PaginationContent>
                 <PaginationItem>
                   <PaginationPrevious
