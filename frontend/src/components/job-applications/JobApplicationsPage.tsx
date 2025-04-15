@@ -40,10 +40,12 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 
+// Helper: returns a pagination range as an array of numbers and ellipsis strings ("...")
 function getPaginationRange(currentPage: number, totalPages: number): (number | string)[] {
   const DOTS = "...";
-  const totalPageNumbersToShow = 7;
+  const totalPageNumbersToShow = 7; // Maximum buttons to show (including first and last)
 
+  // If total pages is less than the number to show, display range [1...totalPages]
   if (totalPages <= totalPageNumbersToShow) {
     return Array.from({ length: totalPages }, (_, i) => i + 1);
   }
@@ -75,7 +77,6 @@ const JobApplicationsPage = () => {
   const [jobs, setJobs] = useState<JobApplication[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("all");
-  // "desc" for newest first, "asc" for oldest first.
   const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
 
   // Pagination state
@@ -120,7 +121,6 @@ const JobApplicationsPage = () => {
       const response = await fetchJobApplications(params);
       const data = response.data;
       setJobs(data.results || []);
-      // Compute total pages using page size 15 (as defined in backend)
       const count = data.count || (data.results && data.results.length) || 0;
       setTotalPages(Math.ceil(count / 15));
       setCurrentPage(page);
@@ -132,9 +132,10 @@ const JobApplicationsPage = () => {
     }
   }, [activeTab, searchTerm, sortOrder]);
 
-  // useEffect to call fetchJobs(1) when filters change.
+  // When filters change, clear the job list (to show the loader) then fetch new jobs.
   useEffect(() => {
     resetPagination();
+    setJobs([]); // Clear old jobs so that loading appears in the middle.
     fetchJobs(1);
   }, [searchTerm, activeTab, sortOrder, fetchJobs]);
 
@@ -226,7 +227,6 @@ const JobApplicationsPage = () => {
       try {
         const csrfToken = getCookie("csrftoken");
         await deleteJobApplicationAPI(id, csrfToken);
-        // If deleting leaves the current page empty, go to the previous page (if available)
         const newPage = currentPage > 1 ? currentPage - 1 : 1;
         resetPagination();
         fetchJobs(newPage);
@@ -278,7 +278,10 @@ const JobApplicationsPage = () => {
   };
 
   // Memoize the pagination range so it isn’t recalculated on every render
-  const paginationRange = useMemo(() => getPaginationRange(currentPage, totalPages), [currentPage, totalPages]);
+  const paginationRange = useMemo(
+    () => getPaginationRange(currentPage, totalPages),
+    [currentPage, totalPages]
+  );
 
   return (
     <div className="min-h-screen">
@@ -354,7 +357,7 @@ const JobApplicationsPage = () => {
         <Tabs
           value={activeTab}
           onValueChange={(value) => {
-            setActiveTab(value); // Just update the state.
+            setActiveTab(value);
             resetPagination();
           }}
           className="mb-4"
@@ -410,8 +413,8 @@ const JobApplicationsPage = () => {
           )}
         </div>
 
-        {/* Optimized Pagination UI */}
-        {totalPages > 1 && (
+        {/* Optimized Pagination UI: Only show when not loading */}
+        {!jobsLoading && totalPages > 1 && (
           <div className="mt-8 flex justify-center">
             <Pagination>
               <PaginationContent>
