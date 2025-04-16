@@ -34,6 +34,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useSidebar } from "../../context/SideBarContext"
 
 // Sample data based on the initialJobs from the tracking page
 const sampleJobs: JobApplication[] = [
@@ -261,6 +262,7 @@ const getWeekNumber = (date: Date) => {
   return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7)
 }
 
+
 // Prepare data for charts
 const prepareStatusData = (jobs: JobApplication[]) => {
   const counts = {
@@ -398,6 +400,8 @@ export default function DashboardLayout() {
   const [jobs, setJobs] = useState<JobApplication[]>(extendedJobs)
   const [timeRange, setTimeRange] = useState("all")
   const [activeTab, setActiveTab] = useState("overview")
+  const { collapsed } = useSidebar();
+  const leftPadding = collapsed ? "pl-16" : "pl-64";
 
   // Filter jobs based on time range
   const filteredJobs = React.useMemo(() => {
@@ -446,7 +450,7 @@ export default function DashboardLayout() {
     .slice(0, 5)
 
   return (
-    <div className="ml-20 md:ml-20 lg:ml-32 p-4">
+    <div className={`ml-20 md:ml-20 lg:ml-32 p-4 ${leftPadding} transition-all duration-300`} >
       <div className="container mx-auto py-6 max-w-7xl">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
           <div className="mb-4 sm:mb-0">
@@ -915,7 +919,7 @@ export default function DashboardLayout() {
           </TabsContent>
         </Tabs>
       </div>
-    </div>
+    </div >
   )
 }
 
