@@ -92,8 +92,9 @@ function getPaginationRange(
 }
 
 export default function ContactLayout() {
-  const { collapsed } = useSidebar();
+  const { isMobile, collapsed } = useSidebar();
   const leftPadding = collapsed ? "pl-24" : "pl-64";
+  const leftPaddingClass = collapsed ? "lg:pl-32" : "lg:pl-[17rem]";
 
   // filters & tabs
   const [searchTerm, setSearchTerm] = useState("");
@@ -369,8 +370,8 @@ export default function ContactLayout() {
   };
 
   return (
-    <div className={`${leftPadding} transition-all duration-300 `}>
-      <div className="container mx-auto pl-8 py-6 max-w-7xl">
+    <div className={`${!isMobile && leftPaddingClass} ${isMobile ? "px-4" : ""} transition-all duration-300 `}>
+      <div className="container mx-auto  py-6 max-w-7xl">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-center mb-6">
           <div>
