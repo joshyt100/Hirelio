@@ -18,6 +18,7 @@ import { LogoutConfirm } from "./LogoutConfirm";
 import { useSidebar } from "@/context/SideBarContext";
 import { SidebarNavItemProps } from "@/types/SidebarTypes";
 
+// Navigation items
 const navItems = [
   { to: "/dashboard", icon: <ChartLine className="h-5 w-5" />, label: "Dashboard" },
   { to: "/job-application-tracker", icon: <ChartBarBig className="h-5 w-5" />, label: "Job Application Tracker" },
@@ -26,6 +27,7 @@ const navItems = [
   { to: "/saved", icon: <Save className="h-5 w-5" />, label: "Saved Cover Letters" },
 ];
 
+// Individual nav item component
 const SidebarNavItem: React.FC<SidebarNavItemProps> = React.memo(
   ({ to, icon, label, collapsed }) => (
     <Link to={to} className="w-full">
@@ -37,56 +39,63 @@ const SidebarNavItem: React.FC<SidebarNavItemProps> = React.memo(
   )
 );
 
+// Sausage menu icon
+
+
+const SausageMenuIcon = () => (
+  <svg width="36" height="44" viewBox="0 0 32 32" fill="none">
+    <rect x="3" y="5" width="30" height="3" rx="1.5" fill="currentColor" />
+    <rect x="3" y="15" width="30" height="3" rx="1.5" fill="currentColor" />
+    <rect x="3" y="25" width="30" height="3" rx="1.5" fill="currentColor" />
+  </svg>
+);
+
 export function AppSidebar(): JSX.Element {
   const { theme, setTheme } = useTheme();
   const { isAuthenticated, logout } = useAuth();
   const { collapsed, toggleCollapsed } = useSidebar();
   const [logoutModal, setLogoutModal] = useState(false);
 
+  // Sidebar classes
   const sidebarClasses = useMemo(() => {
     const base =
-      "fixed top-0 left-0 h-full bg-zinc-50 dark:bg-zinc-900 border-r z-50 p-4 flex flex-col gap-6 shadow-lg transition-all duration-300 ease-in-out transform";
-    const mobileTransform = collapsed ? "-translate-x-full" : "translate-x-0";
-    const widthClasses = "w-64 " + (collapsed ? "lg:w-20" : "lg:w-64");
-    return `${base} ${mobileTransform} lg:translate-x-0 ${widthClasses}`;
+      "fixed top-0 left-0 h-full bg-zinc-50 dark:bg-zinc-900 border-r z-50 p-4 flex flex-col gap-6 shadow-lg transition-transform duration-300 ease-in-out";
+    const transform = collapsed ? "-translate-x-full" : "translate-x-0";
+    const width = collapsed ? "w-20 lg:w-20" : "w-64 lg:w-64";
+    return `${base} ${transform} lg:translate-x-0 ${width}`;
   }, [collapsed]);
 
-  const handleLogoutModal = () => setLogoutModal(true);
   const handleLogout = async () => {
     await logout();
     setLogoutModal(false);
   };
 
-  const SausageMenuIcon = () => (
-    <svg width="36" height="44" viewBox="0 0 32 32" fill="none">
-      <rect x="3" y="5" width="30" height="3" rx="1.5" fill="currentColor" />
-      <rect x="3" y="15" width="30" height="3" rx="1.5" fill="currentColor" />
-      <rect x="3" y="25" width="30" height="3" rx="1.5" fill="currentColor" />
-    </svg>
-  );
-
   return (
     <>
-      <Button
-        variant="ghost"
-        onClick={toggleCollapsed}
-        className="lg:hidden fixed top-4 left-4 z-[60] p-2"
-        aria-label="Toggle sidebar"
-      >
-        <SausageMenuIcon />
-      </Button>
+      {/* Mobile toggle: fixed to viewport */}
+      <div className="lg:hidden fixed top-4 left-4 z-60">
+        <Button
+          variant="ghost"
+          onClick={toggleCollapsed}
+          aria-label={collapsed ? "Open menu" : "Close menu"}
+          className="p-2"
+        >
+          <SausageMenuIcon />
+        </Button>
+      </div>
 
+      {/* Overlay when open on mobile */}
       {!collapsed && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black bg-opacity-50 z-50 lg:hidden"
           onClick={toggleCollapsed}
         />
       )}
 
-      {/* Sidebar */}
-      <div className={`${sidebarClasses} transition-all duration-300 ease-in-out`}>
-        {/* Header */}
-        <div className={`flex items-center justify-between ${collapsed ? "ml-0" : "ml-10"} transition-all duration-300 ease-in-out`}>
+      {/* Sidebar container */}
+      <div className={sidebarClasses}>
+        {/* Header / Logo */}
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="bg-primary rounded-lg p-1.5">
               <Briefcase className="h-5 w-5 text-primary-foreground" />
@@ -96,40 +105,37 @@ export function AppSidebar(): JSX.Element {
                 HireMind
               </Link>
             )}
-
-
           </div>
-
         </div>
 
-        {/* Navigation */}
-        <div className="flex flex-col gap-4 items-start flex-grow">
+        {/* Nav & actions */}
+        <div className="flex flex-col gap-4 flex-grow">
           {/* Theme toggle */}
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
             aria-label="Toggle theme"
-            className="border-none rounded-full"
+            className="self-start"
           >
             {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </Button>
 
           {collapsed ? (
-            <hr className="w-full border-gray-300 dark:border-gray-700 my-2" />
+            <hr className="border-gray-300 dark:border-gray-700 my-2" />
           ) : (
-            <h1 className="text-sm text-muted-foreground">Navigation</h1>
+            <span className="text-sm text-muted-foreground">Navigation</span>
           )}
 
+          {/* Navigation items */}
           {navItems.map((item) => (
             <SidebarNavItem key={item.to} {...item} collapsed={collapsed} />
           ))}
 
-
           {/* Auth button */}
           {isAuthenticated ? (
             <Button
-              onClick={handleLogoutModal}
+              onClick={() => setLogoutModal(true)}
               className="w-full justify-start flex items-center gap-2"
             >
               <LogOut className="h-4 w-4" />
@@ -143,17 +149,14 @@ export function AppSidebar(): JSX.Element {
             </Link>
           )}
 
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={toggleCollapsed}
-            className=""
-          >
+          {/* Collapse toggle for lg+ */}
+          <Button variant="outline" size="icon" onClick={toggleCollapsed} className="self-end">
             {collapsed ? ">" : "<"}
           </Button>
         </div>
       </div>
 
+      {/* Logout confirmation */}
       <LogoutConfirm
         open={logoutModal}
         onClose={() => setLogoutModal(false)}

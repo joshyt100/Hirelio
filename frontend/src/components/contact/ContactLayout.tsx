@@ -373,9 +373,9 @@ export default function ContactLayout() {
     <div className={`${!isMobile && leftPaddingClass} ${isMobile ? "px-4" : ""} transition-all duration-300 `}>
       <div className="container mx-auto  py-6 max-w-7xl">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-center mb-6">
+        <div className="flex mt-8 flex-col sm:flex-row justify-between items-center mb-6">
           <div>
-            <h1 className="text-3xl font-bold">
+            <h1 className="text-3xl  font-bold">
               Network Contacts
             </h1>
             <p className="text-muted-foreground mt-1">
