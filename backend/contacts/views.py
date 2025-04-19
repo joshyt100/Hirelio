@@ -1,17 +1,15 @@
 # contacts/views.py
 
 from django.db.models import Q
-
 import django_filters
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, filters
-
-# Change this import to match your project’s layout:
-from job_applications.views import JobApplicationPageNumberPagination
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.exceptions import NotFound
 
 from .models import Contact, Interaction
 from .serializers import ContactSerializer, InteractionSerializer
-from rest_framework.pagination import PageNumberPagination
 
 
 class ContactPageNumberPagination(PageNumberPagination):
@@ -19,15 +17,11 @@ class ContactPageNumberPagination(PageNumberPagination):
 
 
 class ContactFilter(django_filters.FilterSet):
-    # Full‑text search across name, email, company, position
     search = django_filters.CharFilter(method="filter_search")
-    # Exact (case‑insensitive) match on relationship
     relationship = django_filters.CharFilter(
         field_name="relationship", lookup_expr="iexact"
     )
-    # Tag lookup (adjust if your field isn’t an ArrayField/JSONField)
     tag = django_filters.CharFilter(method="filter_tag")
-    # Boolean favorite filter
     is_favorite = django_filters.BooleanFilter(field_name="is_favorite")
 
     class Meta:
@@ -52,12 +46,18 @@ class ContactListCreateAPIView(generics.ListCreateAPIView):
     POST: Create a new contact.
     """
 
-    queryset = Contact.objects.all().order_by("-id")
     serializer_class = ContactSerializer
     pagination_class = ContactPageNumberPagination
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_class = ContactFilter
     ordering_fields = ["id"]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Contact.objects.filter(user=self.request.user).order_by("-id")
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 
 class ContactRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
@@ -67,8 +67,11 @@ class ContactRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView)
     DELETE: Remove a contact.
     """
 
-    queryset = Contact.objects.all()
     serializer_class = ContactSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Contact.objects.filter(user=self.request.user)
 
 
 class InteractionCreateAPIView(generics.CreateAPIView):
@@ -78,14 +81,13 @@ class InteractionCreateAPIView(generics.CreateAPIView):
     """
 
     serializer_class = InteractionSerializer
+    permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
         contact_id = self.kwargs.get("contact_id")
         try:
-            contact = Contact.objects.get(pk=contact_id)
+            contact = Contact.objects.get(pk=contact_id, user=self.request.user)
         except Contact.DoesNotExist:
-            from rest_framework.exceptions import NotFound
-
             raise NotFound("Contact not found.")
         serializer.save(contact=contact)
 
@@ -95,5 +97,8 @@ class InteractionDestroyAPIView(generics.DestroyAPIView):
     DELETE: Remove an interaction.
     """
 
-    queryset = Interaction.objects.all()
     serializer_class = InteractionSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Interaction.objects.filter(contact__user=self.request.user)
