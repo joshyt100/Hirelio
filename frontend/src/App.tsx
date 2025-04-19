@@ -14,6 +14,8 @@ import DashboardLayout from "./components/dashboard/DashboardLayout";
 import ContactLayout from "./components/contact/ContactLayout";
 import { SidebarProvider } from "./context/SideBarContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import ResumeLayout from "./components/resume/ResumeLayout";
+
 
 
 

@@ -91,7 +91,7 @@ export const CoverLetterForm = ({
               placeholder="Paste the full job description here..."
               value={jobDescription}
               onChange={(e) => setJobDescription(e.target.value)}
-              className="w-full min-h-[300px]  resize-none"
+              className="w-full min-h-[25rem]  resize-none"
             />
             <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
               Include the full job description for the best results
