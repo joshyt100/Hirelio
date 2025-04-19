@@ -107,7 +107,6 @@ export default function ContactLayout() {
   const [contactsLoading, setContactsLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
-  // pagination
   const PAGE_SIZE = 12;
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);

@@ -18,8 +18,16 @@ from rest_framework.views import APIView
 from reportlab.pdfgen import canvas
 import textwrap
 from django.views.decorators.cache import cache_page
+from rest_framework.pagination import PageNumberPagination
+
 
 logger = logging.getLogger(__name__)
+
+
+class CoverLetterPageNumberPagination(PageNumberPagination):
+    page_size = 15
+    page_size_query_param = "page_size"
+    max_page_size = 100
 
 
 @method_decorator(csrf_exempt, name="dispatch")
@@ -235,12 +243,19 @@ class GetCoverLetters(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        # 1. Query only this user’s cover letters, newest first
         cover_letters = CoverLetter.objects.filter(user=request.user).order_by(
             "-created_at"
         )
-        paginator = CoverLetterCursorPagination()
-        result_page = paginator.paginate_queryset(cover_letters, request)
-        serializer = CoverLetterSerializer(result_page, many=True)
+
+        # 2. Use page‑number pagination (18 items per page)
+        paginator = CoverLetterPageNumberPagination()
+        page = paginator.paginate_queryset(cover_letters, request)
+
+        # 3. Serialize that single page
+        serializer = CoverLetterSerializer(page, many=True)
+
+        # 4. Return the paginated response
         return paginator.get_paginated_response(serializer.data)
 
 
