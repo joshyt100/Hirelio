@@ -118,8 +118,8 @@ const JobApplicationsPage: React.FC = () => {
   // Loading states
   const [jobsLoading, setJobsLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
-  const { collapsed } = useSidebar();
-  const leftPadding = collapsed ? "pl-24" : "pl-[16.5625rem]";
+  const { isMobile, collapsed } = useSidebar();
+  const leftPaddingClass = collapsed ? "lg:pl-32" : "lg:pl-[17rem]";
 
   // Reset pagination state
   const resetPagination = () => setCurrentPage(1);
@@ -313,12 +313,12 @@ const JobApplicationsPage: React.FC = () => {
   return (
     <div className="min-h-screen">
       <div
-        className={`container ${leftPadding} pr-4 pt-8 mx-auto max-w-[96rem] w-full transition-all duration-300`}
+        className={`container ${!isMobile && leftPaddingClass}  ${isMobile ? "px-4" : ""} "pr-4 pt-8 mx-auto max-w-[96rem] w-full transition-all duration-300`}
       >
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3">
           <div className="mb-6 sm:mb-0">
-            <h1 className="text-3xl font-bold bg-clip-text">
+            <h1 className="text-3xl mt-6 font-bold bg-clip-text">
               Job Application Tracker
             </h1>
             <p className="text-muted-foreground mt-2">

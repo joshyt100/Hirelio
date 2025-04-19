@@ -52,7 +52,9 @@ function getPaginationRange(
 
 export const SavedCoverLetters: React.FC = () => {
   const { collapsed } = useSidebar();
-  const leftPadding = collapsed ? "pl-24" : "pl-64";
+
+  // Only add left-padding on md+; no padding on sm
+  const leftPaddingClass = collapsed ? "lg:pl-20" : "lg:pl-64";
 
   const PAGE_SIZE = 15;
   const [coverLetters, setCoverLetters] = useState<
@@ -101,7 +103,7 @@ export const SavedCoverLetters: React.FC = () => {
 
   return (
     <div
-      className={`flex flex-col min-h-screen ${leftPadding} transition-all duration-300 mx-auto`}
+      className={`flex flex-col min-h-screen ${leftPaddingClass} transition-all duration-300 mx-auto`}
     >
       <div className="w-full flex justify-center mt-12 mb-8">
         <h1 className="text-3xl font-bold text-center">
