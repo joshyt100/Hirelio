@@ -25,7 +25,7 @@ CACHE_VERSION = 1  # Bump this to invalidate old caches when models change
 
 
 class JobApplicationPageNumberPagination(PageNumberPagination):
-    page_size = 15  # Define 15 items per page
+    page_size = 18  # Define 18 items per page
 
 
 def generate_cache_key(user_id, query_params=None, detail_id=None):

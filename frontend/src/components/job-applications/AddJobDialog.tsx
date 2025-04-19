@@ -9,7 +9,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Plus, Paperclip, Trash2 } from "lucide-react";
 import { AddJobDialogProps } from "@/types/JobApplicationTypes";
 
-import { DatePicker } from "@/components/ui/date-picker";
 
 
 const statusOptions = [

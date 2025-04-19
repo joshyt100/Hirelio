@@ -41,6 +41,10 @@ import {
 } from "@/components/ui/pagination";
 
 // Custom hook for debouncing a value
+//interface debouncedValue<T> {
+//  value: T;
+//  setValue: (value: T) => void;
+//}
 function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
   useEffect(() => {
@@ -81,7 +85,7 @@ function getPaginationRange(currentPage: number, totalPages: number): (number | 
   return Array.from({ length: totalPages }, (_, i) => i + 1);
 }
 
-const JobApplicationsPage = () => {
+const JobApplicationsPage: React.FC = () => {
   // States for job list and filters
   const [jobs, setJobs] = useState<JobApplication[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -133,7 +137,7 @@ const JobApplicationsPage = () => {
         const data = response.data;
         setJobs(data.results || []);
         const count = data.count || (data.results && data.results.length) || 0;
-        setTotalPages(Math.ceil(count / 15));
+        setTotalPages(Math.ceil(count / 18)); // was 15
         setCurrentPage(page);
       } catch (error) {
         console.error("Error fetching job applications:", error);
@@ -144,6 +148,12 @@ const JobApplicationsPage = () => {
     },
     [activeTab, debouncedSearchTerm, sortOrder]
   );
+
+
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [currentPage])
 
   // When filters change, reset pagination and fetch new jobs.
   useEffect(() => {
@@ -161,8 +171,10 @@ const JobApplicationsPage = () => {
   const handleStatusChange = (value: string) =>
     setFormData((prev) => ({ ...prev, status: value }));
 
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) =>
-    setFormData((prev) => ({ ...prev, date_applied: e.target.value }));
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
+    setFormData((prev) => ({ ...prev, date_applied: value }));
+  };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -436,7 +448,7 @@ const JobApplicationsPage = () => {
             )}
           </div>
           {jobsLoading && (
-            <div className="absolute inset-0 flex justify-center items-center pointer-events-none">
+            <div className="absolute mt-12 inset-0 flex justify-center items-center pointer-events-none">
               <SolidCircleLoader className="w-10 h-10" />
             </div>
           )}
