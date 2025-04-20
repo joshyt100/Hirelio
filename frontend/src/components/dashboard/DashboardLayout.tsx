@@ -105,8 +105,8 @@ export default function DashboardLayout() {
   // UI controls
   const [timeRange, setTimeRange] = useState("all");
   const [activeTab, setActiveTab] = useState("overview");
-  const { collapsed } = useSidebar();
-  const leftPadding = collapsed ? "pl-16" : "pl-48";
+  const { isMobile, collapsed } = useSidebar();
+  const leftPaddingClass = collapsed ? "pl-16" : "pl-48";
 
   // Fetch and reload on timeRange change
   useEffect(() => {
@@ -160,12 +160,12 @@ export default function DashboardLayout() {
   }
 
   return (
-    <div className={`ml-20 p-4 ${leftPadding} transition-all duration-300`}>
-      <div className="container mx-auto py-6 max-w-7xl">
+    <div className={`ml-20 p-4 ${!isMobile && leftPaddingClass} ${isMobile && "ml-0"} transition-all duration-300`}>
+      < div className="container mx-auto py-6 max-w-7xl">
         {/* Header & filter */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
           <div className="mb-4 sm:mb-0">
-            <h1 className="text-3xl font-bold">Job Application Dashboard</h1>
+            <h1 className="text-3xl font-bold mt-6">Job Application Dashboard</h1>
             <p className="text-muted-foreground">
               Track your job search progress and analytics
             </p>
@@ -411,7 +411,7 @@ export default function DashboardLayout() {
           </TabsContent>
         </Tabs>
       </div>
-    </div>
+    </div >
   );
 }
 
