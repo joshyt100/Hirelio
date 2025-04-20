@@ -56,7 +56,7 @@ export function AppSidebar(): JSX.Element {
 
   const sidebarClasses = useMemo(() => {
 
-    const base = `fixed top-0 left-0 h-full bg-zinc-50 dark:bg-zinc-900 border-r z-50 p-4 flex flex-col gap-6 shadow-lg ${isMobile ? "transition-transform duration-300" : "transition-all duration-300 "
+    const base = `fixed top-0 left-0 h-full bg-zinc-50 dark:bg-zinc-900 border-r z-[110] p-4 flex flex-col gap-6 shadow-lg ${isMobile ? " transform transition duration-300" : "transition-all duration-300 "
       }`;
 
     const transform = collapsed ? "-translate-x-full" : "translate-x-0";
@@ -73,7 +73,7 @@ export function AppSidebar(): JSX.Element {
     <>
       {/* Mobile Top Navbar */}
       {collapsed && (
-        <nav className="lg:hidden fixed top-0 left-0 right-0 z-[100] backdrop-blur-2xl px-1   flex items-center shadow-sm">
+        <nav className="lg:hidden fixed top-0 left-0 right-0 z-[100] backdrop-blur-2xl px-1   flex items-center ">
           <Button
             variant="ghost"
             onClick={toggleCollapsed}
@@ -144,15 +144,15 @@ export function AppSidebar(): JSX.Element {
               </Button>
             </Link>
           )}
-
           <Button
             variant="outline"
             size="icon"
             onClick={toggleCollapsed}
-            className="self-end"
+            className="self-start"
           >
             {collapsed ? ">" : "<"}
           </Button>
+
         </div>
       </div>
 
