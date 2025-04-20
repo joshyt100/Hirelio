@@ -33,12 +33,29 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { SolidCircleLoader } from "../loader/SolidCircleLoader";
 import { useSidebar } from "../../context/SideBarContext";
 
 // Dashboard API endpoint
 const DASHBOARD_URL = "http://127.0.0.1:8000/api/dashboard/";
 
-type StatusDatum = { name: string; value: number; color?: string };
+// Color maps for pies
+const STATUS_COLORS: Record<string, string> = {
+  Saved: "#64748b",
+  Applied: "#3b82f6",
+  Interview: "#f59e0b",
+  Offer: "#22c55e",
+  Rejected: "#ef4444",
+};
+
+const RESPONSE_TIME_COLORS = [
+  "#3b82f6", // < 1 week
+  "#f59e0b", // 1-2 weeks
+  "#64748b", // 2-4 weeks
+  "#ef4444", // > 4 weeks
+];
+
+type StatusDatum = { name: string; value: number };
 type TimelineDatum = { month: string; applications: number; interviews: number; offers: number };
 type RateDatum = { name: string; value: number };
 type KeyValue = { name: string; value: number };
@@ -136,7 +153,7 @@ export default function DashboardLayout() {
     });
 
   if (loading) {
-    return <div className="p-4">Loading dashboard…</div>;
+    return <SolidCircleLoader className="w-8 self-center h-8 mt-56 mx-auto my-8" />;
   }
   if (error) {
     return <div className="p-4 text-red-500">Error loading dashboard: {error}</div>;
@@ -253,7 +270,7 @@ export default function DashboardLayout() {
                           label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                         >
                           {statusData.map((entry, idx) => (
-                            <Cell key={idx} fill={entry.color} />
+                            <Cell key={idx} fill={STATUS_COLORS[entry.name]} />
                           ))}
                         </Pie>
                         <Tooltip />
@@ -277,8 +294,8 @@ export default function DashboardLayout() {
                     {recentApplications.map((job) => (
                       <div key={job.id} className="flex items-start gap-3">
                         <div
-                          className={`w-2 h-2 mt-2 rounded-full`}
-                          style={{ backgroundColor: statusData.find(s => s.name.toLowerCase() === job.status)?.color }}
+                          className="w-2 h-2 mt-2 rounded-full"
+                          style={{ backgroundColor: STATUS_COLORS[job.status.charAt(0).toUpperCase() + job.status.slice(1)] }}
                         />
                         <div className="flex-1 space-y-1">
                           <div className="flex justify-between">
@@ -355,6 +372,37 @@ export default function DashboardLayout() {
                         <Tooltip />
                         <Bar dataKey="value" fill="#3b82f6" />
                       </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Time to Response</CardTitle>
+                  <CardDescription>
+                    How long companies take to respond
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-[300px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={timeToResponseData}
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={100}
+                          dataKey="value"
+                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        >
+                          {timeToResponseData.map((_, idx) => (
+                            <Cell key={idx} fill={RESPONSE_TIME_COLORS[idx % RESPONSE_TIME_COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                        <Legend />
+                      </PieChart>
                     </ResponsiveContainer>
                   </div>
                 </CardContent>
