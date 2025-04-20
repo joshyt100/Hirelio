@@ -27,7 +27,7 @@ const navItems = [
   { to: "/saved", icon: <Save className="h-5 w-5" />, label: "Saved Cover Letters" },
 ];
 
-// Individual nav item component
+// Nav item
 const SidebarNavItem: React.FC<SidebarNavItemProps> = React.memo(
   ({ to, icon, label, collapsed }) => (
     <Link to={to} className="w-full">
@@ -39,9 +39,7 @@ const SidebarNavItem: React.FC<SidebarNavItemProps> = React.memo(
   )
 );
 
-// Sausage menu icon
-
-
+// Sausage icon
 const SausageMenuIcon = () => (
   <svg width="36" height="44" viewBox="0 0 32 32" fill="none">
     <rect x="3" y="5" width="30" height="3" rx="1.5" fill="currentColor" />
@@ -53,13 +51,14 @@ const SausageMenuIcon = () => (
 export function AppSidebar(): JSX.Element {
   const { theme, setTheme } = useTheme();
   const { isAuthenticated, logout } = useAuth();
-  const { collapsed, toggleCollapsed } = useSidebar();
+  const { isMobile, collapsed, toggleCollapsed } = useSidebar();
   const [logoutModal, setLogoutModal] = useState(false);
 
-  // Sidebar classes
   const sidebarClasses = useMemo(() => {
-    const base =
-      "fixed top-0 left-0 h-full bg-zinc-50 dark:bg-zinc-900 border-r z-50 p-4 flex flex-col gap-6 shadow-lg transition-transform duration-300 ease-in-out";
+
+    const base = `fixed top-0 left-0 h-full bg-zinc-50 dark:bg-zinc-900 border-r z-50 p-4 flex flex-col gap-6 shadow-lg ${isMobile ? "transition-transform duration-300" : "transition-all duration-300 "
+      }`;
+
     const transform = collapsed ? "-translate-x-full" : "translate-x-0";
     const width = collapsed ? "w-20 lg:w-20" : "w-64 lg:w-64";
     return `${base} ${transform} lg:translate-x-0 ${width}`;
@@ -72,19 +71,21 @@ export function AppSidebar(): JSX.Element {
 
   return (
     <>
-      {/* Mobile toggle: fixed to viewport */}
-      <div className="lg:hidden fixed top-4 left-4 z-60">
-        <Button
-          variant="ghost"
-          onClick={toggleCollapsed}
-          aria-label={collapsed ? "Open menu" : "Close menu"}
-          className="p-2"
-        >
-          <SausageMenuIcon />
-        </Button>
-      </div>
+      {/* Mobile Top Navbar */}
+      {collapsed && (
+        <nav className="lg:hidden fixed top-0 left-0 right-0 z-[100] backdrop-blur-2xl px-1   flex items-center shadow-sm">
+          <Button
+            variant="ghost"
+            onClick={toggleCollapsed}
+            aria-label="Open menu"
+            className="p-2"
+          >
+            <SausageMenuIcon />
+          </Button>
+        </nav>
+      )}
 
-      {/* Overlay when open on mobile */}
+      {/* Mobile overlay when sidebar is open */}
       {!collapsed && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 z-50 lg:hidden"
@@ -92,10 +93,9 @@ export function AppSidebar(): JSX.Element {
         />
       )}
 
-      {/* Sidebar container */}
+      {/* Sidebar */}
       <div className={sidebarClasses}>
-        {/* Header / Logo */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between z-[105]">
           <div className="flex items-center gap-2">
             <div className="bg-primary rounded-lg p-1.5">
               <Briefcase className="h-5 w-5 text-primary-foreground" />
@@ -108,9 +108,7 @@ export function AppSidebar(): JSX.Element {
           </div>
         </div>
 
-        {/* Nav & actions */}
         <div className="flex flex-col gap-4 flex-grow">
-          {/* Theme toggle */}
           <Button
             variant="ghost"
             size="icon"
@@ -127,12 +125,10 @@ export function AppSidebar(): JSX.Element {
             <span className="text-sm text-muted-foreground">Navigation</span>
           )}
 
-          {/* Navigation items */}
           {navItems.map((item) => (
             <SidebarNavItem key={item.to} {...item} collapsed={collapsed} />
           ))}
 
-          {/* Auth button */}
           {isAuthenticated ? (
             <Button
               onClick={() => setLogoutModal(true)}
@@ -149,14 +145,17 @@ export function AppSidebar(): JSX.Element {
             </Link>
           )}
 
-          {/* Collapse toggle for lg+ */}
-          <Button variant="outline" size="icon" onClick={toggleCollapsed} className="self-end">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={toggleCollapsed}
+            className="self-end"
+          >
             {collapsed ? ">" : "<"}
           </Button>
         </div>
       </div>
 
-      {/* Logout confirmation */}
       <LogoutConfirm
         open={logoutModal}
         onClose={() => setLogoutModal(false)}
