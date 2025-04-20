@@ -318,7 +318,7 @@ const JobApplicationsPage: React.FC = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3">
           <div className="mb-6 sm:mb-0">
-            <h1 className="text-3xl mt-6 font-bold bg-clip-text">
+            <h1 className="text-3xl mt-4 font-bold bg-clip-text">
               Job Application Tracker
             </h1>
             <p className="text-muted-foreground mt-2">

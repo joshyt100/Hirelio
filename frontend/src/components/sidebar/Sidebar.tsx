@@ -73,7 +73,7 @@ export function AppSidebar(): JSX.Element {
     <>
       {/* Mobile Top Navbar */}
       {collapsed && (
-        <nav className="lg:hidden fixed top-0 left-0 right-0 z-[100] backdrop-blur-2xl px-1   flex items-center ">
+        <nav className="lg:hidden fixed top-0 left-0 right-0 z-[100]   backdrop-blur-2xl px-2   flex items-center ">
           <Button
             variant="ghost"
             onClick={toggleCollapsed}

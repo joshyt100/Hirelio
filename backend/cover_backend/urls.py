@@ -12,6 +12,7 @@ urlpatterns = [
     path("google/", include("social_django.urls", namespace="social")),
     path("cover/", include("AI_generator.urls")),
     path("api/contacts/", include("contacts.urls")),
+    path("api/dashboard/", include("dashboard.urls")),
     # path("silk/", include("silk.urls", namespace="silk")),
 ]
 
