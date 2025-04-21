@@ -15,7 +15,7 @@ export const CoverLetterGenerator: React.FC = () => {
   const [isSaved, setIsSaved] = useState(() => localStorage.getItem("isSaved") === "true");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { collapsed } = useSidebar();
+  const { isMobile, collapsed } = useSidebar();
   const leftPadding = collapsed ? "pl-20" : "pl-64";
 
   useEffect(() => {
@@ -75,10 +75,10 @@ export const CoverLetterGenerator: React.FC = () => {
   };
 
   return (
-    <div className={`w-full min-h-screen transition-all duration-300  ${leftPadding}`}>
+    <div className={`w-full min-h-screen transition-all duration-300 ${isMobile ? "ml-1" : ""}  ${!isMobile && leftPadding}`}>
       <div className="max-w-7xl px-4 py-8 mx-auto flex flex-col md:flex-row gap-6">
         <div className="flex-1">
-          <h1 className="text-3xl font-bold mb-6">Cover Letter Generator</h1>
+          <h1 className="text-3xl mt-4 font-bold mb-6">Cover Letter Generator</h1>
           <CoverLetterForm
             jobDescription={jobDescription}
             setJobDescription={setJobDescription}

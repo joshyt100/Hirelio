@@ -304,7 +304,7 @@ const JobApplicationsPage: React.FC = () => {
     fetchJobs(page);
   };
 
-  // Memoize the pagination range so it isn’t recalculated on every render
+  //memoize the pagination range so it isn’t recalculated on every render
   const paginationRange = useMemo(
     () => getPaginationRange(currentPage, totalPages),
     [currentPage, totalPages]
