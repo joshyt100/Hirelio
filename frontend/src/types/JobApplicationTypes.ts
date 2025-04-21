@@ -81,3 +81,29 @@ export interface EditJobDialogProps {
   currentJob: any;
   onDeleteAttachment: (jobId: string, attachmentId: string) => void;
 }
+
+
+
+
+type StatusDatum = { name: string; value: number };
+type TimelineDatum = { month: string; applications: number; interviews: number; offers: number };
+type RateDatum = { name: string; value: number };
+type KeyValue = { name: string; value: number };
+type RecentApp = { id: number; company: string; position: string; location: string; status: string; date_applied: string };
+
+export type DashboardResponse = {
+  total_applications: number;
+  active_applications: number;
+  interview_count: number;
+  offer_count: number;
+  rejection_count: number;
+  response_rate: number;
+  success_rate: number;
+  status_data: StatusDatum[];
+  timeline_data: TimelineDatum[];
+  response_rate_data: RateDatum[];
+  location_data: KeyValue[];
+  company_data: KeyValue[];
+  time_to_response_data: KeyValue[];
+  recent_applications: RecentApp[];
+};

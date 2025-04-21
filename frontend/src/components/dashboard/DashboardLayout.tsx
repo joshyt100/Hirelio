@@ -34,7 +34,9 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { SolidCircleLoader } from "../loader/SolidCircleLoader";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useSidebar } from "../../context/SideBarContext";
+import { DashboardResponse, StatusDatum, TimelineDatum, RateDatum, KeyValue, RecentApp } from "@/types/JobApplicationTypes";
 
 // Dashboard API endpoint
 const DASHBOARD_URL = "http://127.0.0.1:8000/api/dashboard/";
@@ -54,29 +56,6 @@ const RESPONSE_TIME_COLORS = [
   "#64748b", // 2-4 weeks
   "#ef4444", // > 4 weeks
 ];
-
-type StatusDatum = { name: string; value: number };
-type TimelineDatum = { month: string; applications: number; interviews: number; offers: number };
-type RateDatum = { name: string; value: number };
-type KeyValue = { name: string; value: number };
-type RecentApp = { id: number; company: string; position: string; location: string; status: string; date_applied: string };
-
-type DashboardResponse = {
-  total_applications: number;
-  active_applications: number;
-  interview_count: number;
-  offer_count: number;
-  rejection_count: number;
-  response_rate: number;
-  success_rate: number;
-  status_data: StatusDatum[];
-  timeline_data: TimelineDatum[];
-  response_rate_data: RateDatum[];
-  location_data: KeyValue[];
-  company_data: KeyValue[];
-  time_to_response_data: KeyValue[];
-  recent_applications: RecentApp[];
-};
 
 export default function DashboardLayout() {
   const [loading, setLoading] = useState(true);
@@ -106,7 +85,7 @@ export default function DashboardLayout() {
   const [timeRange, setTimeRange] = useState("all");
   const [activeTab, setActiveTab] = useState("overview");
   const { isMobile, collapsed } = useSidebar();
-  const leftPaddingClass = collapsed ? "pl-16" : "pl-48";
+  const leftPaddingClass = collapsed ? "pl-16" : "pl-56";
 
   // Fetch and reload on timeRange change
   useEffect(() => {
@@ -152,23 +131,81 @@ export default function DashboardLayout() {
       day: "numeric",
     });
 
-  if (loading) {
-    return <SolidCircleLoader className="w-8 self-center h-8 mt-56 mx-auto my-8" />;
-  }
   if (error) {
     return <div className="p-4 text-red-500">Error loading dashboard: {error}</div>;
   }
 
+  // SKELETON LOADER
+  if (loading) {
+    return (
+      <div className={`p-4 ${!isMobile && leftPaddingClass} ${isMobile ? "ml-0" : "ml-10"} transition-all duration-300`}>
+        <div className="container mx-auto py-6 max-w-7xl">
+          {/* Header & filter */}
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
+            <div className="mb-4 sm:mb-0">
+              <Skeleton className="h-8 w-48 mb-2" />
+              <Skeleton className="h-4 w-32" />
+            </div>
+            <Skeleton className="h-8 w-40" />
+          </div>
+
+          {/* Summary cards skeleton */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            {[...Array(4)].map((_, i) => (
+              <Card key={i}>
+                <CardHeader className="pb-2">
+                  <Skeleton className="h-4 w-24 mb-1" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-8 w-16 mb-1" />
+                  <Skeleton className="h-3 w-28" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Tabs nav skeleton */}
+          <Skeleton className="h-10 w-full mb-6" />
+
+          {/* Overview skeleton */}
+          <div className="grid md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <Skeleton className="h-6 w-32 mb-1" />
+                <Skeleton className="h-4 w-48" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-[300px] w-full" />
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <Skeleton className="h-6 w-40 mb-1" />
+                <Skeleton className="h-4 w-36" />
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {[...Array(3)].map((_, j) => (
+                    <Skeleton key={j} className="h-6 w-full" />
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ACTUAL CONTENT
   return (
-    <div className={`ml-20 p-4 ${!isMobile && leftPaddingClass} ${isMobile && "ml-0"} transition-all duration-300`}>
-      < div className="container mx-auto py-6 max-w-7xl">
+    <div className={`p-4 ${!isMobile && leftPaddingClass} ${isMobile ? "ml-0" : "ml-10"} transition-all duration-300`}>
+      <div className="container mx-auto py-6 max-w-7xl">
         {/* Header & filter */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
           <div className="mb-4 sm:mb-0">
             <h1 className="text-3xl font-bold mt-6">Job Application Dashboard</h1>
-            <p className="text-muted-foreground">
-              Track your job search progress and analytics
-            </p>
+            <p className="text-muted-foreground">Track your job search progress and analytics</p>
           </div>
           <div className="flex items-center gap-2">
             <Filter className="h-4 w-4 text-muted-foreground" />
@@ -253,9 +290,7 @@ export default function DashboardLayout() {
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">Application Status</CardTitle>
-                  <CardDescription>
-                    Distribution of your job applications by status
-                  </CardDescription>
+                  <CardDescription>Distribution of your job applications by status</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="h-[300px]">
@@ -285,9 +320,7 @@ export default function DashboardLayout() {
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">Recent Applications</CardTitle>
-                  <CardDescription>
-                    Your most recent job applications
-                  </CardDescription>
+                  <CardDescription>Your most recent job applications</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
@@ -300,9 +333,7 @@ export default function DashboardLayout() {
                         <div className="flex-1 space-y-1">
                           <div className="flex justify-between">
                             <p className="font-medium">{job.position}</p>
-                            <span className="text-xs text-muted-foreground">
-                              {formatDate(job.date_applied)}
-                            </span>
+                            <span className="text-xs text-muted-foreground">{formatDate(job.date_applied)}</span>
                           </div>
                           <div className="flex items-center text-sm text-muted-foreground">
                             <Building className="h-3 w-3 mr-1" />
@@ -329,9 +360,7 @@ export default function DashboardLayout() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Application Timeline</CardTitle>
-                <CardDescription>
-                  Your job application activity over time
-                </CardDescription>
+                <CardDescription>Your job application activity over time</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="h-[400px]">
@@ -358,9 +387,7 @@ export default function DashboardLayout() {
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">Top Companies</CardTitle>
-                  <CardDescription>
-                    Companies you've applied to most
-                  </CardDescription>
+                  <CardDescription>Companies you've applied to most</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="h-[300px]">
@@ -370,7 +397,7 @@ export default function DashboardLayout() {
                         <XAxis type="number" />
                         <YAxis dataKey="name" type="category" width={120} />
                         <Tooltip />
-                        <Bar dataKey="value" fill="#3b82f6" />
+                        <Bar dataKey="value" />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
@@ -380,9 +407,7 @@ export default function DashboardLayout() {
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">Time to Response</CardTitle>
-                  <CardDescription>
-                    How long companies take to respond
-                  </CardDescription>
+                  <CardDescription>How long companies take to respond</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="h-[300px]">
@@ -411,7 +436,7 @@ export default function DashboardLayout() {
           </TabsContent>
         </Tabs>
       </div>
-    </div >
+    </div>
   );
 }
 

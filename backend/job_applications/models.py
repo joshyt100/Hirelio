@@ -18,7 +18,9 @@ class JobApplication(models.Model):
     position = models.CharField(max_length=255, db_index=True)
     location = models.CharField(max_length=255, blank=True, db_index=True)
     status = models.CharField(max_length=50, db_index=True)
-    date_applied = models.DateField()
+    date_applied = models.DateField(
+        db_index=True
+    )  # test db in dex for date for faster queries
     notes = models.TextField(blank=True)
     salary = models.CharField(max_length=100, blank=True)
     contact_person = models.CharField(max_length=255, blank=True)
@@ -33,8 +35,8 @@ class JobApplication(models.Model):
             Index(fields=["user", "status", "-date_applied", "-id"]),
             Index(fields=["user", "status", "position", "-date_applied", "-id"]),
             Index(fields=["user", "status", "company", "-date_applied", "-id"]),
+            Index(fields=["user", "company", "-date_applied", "-id"]),
             # Index(fields=["user", "status", "location", "-date_applied", "-id"]),
-            # match your pagination ordering
         ]
 
     def __str__(self):

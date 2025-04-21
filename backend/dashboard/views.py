@@ -1,10 +1,14 @@
-import re
+# app/job_applications/views.py
+
 from collections import defaultdict
+from django.db.models import Count, Q, Case, When, Value, F, CharField
+from django.db.models.functions import TruncMonth
+from django.db.models.expressions import Func
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from rest_framework import status
 from job_applications.models import JobApplication
+
 from .serializers import DashboardSerializer, RecentJobSerializer
 
 
@@ -13,128 +17,101 @@ class DashboardAPIView(APIView):
 
     def get(self, request):
         qs = JobApplication.objects.filter(user=request.user)
-        total = qs.count()
 
-        # --- 1) summary metrics ---
-        interview_count = qs.filter(status="interview").count()
-        offer_count = qs.filter(status="offer").count()
-        rejection_count = qs.filter(status="rejected").count()
-        active_count = qs.filter(status__in=["applied", "interview"]).count()
-        responses = qs.exclude(status__in=["saved", "applied"]).count()
+        # 1) Summary metrics via a single aggregate()
+        metrics = qs.aggregate(
+            total=Count("id"),
+            interview=Count("id", filter=Q(status="interview")),
+            offer=Count("id", filter=Q(status="offer")),
+            rejected=Count("id", filter=Q(status="rejected")),
+            active=Count("id", filter=Q(status__in=["applied", "interview"])),
+            responses=Count("id", filter=~Q(status__in=["saved", "applied"])),
+        )
+        total = metrics["total"]
+        interview_count = metrics["interview"]
+        offer_count = metrics["offer"]
+        rejection_count = metrics["rejected"]
+        active_count = metrics["active"]
+        responses = metrics["responses"]
 
         response_rate = (responses / total * 100) if total else 0
-        success_rate = (
-            ((offer_count / (interview_count + offer_count + rejection_count)) * 100)
-            if (interview_count + offer_count + rejection_count)
-            else 0
-        )
+        responded = interview_count + offer_count + rejection_count
+        success_rate = (offer_count / responded * 100) if responded else 0
 
-        # --- 2) status distribution (PieChart) ---
-        status_counts = {
-            s: qs.filter(status=s).count()
-            for s in ["saved", "applied", "interview", "offer", "rejected"]
-        }
+        # 2) Status distribution (PieChart)
+        status_qs = qs.values("status").annotate(count=Count("id"))
+        status_map = {s["status"]: s["count"] for s in status_qs}
+        status_order = ["saved", "applied", "interview", "offer", "rejected"]
         status_data = [
-            {"name": s.capitalize(), "value": status_counts[s]}
-            for s in ["saved", "applied", "interview", "offer", "rejected"]
+            {"name": s.capitalize(), "value": status_map.get(s, 0)}
+            for s in status_order
         ]
 
-        # --- 3) timeline data by month (LineChart) ---
-        month_names = [
-            "Jan",
-            "Feb",
-            "Mar",
-            "Apr",
-            "May",
-            "Jun",
-            "Jul",
-            "Aug",
-            "Sep",
-            "Oct",
-            "Nov",
-            "Dec",
-        ]
-        monthly = defaultdict(
-            lambda: {"month": None, "applications": 0, "interviews": 0, "offers": 0}
+        # 3) Timeline by month (LineChart)
+        month_qs = (
+            qs.annotate(month=TruncMonth("date_applied"))
+            .values("month")
+            .annotate(
+                applications=Count("id"),
+                interviews=Count("id", filter=Q(status="interview")),
+                offers=Count("id", filter=Q(status="offer")),
+            )
+            .order_by("month")
         )
-        for job in qs:
-            m = month_names[job.date_applied.month - 1]
-            rec = monthly[m]
-            rec["month"] = m
-            rec["applications"] += 1
-            if job.status == "interview":
-                rec["interviews"] += 1
-            if job.status == "offer":
-                rec["offers"] += 1
         timeline_data = [
-            monthly[m] for m in month_names if monthly[m]["applications"] > 0
+            {
+                "month": entry["month"].strftime("%b"),
+                "applications": entry["applications"],
+                "interviews": entry["interviews"],
+                "offers": entry["offers"],
+            }
+            for entry in month_qs
         ]
 
-        # --- 4) response rates bar data ---
+        # 4) Response‑rate bar metrics
         response_rate_data = [
             {"name": "Response Rate", "value": round(response_rate, 1)},
             {
                 "name": "Interview Rate",
-                "value": round(
-                    (
-                        (
-                            (interview_count + offer_count + rejection_count)
-                            / responses
-                            * 100
-                        )
-                        if responses
-                        else 0
-                    ),
-                    1,
-                ),
+                "value": round(responded / responses * 100, 1) if responses else 0,
             },
             {
                 "name": "Offer Rate",
-                "value": round(
-                    (
-                        (
-                            offer_count
-                            / (interview_count + offer_count + rejection_count)
-                            * 100
-                        )
-                        if (interview_count + offer_count + rejection_count)
-                        else 0
-                    ),
-                    1,
-                ),
+                "value": round(offer_count / responded * 100, 1) if responded else 0,
             },
         ]
 
-        # --- 5) top locations (vertical BarChart) ---
-        loc_map = defaultdict(int)
-        for job in qs:
-            loc = "Unknown"
-            if job.location:
-                low = job.location.lower()
-                if "remote" in low:
-                    loc = "Remote"
-                else:
-                    m = re.match(r"([A-Za-z\s]+),?\s*[A-Z]{2}", job.location)
-                    loc = m.group(1).strip() if m else job.location.split(",")[0]
-            loc_map[loc] += 1
-        location_data = sorted(
-            [{"name": k, "value": v} for k, v in loc_map.items()],
-            key=lambda x: x["value"],
-            reverse=True,
-        )[:5]
+        # 5) Top locations (vertical BarChart)
+        loc_annotation = Case(
+            When(location__icontains="remote", then=Value("Remote")),
+            When(
+                ~Q(location=""),
+                then=Func(
+                    F("location"), Value(r",.*$"), Value(""), function="regexp_replace"
+                ),
+            ),
+            default=Value("Unknown"),
+            output_field=CharField(),
+        )
+        loc_qs = (
+            qs.annotate(loc=loc_annotation)
+            .values("loc")
+            .annotate(count=Count("id"))
+            .order_by("-count")[:5]
+        )
+        location_data = [
+            {"name": entry["loc"], "value": entry["count"]} for entry in loc_qs
+        ]
 
-        # --- 6) top companies (vertical BarChart) ---
-        comp_map = defaultdict(int)
-        for job in qs:
-            comp_map[job.company] += 1
-        company_data = sorted(
-            [{"name": k, "value": v} for k, v in comp_map.items()],
-            key=lambda x: x["value"],
-            reverse=True,
-        )[:5]
+        # 6) Top companies (vertical BarChart)
+        comp_qs = (
+            qs.values("company").annotate(count=Count("id")).order_by("-count")[:5]
+        )
+        company_data = [
+            {"name": entry["company"], "value": entry["count"]} for entry in comp_qs
+        ]
 
-        # --- 7) time-to-response pie (simulated) ---
-        # you can replace with real response-date logic later
+        # 7) Time‑to‑response buckets (simulated)
         simulated_days = [3, 5, 7, 10, 14, 21, 28, 30]
         cat_map = defaultdict(int)
         for d in simulated_days:
@@ -146,7 +123,7 @@ class DashboardAPIView(APIView):
             cat_map[cat] += 1
         time_to_response_data = [{"name": k, "value": v} for k, v in cat_map.items()]
 
-        # --- 8) recent 5 applications ---
+        # 8) Recent 5 applications
         recent_qs = qs.order_by("-date_applied")[:5]
         recent = RecentJobSerializer(recent_qs, many=True).data
 
@@ -168,4 +145,4 @@ class DashboardAPIView(APIView):
         }
 
         serializer = DashboardSerializer(payload)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data, status=200)

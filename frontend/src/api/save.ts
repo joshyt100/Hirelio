@@ -2,17 +2,12 @@
 
 import axios from "axios";
 import { getCookie } from "../utils/csrfUtils";
-import { CoverLetterData, CoverLetterMetadataResponse } from "../types/types";
+//import { CoverLetterData } from "../types/types";
+import { CoverLetterData, PagedCoverLettersResponse } from "@/types/CoverLetterTypes";
 
 /**
  * Response shape for page‑number pagination
  */
-export interface PagedCoverLettersResponse {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: CoverLetterMetadataResponse[];
-}
 
 const BASE_URL = "http://127.0.0.1:8000/cover";
 
