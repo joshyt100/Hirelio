@@ -26,3 +26,13 @@ export interface PagedCoverLettersResponse {
   previous: string | null;
   results: CoverLetterMetadataResponse[];
 }
+
+
+export interface CoverLetterResultProps {
+  coverLetter: string | null;
+  setCoverLetter: React.Dispatch<React.SetStateAction<string | null>>;
+  onSave: () => void;
+  isSaved: boolean;
+  error: string | null;
+  loading: boolean;
+}

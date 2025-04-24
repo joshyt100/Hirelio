@@ -4,7 +4,7 @@ import React, { useEffect, useState, useCallback, useMemo } from "react";
 import {
   Table,
   TableBody,
-  TableCell,
+  // TableCell,
   TableHead,
   TableHeader,
   TableRow,
@@ -111,7 +111,7 @@ export const SavedCoverLetters: React.FC = () => {
         </h1>
       </div>
 
-      <div className="pl-4 w-full max-w-5xl mx-auto dark:bg-zinc-950">
+      <div className="pl-4 w-full max-w-5xl mx-auto ">
         <div className="rounded-md border relative">
           <Table>
             <TableHeader>

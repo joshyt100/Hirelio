@@ -5,6 +5,7 @@ import { generateCoverLetter } from "@/api/generate";
 import { saveCoverLetter } from "@/api/save";
 import { CoverLetterData } from "@/types/CoverLetterTypes";
 import { useSidebar } from "@/context/SideBarContext";
+//import { SolidCircleLoader } from "../loader/SolidCircleLoader";
 
 export const CoverLetterGenerator: React.FC = () => {
   const [jobDescription, setJobDescription] = useState(() => localStorage.getItem("jobDescription") || "");
@@ -22,7 +23,9 @@ export const CoverLetterGenerator: React.FC = () => {
     localStorage.setItem("jobDescription", jobDescription);
     localStorage.setItem("jobName", jobName);
     localStorage.setItem("companyName", companyName);
-    if (coverLetter) localStorage.setItem("coverLetter", coverLetter);
+    if (coverLetter) {
+      localStorage.setItem("coverLetter", coverLetter);
+    }
   }, [jobDescription, jobName, companyName, coverLetter]);
 
   const handleGenerateCoverLetter = async () => {
@@ -47,7 +50,7 @@ export const CoverLetterGenerator: React.FC = () => {
       setIsSaved(false);
       localStorage.setItem("isSaved", "false");
     } catch (error) {
-      setError("Failed to generate cover letter");
+      setError("Failed to generate cover letter and the erorr is: " + error);
     } finally {
       setLoading(false);
     }
@@ -76,7 +79,7 @@ export const CoverLetterGenerator: React.FC = () => {
 
   return (
     <div className={`w-full min-h-screen transition-all duration-300 ${isMobile ? "ml-1" : ""}  ${!isMobile && leftPadding}`}>
-      <div className="max-w-7xl px-4 py-8 mx-auto flex flex-col md:flex-row gap-6">
+      <div className="max-w-7xl px-4 py-8 mx-auto flex flex-col md:flex-row gap-0 lg:gap-4 xl:gap-6">
         <div className="flex-1">
           <h1 className="text-3xl mt-4 font-bold mb-6">Cover Letter Generator</h1>
           <CoverLetterForm
@@ -107,4 +110,3 @@ export const CoverLetterGenerator: React.FC = () => {
 
   );
 };
-

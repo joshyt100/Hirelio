@@ -85,7 +85,7 @@ export default function DashboardLayout() {
   const [timeRange, setTimeRange] = useState("all");
   const [activeTab, setActiveTab] = useState("overview");
   const { isMobile, collapsed } = useSidebar();
-  const leftPaddingClass = collapsed ? "pl-16" : "pl-56";
+  const leftPaddingClass = collapsed ? "pl-16" : "pl-64";
 
   // Fetch and reload on timeRange change
   useEffect(() => {
@@ -285,7 +285,7 @@ export default function DashboardLayout() {
 
           {/* Overview */}
           <TabsContent value="overview" className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid md:grid-cols-2  gap-6">
               {/* Status Pie */}
               <Card>
                 <CardHeader>
@@ -293,7 +293,7 @@ export default function DashboardLayout() {
                   <CardDescription>Distribution of your job applications by status</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-[300px]">
+                  <div className="h-[300px] ">
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
@@ -390,14 +390,14 @@ export default function DashboardLayout() {
                   <CardDescription>Companies you've applied to most</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-[300px]">
+                  <div className="h-[300px] ">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart layout="vertical" data={companyData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis type="number" />
                         <YAxis dataKey="name" type="category" width={120} />
                         <Tooltip />
-                        <Bar dataKey="value" />
+                        <Bar dataKey="value" fill="#6366F1" />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>

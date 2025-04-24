@@ -3,6 +3,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { EditCoverLetterDialog } from "./EditCoverLetterDialog";
 import { useSidebar } from "@/context/SideBarContext";
+import { SolidCircleLoader } from "../loader/SolidCircleLoader";
+import { CoverLetterResultProps } from "@/types/CoverLetterTypes";
 
 export const CoverLetterResult = ({
   coverLetter,
@@ -11,7 +13,7 @@ export const CoverLetterResult = ({
   isSaved,
   error,
   loading,
-}: any) => {
+}: CoverLetterResultProps) => {
   const { isMobile } = useSidebar();
   const paddingClass = isMobile ? "px-4" : "px-6";
 
@@ -27,7 +29,7 @@ export const CoverLetterResult = ({
     >
       {loading ? (
         <div className="flex flex-col items-center">
-          <div className="animate-spin h-8 w-8 border-4 border-t-transparent rounded-full" />
+          <SolidCircleLoader className="w-6 h-6 mx-auto my-8" />
           <p className="mt-4">Generating your cover letter...</p>
         </div>
       ) : coverLetter ? (
