@@ -14,7 +14,8 @@ import DashboardLayout from "./components/dashboard/DashboardLayout";
 import ContactLayout from "./components/contact/ContactLayout";
 import { SidebarProvider } from "./context/SideBarContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import ResumeLayout from "./components/resume/ResumeLayout";
+// import ResumeLayout from "./components/resume/ResumeLayout";
+import ProfileLayout from "./components/ProfileLayout";
 
 
 
@@ -77,6 +78,7 @@ function App() {
                   <Route path="/job-application-tracker" element={<JobApplicationsPage />} />
                   <Route path="/dashboard" element={<DashboardLayout />} />
                   <Route path="/contacts-tracker" element={<ContactLayout />} />
+                  <Route path="/profile" element={<ProfileLayout />} />
                 </Routes>
               </Layout>
             </Router>

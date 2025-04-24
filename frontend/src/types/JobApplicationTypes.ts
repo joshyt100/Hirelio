@@ -13,7 +13,7 @@ export interface JobApplication {
   position: string
   location: string
   status: "saved" | "applied" | "interview" | "offer" | "rejected"
-  dateApplied: Date
+  date_applied: string
   notes: string
   attachments: Attachment[]
   salary?: string
