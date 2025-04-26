@@ -19,6 +19,9 @@ const statusOptions = [
   { value: "rejected", label: "Rejected" },
 ];
 
+
+
+
 const AddJobDialog: React.FC<AddJobDialogProps> = ({
   open,
   onOpenChange,

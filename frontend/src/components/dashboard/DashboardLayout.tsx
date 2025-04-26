@@ -36,7 +36,14 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { SolidCircleLoader } from "../loader/SolidCircleLoader";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSidebar } from "../../context/SideBarContext";
-import { DashboardResponse, StatusDatum, TimelineDatum, RateDatum, KeyValue, RecentApp } from "@/types/JobApplicationTypes";
+import {
+  DashboardResponse,
+  StatusDatum,
+  TimelineDatum,
+  RateDatum,
+  KeyValue,
+  RecentApp,
+} from "@/types/JobApplicationTypes";
 
 // Dashboard API endpoint
 const DASHBOARD_URL = "http://127.0.0.1:8000/api/dashboard/";
@@ -49,6 +56,19 @@ const STATUS_COLORS: Record<string, string> = {
   Offer: "#22c55e",
   Rejected: "#ef4444",
 };
+
+
+
+
+
+// const STATUS_COLORS: Record<string, string> = {
+//   Saved: "#A855F7",      // bg-purple-500
+//   Applied: "#0EA5E9",    // bg-sky-500
+//   Interview: "#EC4899",  // bg-pink-500
+//   Offer: "#10B981",      // bg-emerald-500
+//   Rejected: "#F43F5E",   // bg-rose-500
+// };
+
 
 const RESPONSE_TIME_COLORS = [
   "#3b82f6", // < 1 week
@@ -86,6 +106,7 @@ export default function DashboardLayout() {
   const [activeTab, setActiveTab] = useState("overview");
   const { isMobile, collapsed } = useSidebar();
   const leftPaddingClass = collapsed ? "pl-16" : "pl-64";
+  const RATE_COLORS = ["#3b82f6", "#f59e0b", "#22c55e"];
 
   // Fetch and reload on timeRange change
   useEffect(() => {
@@ -285,7 +306,8 @@ export default function DashboardLayout() {
 
           {/* Overview */}
           <TabsContent value="overview" className="space-y-6">
-            <div className="grid md:grid-cols-2  gap-6">
+            {/* First row: Status Pie & Response‐Rates Bar */}
+            <div className="grid md:grid-cols-2 gap-6">
               {/* Status Pie */}
               <Card>
                 <CardHeader>
@@ -293,7 +315,7 @@ export default function DashboardLayout() {
                   <CardDescription>Distribution of your job applications by status</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-[300px] ">
+                  <div className="h-[300px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
@@ -316,7 +338,10 @@ export default function DashboardLayout() {
                 </CardContent>
               </Card>
 
-              {/* Recent */}
+
+
+
+
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">Recent Applications</CardTitle>
@@ -328,12 +353,17 @@ export default function DashboardLayout() {
                       <div key={job.id} className="flex items-start gap-3">
                         <div
                           className="w-2 h-2 mt-2 rounded-full"
-                          style={{ backgroundColor: STATUS_COLORS[job.status.charAt(0).toUpperCase() + job.status.slice(1)] }}
+                          style={{
+                            backgroundColor:
+                              STATUS_COLORS[job.status.charAt(0).toUpperCase() + job.status.slice(1)],
+                          }}
                         />
                         <div className="flex-1 space-y-1">
                           <div className="flex justify-between">
                             <p className="font-medium">{job.position}</p>
-                            <span className="text-xs text-muted-foreground">{formatDate(job.date_applied)}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {formatDate(job.date_applied)}
+                            </span>
                           </div>
                           <div className="flex items-center text-sm text-muted-foreground">
                             <Building className="h-3 w-3 mr-1" />
@@ -349,6 +379,71 @@ export default function DashboardLayout() {
                         </div>
                       </div>
                     ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Second row: Recent Applications & Top Locations */}
+            <div className="grid md:grid-cols-2 gap-6">
+
+
+
+              {/* Response Rates Bar */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Response & Success Rates</CardTitle>
+                  <CardDescription>
+                    How often you get responses, interviews, and offers
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-[300px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={responseRateData}
+                        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Bar dataKey="value">
+                          {responseRateData.map((_, idx) => (
+                            <Cell
+                              key={`cell-${idx}`}
+                              fill={RATE_COLORS[idx % RATE_COLORS.length]}
+                            />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Top Locations Horizontal Bar */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Top Locations</CardTitle>
+                  <CardDescription>Where you're applying most</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-[300px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        layout="vertical"
+                        data={locationData}
+                        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis type="number" />
+                        <YAxis dataKey="name" type="category" width={120} />
+                        <Tooltip />
+                        <Bar dataKey="value" fill="#6366F1" />
+                      </BarChart>
+                    </ResponsiveContainer>
                   </div>
                 </CardContent>
               </Card>
@@ -390,14 +485,15 @@ export default function DashboardLayout() {
                   <CardDescription>Companies you've applied to most</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-[300px] ">
+                  <div className="h-[300px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart layout="vertical" data={companyData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis type="number" />
                         <YAxis dataKey="name" type="category" width={120} />
                         <Tooltip />
-                        <Bar dataKey="value" fill="#6366F1" />
+                        <Bar dataKey="value" fill="#6B7280
+" />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
