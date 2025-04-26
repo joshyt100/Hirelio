@@ -264,7 +264,7 @@ export default function ContactLayout() {
 
   return (
     <div className={`${leftPaddingClass} transition-all duration-300`}>
-      <div className="container mx-auto py-6 max-w-7xl">
+      <div className="container mx-auto py-6 max-w-7xl 2xl:max-w-[100rem]">
         {/* Header */}
         <div className="flex mt-6 flex-col sm:flex-row justify-between items-center mb-6">
           <div>

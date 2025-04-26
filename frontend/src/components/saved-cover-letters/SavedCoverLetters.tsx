@@ -1,5 +1,3 @@
-// src/components/contact/SavedCoverLetters.tsx
-
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import {
   Table,
@@ -21,19 +19,15 @@ import {
 import { getCoverLetters, getPresignedUrl, deleteCoverLetter } from "@/api/save";
 import { CoverLetterMetadataResponse } from "@/types/CoverLetterTypes";
 import { useSidebar } from "@/context/SideBarContext";
-import { Download, Trash2 } from "lucide-react";
+import { Download, Trash2, Eye } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { TableSkeleton } from "./TableSkeleton";
 import { NoDataRow } from "./NoDataRow";
 
-function getPaginationRange(
-  current: number,
-  total: number
-): (number | string)[] {
+function getPaginationRange(current: number, total: number): (number | string)[] {
   const DOTS = "...";
   const totalButtons = 7;
-  if (total <= totalButtons) {
-    return Array.from({ length: total }, (_, i) => i + 1);
-  }
+  if (total <= totalButtons) return Array.from({ length: total }, (_, i) => i + 1);
   const left = Math.max(current - 1, 1);
   const right = Math.min(current + 1, total);
   const showLeftDots = left > 2;
@@ -55,31 +49,27 @@ export const SavedCoverLetters: React.FC = () => {
   const leftPaddingClass = collapsed ? "lg:pl-20" : "lg:pl-64";
 
   const PAGE_SIZE = 15;
-  const [coverLetters, setCoverLetters] = useState<
-    CoverLetterMetadataResponse[]
-  >([]);
+  const [coverLetters, setCoverLetters] = useState<CoverLetterMetadataResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-  const fetchCoverLetters = useCallback(
-    async (page: number = 1) => {
-      setLoading(true);
-      try {
-        const data = await getCoverLetters(page, PAGE_SIZE);
-        setCoverLetters(data.results);
-        setTotalPages(Math.ceil(data.count / PAGE_SIZE));
-        setCurrentPage(page);
-      } catch (err) {
-        console.error("Failed to fetch cover letters", err);
-        setCoverLetters([]);
-        setTotalPages(1);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [PAGE_SIZE]
-  );
+  const fetchCoverLetters = useCallback(async (page: number = 1) => {
+    setLoading(true);
+    try {
+      const data = await getCoverLetters(page, PAGE_SIZE);
+      setCoverLetters(data.results);
+      setTotalPages(Math.ceil(data.count / PAGE_SIZE));
+      setCurrentPage(page);
+    } catch (err) {
+      console.error("Failed to fetch cover letters", err);
+      setCoverLetters([]);
+      setTotalPages(1);
+    } finally {
+      setLoading(false);
+    }
+  }, [PAGE_SIZE]);
 
   useEffect(() => {
     fetchCoverLetters(1);
@@ -95,16 +85,26 @@ export const SavedCoverLetters: React.FC = () => {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this cover letter?")) {
-      return;
-    }
+    if (!confirm("Are you sure you want to delete this cover letter?")) return;
     try {
       await deleteCoverLetter(id);
-      // refresh current page after delete
       fetchCoverLetters(currentPage);
     } catch (error) {
       console.error("Delete failed", error);
     }
+  };
+
+  const handlePreview = async (id: number) => {
+    try {
+      const url = await getPresignedUrl(id);
+      setPreviewUrl(url);
+    } catch (error) {
+      console.error("Preview failed", error);
+    }
+  };
+
+  const closePreview = () => {
+    setPreviewUrl(null);
   };
 
   const paginationRange = useMemo(
@@ -113,16 +113,12 @@ export const SavedCoverLetters: React.FC = () => {
   );
 
   return (
-    <div
-      className={`flex flex-col min-h-screen ${leftPaddingClass} transition-all duration-300 mx-auto`}
-    >
+    <div className={`flex flex-col min-h-screen ${leftPaddingClass} transition-all duration-300 mx-auto`}>
       <div className="w-full flex justify-center mt-12 mb-8">
-        <h1 className="text-3xl font-bold text-center">
-          Saved Cover Letters
-        </h1>
+        <h1 className="text-3xl font-bold text-center">Saved Cover Letters</h1>
       </div>
 
-      <div className="pl-4 w-full max-w-5xl mx-auto">
+      <div className="pl-4 w-full max-w-6xl  mx-auto">
         <div className="rounded-md border relative">
           <Table>
             <TableHeader>
@@ -142,20 +138,25 @@ export const SavedCoverLetters: React.FC = () => {
                   <TableRow key={letter.id}>
                     <TableCell>{letter.company_name}</TableCell>
                     <TableCell>{letter.job_title}</TableCell>
-                    <TableCell>
-                      {new Date(letter.created_at).toLocaleString()}
-                    </TableCell>
+                    <TableCell>{new Date(letter.created_at).toLocaleString()}</TableCell>
                     <TableCell className="text-right space-x-2">
                       <button
+                        onClick={() => handlePreview(letter.id)}
+                        className="p-1  rounded"
+                        title="Preview"
+                      >
+                        <Eye className="h-5 w-5 text-cyan-700" />
+                      </button>
+                      <button
                         onClick={() => handleDownload(letter.id)}
-                        className="p-1 hover:bg-gray-100 rounded"
+                        className="p-1  rounded"
                         title="Download"
                       >
-                        <Download className="h-5 w-5 text-primary" />
+                        <Download className="h-5 w-5 text-primary " />
                       </button>
                       <button
                         onClick={() => handleDelete(letter.id)}
-                        className="p-1 hover:bg-gray-100 rounded"
+                        className="p-1  rounded"
                         title="Delete"
                       >
                         <Trash2 className="h-5 w-5 text-red-500" />
@@ -228,6 +229,19 @@ export const SavedCoverLetters: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Preview Dialog */}
+      {previewUrl && (
+        <Dialog open={!!previewUrl} onOpenChange={closePreview}>
+          <DialogContent className="max-w-4xl h-[90vh]">
+            <iframe
+              src={previewUrl}
+              title="Preview"
+              className="w-full h-full rounded"
+            />
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };

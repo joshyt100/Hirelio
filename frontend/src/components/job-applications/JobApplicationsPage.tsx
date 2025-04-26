@@ -313,7 +313,7 @@ const JobApplicationsPage: React.FC = () => {
   return (
     <div className="min-h-screen">
       <div
-        className={`container ${!isMobile && leftPaddingClass}  ${isMobile ? "px-4" : ""} "pr-4 pt-8 mx-auto max-w-[96rem] w-full transition-all duration-300`}
+        className={`container ${!isMobile && leftPaddingClass}  ${isMobile ? "px-4" : ""} "pr-4 pt-8 mx-auto max-w-[100rem] w-full transition-all duration-300`}
       >
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3">

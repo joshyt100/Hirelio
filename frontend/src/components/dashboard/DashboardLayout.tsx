@@ -160,7 +160,7 @@ export default function DashboardLayout() {
   if (loading) {
     return (
       <div className={`p-4 ${!isMobile && leftPaddingClass} ${isMobile ? "ml-0" : "ml-10"} transition-all duration-300`}>
-        <div className="container mx-auto py-6 max-w-7xl">
+        <div className="container mx-auto py-6 max-w-7xl 2xl:max-w-[100rem]">
           {/* Header & filter */}
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
             <div className="mb-4 sm:mb-0">
@@ -221,12 +221,12 @@ export default function DashboardLayout() {
   // ACTUAL CONTENT
   return (
     <div className={`p-4 ${!isMobile && leftPaddingClass} ${isMobile ? "ml-0" : "ml-10"} transition-all duration-300`}>
-      <div className="container mx-auto py-6 max-w-7xl">
+      <div className="container mx-auto py-6 max-w-7xl 2xl:max-w-[100rem]">
         {/* Header & filter */}
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center ">
           <div className="mb-4 sm:mb-0">
-            <h1 className="text-3xl font-bold mt-6">Job Application Dashboard</h1>
-            <p className="text-muted-foreground">Track your job search progress and analytics</p>
+            <h1 className="text-3xl font-bold sm:mt-4 lg:mt-0 ">Job Application Dashboard</h1>
+            <p className="text-muted-foreground mb-4">Track your job search progress and analytics</p>
           </div>
           <div className="flex items-center gap-2">
             <Filter className="h-4 w-4 text-muted-foreground" />
