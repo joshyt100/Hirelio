@@ -1,20 +1,14 @@
-// contact/SavedCoverLetters.tsx
+// src/components/contact/SavedCoverLetters.tsx
 
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import {
   Table,
   TableBody,
-  // TableCell,
+  TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getCoverLetters, getPresignedUrl } from "@/api/save";
-import { CoverLetterMetadataResponse } from "@/types/CoverLetterTypes";
-import { CoverLetterRow } from "./CoverLetterRow";
-import { TableSkeleton } from "./TableSkeleton";
-import { NoDataRow } from "./NoDataRow";
-import { useSidebar } from "@/context/SideBarContext";
 import {
   Pagination,
   PaginationContent,
@@ -24,6 +18,12 @@ import {
   PaginationNext,
   PaginationEllipsis,
 } from "@/components/ui/pagination";
+import { getCoverLetters, getPresignedUrl, deleteCoverLetter } from "@/api/save";
+import { CoverLetterMetadataResponse } from "@/types/CoverLetterTypes";
+import { useSidebar } from "@/context/SideBarContext";
+import { Download, Trash2 } from "lucide-react";
+import { TableSkeleton } from "./TableSkeleton";
+import { NoDataRow } from "./NoDataRow";
 
 function getPaginationRange(
   current: number,
@@ -52,8 +52,6 @@ function getPaginationRange(
 
 export const SavedCoverLetters: React.FC = () => {
   const { collapsed } = useSidebar();
-
-  // Only add left-padding on md+; no padding on sm
   const leftPaddingClass = collapsed ? "lg:pl-20" : "lg:pl-64";
 
   const PAGE_SIZE = 15;
@@ -96,6 +94,19 @@ export const SavedCoverLetters: React.FC = () => {
     }
   };
 
+  const handleDelete = async (id: number) => {
+    if (!confirm("Are you sure you want to delete this cover letter?")) {
+      return;
+    }
+    try {
+      await deleteCoverLetter(id);
+      // refresh current page after delete
+      fetchCoverLetters(currentPage);
+    } catch (error) {
+      console.error("Delete failed", error);
+    }
+  };
+
   const paginationRange = useMemo(
     () => getPaginationRange(currentPage, totalPages),
     [currentPage, totalPages]
@@ -111,7 +122,7 @@ export const SavedCoverLetters: React.FC = () => {
         </h1>
       </div>
 
-      <div className="pl-4 w-full max-w-5xl mx-auto ">
+      <div className="pl-4 w-full max-w-5xl mx-auto">
         <div className="rounded-md border relative">
           <Table>
             <TableHeader>
@@ -122,19 +133,38 @@ export const SavedCoverLetters: React.FC = () => {
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
+
             <TableBody>
               {loading ? (
                 <TableSkeleton />
               ) : coverLetters.length > 0 ? (
                 coverLetters.map((letter) => (
-                  <CoverLetterRow
-                    key={letter.id}
-                    letter={letter}
-                    onDownload={handleDownload}
-                  />
+                  <TableRow key={letter.id}>
+                    <TableCell>{letter.company_name}</TableCell>
+                    <TableCell>{letter.job_title}</TableCell>
+                    <TableCell>
+                      {new Date(letter.created_at).toLocaleString()}
+                    </TableCell>
+                    <TableCell className="text-right space-x-2">
+                      <button
+                        onClick={() => handleDownload(letter.id)}
+                        className="p-1 hover:bg-gray-100 rounded"
+                        title="Download"
+                      >
+                        <Download className="h-5 w-5 text-primary" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(letter.id)}
+                        className="p-1 hover:bg-gray-100 rounded"
+                        title="Delete"
+                      >
+                        <Trash2 className="h-5 w-5 text-red-500" />
+                      </button>
+                    </TableCell>
+                  </TableRow>
                 ))
               ) : (
-                <NoDataRow />
+                <NoDataRow colSpan={4} />
               )}
             </TableBody>
           </Table>

@@ -5,6 +5,7 @@ from .views import (
     GetCoverLetterURL,
     SaveCoverLetter,
     GetCoverLetters,
+    DeleteCoverLetter,
 )
 
 urlpatterns = [
@@ -16,4 +17,9 @@ urlpatterns = [
         name="get_cover_letter_url",
     ),
     path("get-cover-letters/", GetCoverLetters.as_view(), name="get_cover_letters"),
+    path(
+        "delete-cover-letter/<int:cover_letter_id>/",
+        DeleteCoverLetter.as_view(),
+        name="delete_cover_letter",
+    ),
 ]
