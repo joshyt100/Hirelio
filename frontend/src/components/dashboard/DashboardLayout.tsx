@@ -156,12 +156,11 @@ export default function DashboardLayout() {
     return <div className="p-4 text-red-500">Error loading dashboard: {error}</div>;
   }
 
-  // SKELETON LOADER
   if (loading) {
     return (
       <div className={`p-4 ${!isMobile && leftPaddingClass} ${isMobile ? "ml-0" : "ml-10"} transition-all duration-300`}>
         <div className="container mx-auto py-6 max-w-7xl 2xl:max-w-[100rem]">
-          {/* Header & filter */}
+          {/* Header & Filter Skeleton */}
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
             <div className="mb-4 sm:mb-0">
               <Skeleton className="h-8 w-48 mb-2" />
@@ -170,9 +169,9 @@ export default function DashboardLayout() {
             <Skeleton className="h-8 w-40" />
           </div>
 
-          {/* Summary cards skeleton */}
+          {/* Summary Cards Skeleton */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            {[...Array(4)].map((_, i) => (
+            {Array.from({ length: 4 }).map((_, i) => (
               <Card key={i}>
                 <CardHeader className="pb-2">
                   <Skeleton className="h-4 w-24 mb-1" />
@@ -185,33 +184,37 @@ export default function DashboardLayout() {
             ))}
           </div>
 
-          {/* Tabs nav skeleton */}
+          {/* Tabs Skeleton */}
           <Skeleton className="h-10 w-full mb-6" />
 
-          {/* Overview skeleton */}
+          {/* Top Two Graphs Skeleton */}
+          <div className="grid md:grid-cols-2 gap-6 mb-6">
+            {Array.from({ length: 2 }).map((_, i) => (
+              <Card key={i}>
+                <CardHeader>
+                  <Skeleton className="h-6 w-32 mb-2" />
+                  <Skeleton className="h-4 w-48" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-[300px] w-full" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Bottom Two Graphs Skeleton (New, added for you) */}
           <div className="grid md:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <Skeleton className="h-6 w-32 mb-1" />
-                <Skeleton className="h-4 w-48" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-[300px] w-full" />
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <Skeleton className="h-6 w-40 mb-1" />
-                <Skeleton className="h-4 w-36" />
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {[...Array(3)].map((_, j) => (
-                    <Skeleton key={j} className="h-6 w-full" />
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            {Array.from({ length: 2 }).map((_, i) => (
+              <Card key={i}>
+                <CardHeader>
+                  <Skeleton className="h-6 w-32 mb-2" />
+                  <Skeleton className="h-4 w-48" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-[300px] w-full" />
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       </div>

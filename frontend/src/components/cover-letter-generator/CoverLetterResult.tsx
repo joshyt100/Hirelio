@@ -42,7 +42,7 @@ export const CoverLetterResult = ({
               value={coverLetter}
               readOnly
               className="
-                w-full flex-1 min-h-[750px]
+                w-full flex-1 min-h-[50rem]
                 bg-zinc-50 border border-zinc-300
                 dark:border-border dark:bg-zinc-900
                 resize-none mb-4
@@ -72,7 +72,7 @@ export const CoverLetterResult = ({
               placeholder="Your cover letter will appear here."
               readOnly
               className="
-                w-full flex-1 min-h-[750px]
+                w-full flex-1 min-h-[50rem]
                 bg-zinc-50 border border-zinc-300
                 dark:border-border dark:bg-zinc-900
                 resize-none mb-4

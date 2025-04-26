@@ -79,7 +79,7 @@ export const CoverLetterGenerator: React.FC = () => {
 
   return (
     <div className={`w-full min-h-screen transition-all duration-300 ${isMobile ? "ml-1" : ""}  ${!isMobile && leftPadding}`}>
-      <div className="max-w-7xl px-4 py-8 mx-auto flex flex-col md:flex-row gap-0 lg:gap-4 xl:gap-6">
+      <div className="max-w-[97rem] px-4 py-8 mx-auto flex flex-col md:flex-row gap-0 lg:gap-4 xl:gap-6">
         <div className="flex-1">
           <h1 className="text-3xl mt-4 font-bold mb-6">Cover Letter Generator</h1>
           <CoverLetterForm

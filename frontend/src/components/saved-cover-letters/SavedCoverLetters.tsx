@@ -113,7 +113,7 @@ export const SavedCoverLetters: React.FC = () => {
   );
 
   return (
-    <div className={`flex flex-col min-h-screen ${leftPaddingClass} transition-all duration-300 mx-auto`}>
+    <div className={`flex flex-col min-h-screen ${leftPaddingClass}  transition-all duration-300 mx-1 sm:mx-2 lg:mx-0 lg:mr-2 xl:mx-0 `}>
       <div className="w-full flex justify-center mt-12 mb-8">
         <h1 className="text-3xl font-bold text-center">Saved Cover Letters</h1>
       </div>
@@ -237,7 +237,7 @@ export const SavedCoverLetters: React.FC = () => {
             <iframe
               src={previewUrl}
               title="Preview"
-              className="w-full h-full rounded"
+              className="w-full h-full p-2 rounded-lg"
             />
           </DialogContent>
         </Dialog>

@@ -10,6 +10,7 @@ from rest_framework.permissions import IsAuthenticated
 from job_applications.models import JobApplication
 
 from .serializers import DashboardSerializer, RecentJobSerializer
+from datetime import timedelta, date
 
 
 class DashboardAPIView(APIView):
@@ -17,6 +18,14 @@ class DashboardAPIView(APIView):
 
     def get(self, request):
         qs = JobApplication.objects.filter(user=request.user)
+
+        time_range = request.query_params.get("time_range", "all")
+        if time_range == "30days":
+            qs = qs.filter(date_applied__gte=date.today() - timedelta(days=30))
+        elif time_range == "90days":
+            qs = qs.filter(date_applied__gte=date.today() - timedelta(days=90))
+        elif time_range == "6months":
+            qs = qs.filter(date_applied__gte=date.today() - timedelta(days=180))
 
         # 1) Summary metrics via a single aggregate()
         metrics = qs.aggregate(
