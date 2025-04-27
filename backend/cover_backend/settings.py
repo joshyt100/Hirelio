@@ -365,5 +365,5 @@ AWS_S3_FILE_OVERWRITE = False
 GEMINI_API_KEY = env("GEMINI_API_KEY")
 
 
-LOGIN_REDIRECT_URL = "http://localhost:5173/"
-LOGOUT_REDIRECT_URL = "http://localhost:5173/"
+LOGIN_REDIRECT_URL = "http://localhost:5173/dashboard"
+LOGOUT_REDIRECT_URL = "http://127.0.0.1:5173/"

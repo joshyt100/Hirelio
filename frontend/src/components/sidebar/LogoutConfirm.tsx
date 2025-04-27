@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import {
   Dialog,
   DialogPortal,
@@ -17,13 +17,22 @@ export const LogoutConfirm: React.FC<LogoutConfirmProps> = ({
   open,
   onClose,
 }) => {
+  const formRef = useRef<HTMLFormElement>(null);
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    // Let the browser submit the form
+  };
+
+  const submitForm = () => {
+    if (formRef.current) {
+      formRef.current.submit(); // 🔥 manually submit the real form
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogPortal>
-        {/* 1) overlay */}
         <DialogOverlay className="fixed inset-0 bg-black/50 data-[state=open]:animate-fadeIn" />
-
-        {/* 2) content: ShadCN’s DialogContent is fixed & centered by default */}
         <DialogContent className="z-50 max-w-lg">
           <DialogHeader>
             <DialogTitle>Confirm Logout</DialogTitle>
@@ -32,9 +41,12 @@ export const LogoutConfirm: React.FC<LogoutConfirmProps> = ({
             </DialogDescription>
           </DialogHeader>
 
+          {/* REAL FORM with CSRF */}
           <form
+            ref={formRef}
             action="http://127.0.0.1:8000/api/logout/"
-            method="post"
+            method="POST"
+            onSubmit={handleSubmit}
             className="mt-4 space-y-4"
           >
             <CSRFToken />
@@ -43,7 +55,9 @@ export const LogoutConfirm: React.FC<LogoutConfirmProps> = ({
               <Button type="button" variant="outline" onClick={onClose}>
                 Cancel
               </Button>
-              <Button type="submit">Logout</Button>
+              <Button type="button" onClick={submitForm}>
+                Logout
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>

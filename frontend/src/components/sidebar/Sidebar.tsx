@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useTheme } from "@/components/theme-provider/theme-provider";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import {
   ChartLine,
   ChartBarBig,
@@ -54,6 +55,7 @@ export function AppSidebar(): JSX.Element {
   const { isAuthenticated, logout } = useAuth();
   const { isMobile, collapsed, toggleCollapsed } = useSidebar();
   const [logoutModal, setLogoutModal] = useState(false);
+  const navigate = useNavigate();
 
   const sidebarClasses = useMemo(() => {
 
@@ -65,10 +67,16 @@ export function AppSidebar(): JSX.Element {
     return `${base} ${transform} lg:translate-x-0 ${width}`;
   }, [collapsed]);
 
-  const handleLogout = async () => {
-    // await refreshCsrfToken();
-    await logout();
-    setLogoutModal(false);
+  const handleLogout = async (e?: React.MouseEvent) => {
+    if (e) e.preventDefault(); // ⬅️ This is the missing piece
+
+    try {
+      await logout();           // POST to /api/logout/
+      setLogoutModal(false);    // Close modal
+      navigate("/");            // Navigate home
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
   };
 
   return (

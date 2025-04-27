@@ -15,6 +15,8 @@ import { loginUser } from "@/api/auth"
 import CSRFToken from "../csrf-token/CSRFToken"
 import { useAuth } from "@/context/AuthContext"
 import { refreshCsrfToken } from "@/utils/refreshCSRFToken"
+// import { useEffect } from "react"
+
 
 export function LoginForm({
   className,
@@ -52,6 +54,9 @@ export function LoginForm({
       setIsLoading(false)
     }
   }
+  // useEffect(() => {
+  //   refreshCsrfToken();
+  // }, [])
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>

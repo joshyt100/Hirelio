@@ -11,6 +11,7 @@ from rest_framework.views import APIView
 from social_core.actions import do_complete
 from social_django.utils import psa
 from social_django.views import _do_login
+from django.shortcuts import redirect
 
 User = get_user_model()  # use the custom user model
 
@@ -72,9 +73,7 @@ class LoginView(APIView):
 class LogoutView(APIView):
     def post(self, request):
         logout(request)
-        return Response(
-            {"message": "Logged out successfully"}, status=status.HTTP_200_OK
-        )
+        return redirect("http://127.0.0.1:5173/")
 
 
 @method_decorator(ensure_csrf_cookie, name="dispatch")
