@@ -105,7 +105,7 @@ export default function DashboardLayout() {
   const [timeRange, setTimeRange] = useState("all");
   const [activeTab, setActiveTab] = useState("overview");
   const { isMobile, collapsed } = useSidebar();
-  const leftPaddingClass = collapsed ? "pl-16" : "pl-64";
+  const leftPaddingClass = collapsed ? "pl-16" : "pl-60";
   const RATE_COLORS = ["#3b82f6", "#f59e0b", "#22c55e"];
 
   // Fetch and reload on timeRange change

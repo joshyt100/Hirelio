@@ -1,0 +1,57 @@
+  .git
+  ✗ backend
+  ✗ ★ frontend
+    public
+    ✗ ★ src
+  │   ✗ api
+  │   app
+  │   assets
+  │   ✗ components
+  │ │   contact
+  │ │   cover-letter-generator
+  │ │   csrf-token
+  │ │   ✗ dashboard
+  │ │   forgot-password
+  │ │   job-applications
+  │ │   landing-page
+  │ │   loader
+  │ │   ✗ login
+  │ │ │ └  ✗ login-form.tsx
+  │ │   resume
+  │ │   saved-cover-letters
+  │ │   sidebar
+  │ │   sign-up
+  │ │   theme-provider
+  │ │   ui
+  │ │ └  ProfileLayout.tsx
+  │   context
+  │   hooks
+  │   lib
+  │   types
+  │   ★ utils
+  │ │ │ 󰛦 csrfUtils.ts
+  │ │ └ 󰛦 ★ refreshCSRFToken.ts
+  │ │  App.css
+  │ │  App.tsx
+  │ │  index.css
+  │ │  main.tsx
+  │ └  vite-env.d.ts
+  │  .gitignore
+  │  components.json
+  │  eslint.config.js
+  │  index.html
+  │  package.json
+  │  pnpm-lock.yaml
+  │  postcss.config.cjs
+  │ 󰂺 README.md
+  │ 󱏿 tailwind.config.js
+  │  tsconfig.app.json
+  │  tsconfig.json
+  │  tsconfig.node.json
+  │  vercel.json
+  └ 󰛦 vite.config.ts
+   .gitignore
+  󰈙 cookies.txt
+   railway.json
+  󰂺 README.md
+   resume.pdf

@@ -68,6 +68,7 @@ class LoginView(APIView):
             )
 
 
+@method_decorator(csrf_protect, name="dispatch")
 class LogoutView(APIView):
     def post(self, request):
         logout(request)

@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label"
 import { loginUser } from "@/api/auth"
 import CSRFToken from "../csrf-token/CSRFToken"
 import { useAuth } from "@/context/AuthContext"
+import { refreshCsrfToken } from "@/utils/refreshCSRFToken"
 
 export function LoginForm({
   className,
@@ -35,6 +36,7 @@ export function LoginForm({
 
     try {
       const response = await loginUser({ email, password })
+      await refreshCsrfToken();
 
       // Use the login function from AuthContext to update auth state
       login(response.user || { email })

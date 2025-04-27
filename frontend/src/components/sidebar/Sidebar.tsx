@@ -17,6 +17,7 @@ import { useAuth } from "@/context/AuthContext";
 import { LogoutConfirm } from "./LogoutConfirm";
 import { useSidebar } from "@/context/SideBarContext";
 import { SidebarNavItemProps } from "@/types/SidebarTypes";
+import { refreshCsrfToken } from "@/utils/refreshCSRFToken";
 
 // Navigation items
 const navItems = [
@@ -65,6 +66,7 @@ export function AppSidebar(): JSX.Element {
   }, [collapsed]);
 
   const handleLogout = async () => {
+    // await refreshCsrfToken();
     await logout();
     setLogoutModal(false);
   };

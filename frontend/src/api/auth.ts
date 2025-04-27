@@ -40,18 +40,27 @@ export const loginUser = async (userData: { email: string; password: string }) =
 };
 
 // Logout user
+//
 export const logoutUser = async () => {
   try {
-    const response = await axios.post(`${API_URL}/logout/`, {}, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    const response = await axios.post(
+      `${API_URL}/logout/`,
+      {},
+      {
+        withCredentials: true, // <-- send cookies (sessionid, csrftoken)
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie('csrftoken'), // <-- VERY IMPORTANT
+        },
+      }
+    );
     return response.data;
-  } catch (error: any) {
+  } catch (error) {
     throw new Error(error.response?.data?.error || "Failed to logout");
   }
 };
+
 
 
 
