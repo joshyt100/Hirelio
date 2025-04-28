@@ -124,21 +124,21 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "cover_backend.wsgi.application"
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "handlers": {
-        "console": {
-            "class": "logging.StreamHandler",
-        },
-    },
-    "loggers": {
-        "django.db.backends": {
-            "level": "DEBUG",  # Log all SQL
-            "handlers": ["console"],
-        },
-    },
-}
+# LOGGING = {
+#     "version": 1,
+#     "disable_existing_loggers": False,
+#     "handlers": {
+#         "console": {
+#             "class": "logging.StreamHandler",
+#         },
+#     },
+#     "loggers": {
+#         "django.db.backends": {
+#             "level": "DEBUG",  # Log all SQL
+#             "handlers": ["console"],
+#         },
+#     },
+# }
 
 
 # Database
@@ -221,12 +221,13 @@ SOCIAL_AUTH_PIPELINE = [
     "social_core.pipeline.social_auth.social_uid",
     "social_core.pipeline.social_auth.auth_allowed",
     "social_core.pipeline.social_auth.social_user",
+    "social_core.pipeline.user.get_username",
+    "social_core.pipeline.user.create_user",
     "social_core.pipeline.social_auth.associate_user",
-    "social_core.pipeline.social_auth.associate_by_email",
     "social_core.pipeline.social_auth.load_extra_data",
     "social_core.pipeline.user.user_details",
+    "accounts.pipeline.log_social_user",  # Move this to the end
 ]
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
@@ -251,7 +252,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 SOCIAL_AUTH_ASSOCIATE_BY_EMAIL = True
 
 #
-SESSION_ENGINE = "django.contrib.sessions.backends.db"
+# SESSION_ENGINE = "django.contrib.sessions.backends.db"
 SESSION_COOKIE_NAME = "sessionid"
 SESSION_COOKIE_SECURE = False  # SET TO TRUE IN PRODUCTION
 # SESSION_COOKIE_HTTPONLY = True
@@ -345,7 +346,7 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = env("SOCIAL_AUTH_GOOGLE_OAUTH2_KEY")
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = env("SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET")
 SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI = env("SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI")
 SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = ["email", "profile", "openid"]
-SOCIAL_AUTH_ASSOCIATE_BY_EMAIL = True
+# SOCIAL_AUTH_ASSOCIATE_BY_EMAIL = True
 
 AWS_ACCESS_KEY_ID = env("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = env("AWS_SECRET_ACCESS_KEY")
@@ -365,5 +366,5 @@ AWS_S3_FILE_OVERWRITE = False
 GEMINI_API_KEY = env("GEMINI_API_KEY")
 
 
-LOGIN_REDIRECT_URL = "http://localhost:5173/dashboard"
+LOGIN_REDIRECT_URL = "http://127.0.0.1:5173/dashboard"
 LOGOUT_REDIRECT_URL = "http://127.0.0.1:5173/"

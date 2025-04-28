@@ -39,20 +39,13 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { useDebounce } from "@/hooks/useDebounce";
 
 // Custom hook for debouncing a value
 //interface debouncedValue<T> {
 //  value: T;
 //  setValue: (value: T) => void;
 //}
-function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedValue(value), delay);
-    return () => clearTimeout(timer);
-  }, [value, delay]);
-  return debouncedValue;
-}
 
 // Helper function: returns a pagination range as an array of numbers and ellipsis strings ("...")
 function getPaginationRange(currentPage: number, totalPages: number): (number | string)[] {
@@ -119,7 +112,7 @@ const JobApplicationsPage: React.FC = () => {
   const [jobsLoading, setJobsLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const { isMobile, collapsed } = useSidebar();
-  const leftPaddingClass = collapsed ? "lg:pl-32" : "lg:pl-[17rem]";
+  const leftPaddingClass = collapsed ? "lg:pl-24 lg:pr-2" : "lg:pl-[17rem]";
 
   // Reset pagination state
   const resetPagination = () => setCurrentPage(1);
@@ -318,7 +311,7 @@ const JobApplicationsPage: React.FC = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3">
           <div className="mb-6 sm:mb-0">
-            <h1 className="text-3xl mt-4 font-bold bg-clip-text">
+            <h1 className="text-3xl  mt-4 lg:mt-2 font-bold bg-clip-text">
               Job Application Tracker
             </h1>
             <p className="text-muted-foreground mt-2">

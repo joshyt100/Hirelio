@@ -18,7 +18,6 @@ import { useAuth } from "@/context/AuthContext";
 import { LogoutConfirm } from "./LogoutConfirm";
 import { useSidebar } from "@/context/SideBarContext";
 import { SidebarNavItemProps } from "@/types/SidebarTypes";
-import { refreshCsrfToken } from "@/utils/refreshCSRFToken";
 
 // Navigation items
 const navItems = [
@@ -35,7 +34,9 @@ const SidebarNavItem: React.FC<SidebarNavItemProps> = React.memo(
     <Link to={to} className="w-full">
       <Button variant="ghost" className="w-full justify-start border-none">
         {icon}
-        {!collapsed && <span className="ml-2 text-sm">{label}</span>}
+        <span className={`ml-2 text-sm transition-opacity duration-300 ${collapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>
+          {label}
+        </span>
       </Button>
     </Link>
   )
@@ -58,22 +59,23 @@ export function AppSidebar(): JSX.Element {
   const navigate = useNavigate();
 
   const sidebarClasses = useMemo(() => {
+    // Using CSS transforms for better performance
+    const mobileTransform = collapsed ? "-translate-x-full" : "translate-x-0";
+    const baseClasses = "fixed top-0 left-0 h-full bg-zinc-50 dark:bg-zinc-900 border-r z-[110] p-4 flex flex-col gap-6 shadow-lg";
+    const transitionClasses = "transition-all duration-300 ease-in-out will-change-transform";
+    const widthClasses = collapsed ? "w-20" : "w-64";
+    const transformClasses = isMobile ? mobileTransform : "translate-x-0";
 
-    const base = `fixed top-0 left-0 h-full bg-zinc-50 dark:bg-zinc-900 border-r z-[110] p-4 flex flex-col gap-6 shadow-lg ${isMobile ? " transform transition duration-300" : "transition-all duration-300 "
-      }`;
+    return `${baseClasses} ${transitionClasses} ${widthClasses} ${transformClasses}`;
+  }, [collapsed, isMobile]);
 
-    const transform = collapsed ? "-translate-x-full" : "translate-x-0";
-    const width = collapsed ? "w-20 lg:w-20" : "w-64 lg:w-64";
-    return `${base} ${transform} lg:translate-x-0 ${width}`;
-  }, [collapsed]);
-
-  const handleLogout = async (e?: React.MouseEvent) => {
-    if (e) e.preventDefault(); // ⬅️ This is the missing piece
+  const handleLogout = async (e) => {
+    if (e) e.preventDefault();
 
     try {
-      await logout();           // POST to /api/logout/
-      setLogoutModal(false);    // Close modal
-      navigate("/");            // Navigate home
+      await logout();
+      setLogoutModal(false);
+      navigate("/");
     } catch (error) {
       console.error("Logout error:", error);
     }
@@ -82,8 +84,8 @@ export function AppSidebar(): JSX.Element {
   return (
     <>
       {/* Mobile Top Navbar */}
-      {collapsed && (
-        <nav className="lg:hidden fixed top-0 left-0 right-0 z-[100]   backdrop-blur-2xl px-2   flex items-center ">
+      {isMobile && (
+        <nav className="lg:hidden fixed top-0 left-0 right-0 z-[100] backdrop-blur-2xl px-2 flex items-center">
           <Button
             variant="ghost"
             onClick={toggleCollapsed}
@@ -96,9 +98,9 @@ export function AppSidebar(): JSX.Element {
       )}
 
       {/* Mobile overlay when sidebar is open */}
-      {!collapsed && (
+      {!collapsed && isMobile && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-50 lg:hidden"
+          className="fixed inset-0 bg-black bg-opacity-50 z-50 lg:hidden transition-opacity duration-300"
           onClick={toggleCollapsed}
         />
       )}
@@ -110,11 +112,11 @@ export function AppSidebar(): JSX.Element {
             <div className="bg-primary rounded-lg p-1.5">
               <Briefcase className="h-5 w-5 text-primary-foreground" />
             </div>
-            {!collapsed && (
-              <Link to="/generate" className="text-xl font-bold">
+            <div className={`overflow-hidden transition-all duration-300 ${collapsed ? 'w-0' : 'w-auto'}`}>
+              <Link to="/generate" className="text-xl font-bold whitespace-nowrap">
                 HireMind
               </Link>
-            )}
+            </div>
           </div>
         </div>
 
@@ -132,7 +134,7 @@ export function AppSidebar(): JSX.Element {
           {collapsed ? (
             <hr className="border-gray-300 dark:border-gray-700 my-2" />
           ) : (
-            <span className="text-sm text-muted-foreground">Navigation</span>
+            <span className="text-sm text-muted-foreground transition-opacity duration-300">Navigation</span>
           )}
 
           {navItems.map((item) => (
@@ -145,7 +147,9 @@ export function AppSidebar(): JSX.Element {
               className="w-full justify-start flex items-center gap-2"
             >
               <LogOut className="h-4 w-4" />
-              {!collapsed && "Logout"}
+              <span className={`transition-opacity duration-300 ${collapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>
+                Logout
+              </span>
             </Button>
           ) : (
             <Link to="/login" className="w-full">
@@ -154,15 +158,15 @@ export function AppSidebar(): JSX.Element {
               </Button>
             </Link>
           )}
+
           <Button
             variant="outline"
             size="icon"
             onClick={toggleCollapsed}
-            className="self-start"
+            className="self-start transition-transform duration-300"
           >
             {collapsed ? ">" : "<"}
           </Button>
-
         </div>
       </div>
 
@@ -174,4 +178,3 @@ export function AppSidebar(): JSX.Element {
     </>
   );
 }
-

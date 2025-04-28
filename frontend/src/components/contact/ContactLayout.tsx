@@ -62,7 +62,7 @@ export default function ContactLayout() {
   const leftPaddingClass = isMobile
     ? "px-4"
     : collapsed
-      ? "lg:pl-32"
+      ? "lg:pl-24 pr-2"
       : "lg:pl-[17rem]";
 
   // Filters & tabs
@@ -266,7 +266,7 @@ export default function ContactLayout() {
     <div className={`${leftPaddingClass} transition-all duration-300`}>
       <div className="container mx-auto py-6 max-w-7xl 2xl:max-w-[100rem]">
         {/* Header */}
-        <div className="flex mt-6 flex-col sm:flex-row justify-between items-center mb-6">
+        <div className="flex mt-6 lg:mt-4 flex-col sm:flex-row justify-between items-center mb-4">
           <div>
             <h1 className="text-3xl font-bold">Network Contacts</h1>
             <p className="text-muted-foreground mt-1">Manage your professional connections</p>
@@ -292,7 +292,7 @@ export default function ContactLayout() {
         <Tabs
           value={activeTab}
           onValueChange={(value) => setActiveTab(value as "all" | "favorites")}
-          className="mb-6"
+          className="mb-3"
         >
           <TabsList className="dark:bg-zinc-850">
             <TabsTrigger value="all">All</TabsTrigger>

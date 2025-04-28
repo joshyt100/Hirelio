@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { useState } from 'react'
-import { useNavigate } from "react-router-dom"
+import { useState, useEffect } from 'react'
+import { useNavigate, useLocation } from "react-router-dom"
 import {
   Card,
   CardContent,
@@ -14,9 +14,6 @@ import { Label } from "@/components/ui/label"
 import { loginUser } from "@/api/auth"
 import CSRFToken from "../csrf-token/CSRFToken"
 import { useAuth } from "@/context/AuthContext"
-import { refreshCsrfToken } from "@/utils/refreshCSRFToken"
-// import { useEffect } from "react"
-
 
 export function LoginForm({
   className,
@@ -29,7 +26,17 @@ export function LoginForm({
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
   const navigate = useNavigate()
-  const { login } = useAuth()
+  const location = useLocation()
+  const { login, checkAuthStatus } = useAuth()
+
+  // Check for error messages passed via location state
+  useEffect(() => {
+    if (location.state?.error) {
+      setError(location.state.error)
+      // Clear the error from location state
+      window.history.replaceState({}, document.title)
+    }
+  }, [location])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -38,13 +45,9 @@ export function LoginForm({
 
     try {
       const response = await loginUser({ email, password })
-      await refreshCsrfToken();
-
-      // Use the login function from AuthContext to update auth state
       login(response.user || { email })
-
       setMessage("Logged in Successfully")
-      navigate("/generate")
+      navigate("/dashboard")
     }
     catch (err) {
       console.error("Login error:", err)
@@ -54,9 +57,15 @@ export function LoginForm({
       setIsLoading(false)
     }
   }
-  // useEffect(() => {
-  //   refreshCsrfToken();
-  // }, [])
+
+  const handleGoogleLogin = () => {
+    // Generate and store a unique state parameter for CSRF protection
+    const state = crypto.randomUUID()
+    localStorage.setItem('oauth_state', state)
+
+    // Redirect to your backend's Google login endpoint with state parameter
+    window.location.href = `http://127.0.0.1:8000/google/login-custom/?state=${state}`
+  }
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -109,7 +118,7 @@ export function LoginForm({
                 variant="outline"
                 className="w-full"
                 type="button"
-                onClick={() => window.location.href = "http://127.0.0.1:8000/google/login/google-oauth2/"}
+                onClick={handleGoogleLogin}
                 disabled={isLoading}
               >
                 Login with Google
@@ -117,7 +126,7 @@ export function LoginForm({
             </div>
             <div className="mt-4 text-center text-sm">
               Don&apos;t have an account?{" "}
-              <a onClick={() => navigate("/sign-up")} className="underline underline-offset-4">
+              <a onClick={() => navigate("/sign-up")} className="underline underline-offset-4 cursor-pointer">
                 Sign up
               </a>
             </div>

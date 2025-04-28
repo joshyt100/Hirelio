@@ -39,8 +39,8 @@ export function SignUpForm({
     try {
       const response = await registerUser(data);
       setMessage(response.message);
-      navigate("/generate");
-    } catch (err: any) {
+      navigate("/dashboard");
+    } catch (err) {
       console.log(err);
       setError(err.message || "Error occurred during registration");
     }

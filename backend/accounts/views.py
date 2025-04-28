@@ -12,8 +12,59 @@ from social_core.actions import do_complete
 from social_django.utils import psa
 from social_django.views import _do_login
 from django.shortcuts import redirect
+import uuid
 
 User = get_user_model()  # use the custom user model
+
+
+# accounts/views.py
+from django.contrib.auth import logout
+from social_django.views import complete as social_complete
+from django.contrib.auth import logout as django_logout
+
+
+from django.http import JsonResponse
+from social_django.utils import load_strategy
+
+from social_django.views import auth as social_auth
+
+
+def google_login_clean(request):
+    # Extract state from query params
+    state = request.GET.get("state")
+
+    # Clear session
+    request.session.flush()
+    if request.user.is_authenticated:
+        logout(request)
+
+    # Store the state in the session for verification later
+    if state:
+        request.session["state"] = state
+
+    # Redirect to the actual OAuth provider (important!)
+    return redirect(f"/google/login/google-oauth2/?state={state}")
+
+
+def google_debug_view(request):
+    strategy = load_strategy(request)
+    session_data = dict(request.session.items())
+
+    # Only dump session keys related to Google
+    google_session_data = {
+        k: v for k, v in session_data.items() if "google" in k.lower()
+    }
+
+    return JsonResponse(google_session_data, safe=False)
+
+
+def social_auth_logout_then_complete(request, backend):
+    print("✅ CUSTOM COMPLETE: Logging out user before social-auth...")
+
+    if request.user.is_authenticated:
+        logout(request)  # ✅ Properly logs out without damaging session integrity
+
+    return social_complete(request, backend)
 
 
 @method_decorator(csrf_protect, name="dispatch")
@@ -87,6 +138,7 @@ class GetCSRFTokenView(APIView):
 @psa("social:complete")
 def complete(request, backend, *args, **kwargs):
     """Override this method so we can force user to be logged out."""
+    REDIRECT_FIELD_NAME = "next"  # Define this constant
     return do_complete(
         request.backend,
         _do_login,
@@ -94,7 +146,7 @@ def complete(request, backend, *args, **kwargs):
         redirect_name=REDIRECT_FIELD_NAME,
         request=request,
         *args,
-        **kwargs
+        **kwargs,
     )
 
 
