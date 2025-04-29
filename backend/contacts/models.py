@@ -46,7 +46,7 @@ class Contact(models.Model):
     next_follow_up = models.DateField(blank=True, null=True)
     linkedin_url = models.URLField(blank=True, null=True)
     twitter_url = models.URLField(blank=True, null=True)
-    is_favorite = models.BooleanField(default=False)
+    is_favorite = models.BooleanField(default=False, db_index=True)
     # Using JSONField for tags; alternatively use ArrayField (if using Postgres) or a separate Tag model.
     tags = models.JSONField(default=list, blank=True, db_index=True)
     avatar = models.URLField(blank=True, null=True)

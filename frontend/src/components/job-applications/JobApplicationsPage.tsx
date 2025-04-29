@@ -306,17 +306,14 @@ const JobApplicationsPage: React.FC = () => {
   return (
     <div className="min-h-screen">
       <div
-        className={`container ${!isMobile && leftPaddingClass}  ${isMobile ? "px-4" : ""} "pr-4 pt-8 mx-auto max-w-[100rem] w-full transition-all duration-300`}
+        className={`container ${!isMobile && leftPaddingClass}  ${isMobile ? "px-4" : ""} "pr-4 pt-8 mx-auto max-w-[110rem] w-full transition-all duration-300`}
       >
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-0">
           <div className="mb-6 sm:mb-0">
-            <h1 className="text-3xl  mt-4 lg:mt-2 font-bold bg-clip-text">
+            <h1 className="text-3xl  mt-3 lg:mt-2 font-bold bg-clip-text">
               Job Application Tracker
             </h1>
-            <p className="text-muted-foreground mt-2">
-              Track and manage your job applications in one place
-            </p>
           </div>
           <Button onClick={() => setIsAddDialogOpen(true)} type="button">
             <Plus className="mr-2 h-5 w-5" />
@@ -408,7 +405,7 @@ const JobApplicationsPage: React.FC = () => {
         {/* Job Cards Section */}
         <div className="relative">
           <div
-            className={`job-cards grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 transition-opacity duration-300 ${jobsLoading ? "opacity-50" : "opacity-100"
+            className={`job-cards grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3  gap-4 transition-opacity duration-300 ${jobsLoading ? "opacity-50" : "opacity-100"
               }`}
           >
             {jobs.length === 0 && !jobsLoading ? (

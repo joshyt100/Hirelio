@@ -264,12 +264,12 @@ export default function ContactLayout() {
 
   return (
     <div className={`${leftPaddingClass} transition-all duration-300`}>
-      <div className="container mx-auto py-6 max-w-7xl 2xl:max-w-[100rem]">
+      <div className="container mx-auto py-6 max-w-[105rem]">
         {/* Header */}
         <div className="flex mt-6 lg:mt-4 flex-col sm:flex-row justify-between items-center mb-4">
           <div>
             <h1 className="text-3xl font-bold">Network Contacts</h1>
-            <p className="text-muted-foreground mt-1">Manage your professional connections</p>
+            {/* <p className="text-muted-foreground mt-1">Manage your professional connections</p> */}
           </div>
           <Button onClick={openAdd}>
             <UserPlus className="mr-2 h-4 w-4" />Add Contact

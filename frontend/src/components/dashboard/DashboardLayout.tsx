@@ -292,7 +292,6 @@ export default function DashboardLayout() {
   if (error) {
     return <div className="p-4 text-red-500">Error loading dashboard: {error}</div>;
   }
-
   if (loading) {
     return (
       <div className={containerClasses}>
@@ -325,9 +324,25 @@ export default function DashboardLayout() {
           <Skeleton className="h-10 w-full mb-6" />
 
           {/* Charts Skeleton */}
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-2 gap-6 mb-6">
+            {/* Application Status Pie Chart and Recent Applications */}
             {Array.from({ length: 2 }).map((_, i) => (
-              <Card key={i}>
+              <Card key={`mid-${i}`}>
+                <CardHeader>
+                  <Skeleton className="h-6 w-32 mb-2" />
+                  <Skeleton className="h-4 w-48" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-[300px] w-full" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Response & Success Rate Bar Chart and Top Locations */}
+            {Array.from({ length: 2 }).map((_, i) => (
+              <Card key={`bottom-${i}`}>
                 <CardHeader>
                   <Skeleton className="h-6 w-32 mb-2" />
                   <Skeleton className="h-4 w-48" />
@@ -345,7 +360,7 @@ export default function DashboardLayout() {
 
   return (
     <div className={containerClasses}>
-      <div className="container mx-auto py-6 max-w-7xl 2xl:max-w-[100rem]">
+      <div className="container mx-auto py-6  max-w-[110rem]">
         {/* Header & filter */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
           <div className="mb-4 sm:mb-0">
