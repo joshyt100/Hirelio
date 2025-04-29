@@ -142,7 +142,7 @@ export function AppSidebar(): JSX.Element {
           {collapsed ? (
             <hr className="border-gray-300 dark:border-gray-700 my-2" />
           ) : (
-            <span className="text-sm text-muted-foreground">Navigation</span>
+            <hr className="border-gray-300 dark:border-gray-700 my-2" />
           )}
 
           {/* Nav Items */}

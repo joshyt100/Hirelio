@@ -113,12 +113,12 @@ export const SavedCoverLetters: React.FC = () => {
   );
 
   return (
-    <div className={`flex flex-col min-h-screen ${leftPaddingClass}  transition-all duration-300 mx-1 sm:mx-2 lg:mx-0 lg:mr-2 xl:mx-0 `}>
+    <div className={`flex flex-col min-h-screen ${leftPaddingClass}  transition-all duration-300 mx-1 sm:mx-2 lg:mx-0 lg:mr-2 xl:mr-2 `}>
       <div className="w-full flex justify-center mt-12 mb-8">
         <h1 className="text-3xl font-bold text-center">Saved Cover Letters</h1>
       </div>
 
-      <div className="pl-4 w-full max-w-6xl  mx-auto">
+      <div className="pl-4 w-full max-w-[100rem]  mx-auto">
         <div className="rounded-md border relative">
           <Table>
             <TableHeader>
