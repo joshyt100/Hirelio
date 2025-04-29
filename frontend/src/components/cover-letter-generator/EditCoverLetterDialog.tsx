@@ -22,14 +22,14 @@ export const EditCoverLetterDialog = ({ coverLetter, setCoverLetter }: any) => {
           <CiEdit />
         </button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-4xl">
         <DialogHeader>
           <DialogTitle>Edit Cover Letter</DialogTitle>
         </DialogHeader>
         <Textarea
           value={editedCoverLetter}
           onChange={(e) => setEditedCoverLetter(e.target.value)}
-          className="w-full h-[500px] resize-none border border-border"
+          className="w-full h-[55vh] resize-none border border-border"
         />
         <DialogFooter>
           <Button onClick={handleSave}>Save Changes</Button>

@@ -21,13 +21,13 @@ import { CoverLetterMetadataResponse } from "@/types/CoverLetterTypes";
 import { useSidebar } from "@/context/SideBarContext";
 import { Download, Trash2, Eye } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { TableSkeleton } from "./TableSkeleton";
 import { NoDataRow } from "./NoDataRow";
 
 function getPaginationRange(current: number, total: number): (number | string)[] {
   const DOTS = "...";
   const totalButtons = 7;
   if (total <= totalButtons) return Array.from({ length: total }, (_, i) => i + 1);
+
   const left = Math.max(current - 1, 1);
   const right = Math.min(current + 1, total);
   const showLeftDots = left > 2;
@@ -50,13 +50,14 @@ export const SavedCoverLetters: React.FC = () => {
 
   const PAGE_SIZE = 15;
   const [coverLetters, setCoverLetters] = useState<CoverLetterMetadataResponse[]>([]);
-  const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
+  // track whether we've completed the very first fetch
+  const [initialLoadDone, setInitialLoadDone] = useState(false);
+
   const fetchCoverLetters = useCallback(async (page: number = 1) => {
-    setLoading(true);
     try {
       const data = await getCoverLetters(page, PAGE_SIZE);
       setCoverLetters(data.results);
@@ -66,13 +67,15 @@ export const SavedCoverLetters: React.FC = () => {
       console.error("Failed to fetch cover letters", err);
       setCoverLetters([]);
       setTotalPages(1);
-    } finally {
-      setLoading(false);
     }
-  }, [PAGE_SIZE]);
+  }, []);
 
+  // On mount, do the first load and then flip our flag
   useEffect(() => {
-    fetchCoverLetters(1);
+    (async () => {
+      await fetchCoverLetters(1);
+      setInitialLoadDone(true);
+    })();
   }, [fetchCoverLetters]);
 
   const handleDownload = async (id: number) => {
@@ -103,9 +106,7 @@ export const SavedCoverLetters: React.FC = () => {
     }
   };
 
-  const closePreview = () => {
-    setPreviewUrl(null);
-  };
+  const closePreview = () => setPreviewUrl(null);
 
   const paginationRange = useMemo(
     () => getPaginationRange(currentPage, totalPages),
@@ -113,12 +114,12 @@ export const SavedCoverLetters: React.FC = () => {
   );
 
   return (
-    <div className={`flex flex-col min-h-screen ${leftPaddingClass}  transition-all duration-300 mx-1 sm:mx-2 lg:mx-0 lg:mr-2 xl:mr-2 `}>
+    <div className={`flex flex-col min-h-screen ${leftPaddingClass} transition-all duration-300 mx-1 sm:mx-2 lg:mx-0 lg:mr-2 xl:mr-2`}>
       <div className="w-full flex justify-center mt-12 mb-8">
         <h1 className="text-3xl font-bold text-center">Saved Cover Letters</h1>
       </div>
 
-      <div className="pl-4 w-full max-w-[100rem]  mx-auto">
+      <div className="pl-4 w-full max-w-[85rem] mx-auto">
         <div className="rounded-md border relative">
           <Table>
             <TableHeader>
@@ -129,43 +130,29 @@ export const SavedCoverLetters: React.FC = () => {
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
-
             <TableBody>
-              {loading ? (
-                <TableSkeleton />
-              ) : coverLetters.length > 0 ? (
+              {coverLetters.length > 0 ? (
                 coverLetters.map((letter) => (
                   <TableRow key={letter.id}>
                     <TableCell>{letter.company_name}</TableCell>
                     <TableCell>{letter.job_title}</TableCell>
                     <TableCell>{new Date(letter.created_at).toLocaleString()}</TableCell>
                     <TableCell className="text-right space-x-2">
-                      <button
-                        onClick={() => handlePreview(letter.id)}
-                        className="p-1  rounded"
-                        title="Preview"
-                      >
+                      <button onClick={() => handlePreview(letter.id)} title="Preview" className="p-1 rounded">
                         <Eye className="h-5 w-5 text-cyan-700" />
                       </button>
-                      <button
-                        onClick={() => handleDownload(letter.id)}
-                        className="p-1  rounded"
-                        title="Download"
-                      >
-                        <Download className="h-5 w-5 text-primary " />
+                      <button onClick={() => handleDownload(letter.id)} title="Download" className="p-1 rounded">
+                        <Download className="h-5 w-5 text-primary" />
                       </button>
-                      <button
-                        onClick={() => handleDelete(letter.id)}
-                        className="p-1  rounded"
-                        title="Delete"
-                      >
+                      <button onClick={() => handleDelete(letter.id)} title="Delete" className="p-1 rounded">
                         <Trash2 className="h-5 w-5 text-red-500" />
                       </button>
                     </TableCell>
                   </TableRow>
                 ))
               ) : (
-                <NoDataRow colSpan={4} />
+                // Only show "no data" after the first fetch has finished
+                initialLoadDone && <NoDataRow colSpan={4} />
               )}
             </TableBody>
           </Table>
@@ -178,19 +165,17 @@ export const SavedCoverLetters: React.FC = () => {
                 <PaginationItem>
                   <PaginationPrevious
                     href="#"
-                    disabled={loading || currentPage === 1}
+                    disabled={currentPage === 1}
                     onClick={(e) => {
                       e.preventDefault();
-                      if (!loading && currentPage > 1) {
-                        fetchCoverLetters(currentPage - 1);
-                      }
+                      if (currentPage > 1) fetchCoverLetters(currentPage - 1);
                     }}
                   />
                 </PaginationItem>
 
-                {paginationRange.map((p, i) =>
+                {paginationRange.map((p, idx) =>
                   p === "..." ? (
-                    <PaginationItem key={`dots-${i}`}>
+                    <PaginationItem key={`dots-${idx}`}>
                       <PaginationEllipsis />
                     </PaginationItem>
                   ) : (
@@ -198,12 +183,9 @@ export const SavedCoverLetters: React.FC = () => {
                       <PaginationLink
                         href="#"
                         isActive={p === currentPage}
-                        disabled={loading}
                         onClick={(e) => {
                           e.preventDefault();
-                          if (!loading) {
-                            fetchCoverLetters(Number(p));
-                          }
+                          fetchCoverLetters(Number(p));
                         }}
                       >
                         {p}
@@ -215,12 +197,10 @@ export const SavedCoverLetters: React.FC = () => {
                 <PaginationItem>
                   <PaginationNext
                     href="#"
-                    disabled={loading || currentPage === totalPages}
+                    disabled={currentPage === totalPages}
                     onClick={(e) => {
                       e.preventDefault();
-                      if (!loading && currentPage < totalPages) {
-                        fetchCoverLetters(currentPage + 1);
-                      }
+                      if (currentPage < totalPages) fetchCoverLetters(currentPage + 1);
                     }}
                   />
                 </PaginationItem>
@@ -230,15 +210,10 @@ export const SavedCoverLetters: React.FC = () => {
         )}
       </div>
 
-      {/* Preview Dialog */}
       {previewUrl && (
-        <Dialog open={!!previewUrl} onOpenChange={closePreview}>
+        <Dialog open onOpenChange={closePreview}>
           <DialogContent className="max-w-4xl h-[90vh]">
-            <iframe
-              src={previewUrl}
-              title="Preview"
-              className="w-full h-full p-2 rounded-lg"
-            />
+            <iframe src={previewUrl} title="Preview" className="w-full h-full p-2 rounded-lg" />
           </DialogContent>
         </Dialog>
       )}

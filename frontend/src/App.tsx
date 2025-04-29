@@ -20,7 +20,6 @@ import ProfileLayout from "./components/ProfileLayout";
 
 
 
-
 const queryClient = new QueryClient();
 
 

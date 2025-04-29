@@ -1,11 +1,9 @@
-// contact/ContactLayout.tsx
-
-// src/components/contact/ContactLayout.tsx
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useSidebar } from "@/context/SideBarContext";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SolidCircleLoader } from "../loader/SolidCircleLoader";
 import { User, UserPlus } from "lucide-react";
 import {
   Pagination,
@@ -16,8 +14,6 @@ import {
   PaginationNext,
   PaginationEllipsis,
 } from "@/components/ui/pagination";
-import { SolidCircleLoader } from "../loader/SolidCircleLoader";
-
 import { ContactsToolbar } from "./ContactsToolbar";
 import { ContactCard } from "./ContactCard";
 import { ContactFormDialog, ContactFormData } from "./ContactFormDialog";
@@ -31,55 +27,52 @@ import {
   addInteractionAPI,
   toggleFavoriteAPI,
 } from "@/api/contacts";
-//import custom hook
 import { useDebounce } from "@/hooks/useDebounce";
 
-
-// Pagination helper
-function getPaginationRange(currentPage: number, totalPages: number): (number | string)[] {
+// Helper to compute pagination range
+function getPaginationRange(current: number, total: number): (number | string)[] {
   const DOTS = "...";
-  const MAX_DISPLAY = 7;
-  if (totalPages <= MAX_DISPLAY) {
-    return Array.from({ length: totalPages }, (_, i) => i + 1);
-  }
-  const left = Math.max(currentPage - 1, 1);
-  const right = Math.min(currentPage + 1, totalPages);
+  const MAX = 7;
+  if (total <= MAX) return Array.from({ length: total }, (_, i) => i + 1);
+  const left = Math.max(current - 1, 1);
+  const right = Math.min(current + 1, total);
   const showLeftDots = left > 2;
-  const showRightDots = right < totalPages - 1;
+  const showRightDots = right < total - 1;
   const first = 1;
-  const last = totalPages;
+  const last = total;
   if (!showLeftDots && showRightDots) {
     return [...Array.from({ length: 4 }, (_, i) => i + 1), DOTS, last];
   }
   if (showLeftDots && !showRightDots) {
-    return [first, DOTS, ...Array.from({ length: 4 }, (_, i) => totalPages - 3 + i)];
+    return [first, DOTS, ...Array.from({ length: 4 }, (_, i) => total - 3 + i)];
   }
-  return [first, DOTS, left, currentPage, right, DOTS, last];
+  return [first, DOTS, left, current, right, DOTS, last];
 }
 
 export default function ContactLayout() {
   const { isMobile, collapsed } = useSidebar();
-  const leftPaddingClass = isMobile
+  const leftPadding = isMobile
     ? "px-4"
     : collapsed
       ? "lg:pl-24 pr-2"
       : "lg:pl-[17rem]";
 
   // Filters & tabs
-  const [searchTerm, setSearchTerm] = useState("");
-  const debouncedSearch = useDebounce(searchTerm, 500);
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 500);
   const [relationshipFilter, setRelationshipFilter] = useState<string | null>(null);
   const [tagFilter, setTagFilter] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"all" | "favorites">("all");
 
-  // Data & loading state
-  const [contacts, setContacts] = useState<Contact[]>([]);
-  const [contactsLoading, setContactsLoading] = useState(false);
-  const [actionLoading, setActionLoading] = useState(false);
-
+  // Pagination state
   const PAGE_SIZE = 12;
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+
+  // Data & loading
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [contactsLoading, setContactsLoading] = useState(false);
+  const [prefetchedPages, setPrefetchedPages] = useState<Record<number, Contact[]>>({});
 
   // Dialog & form state
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -108,37 +101,65 @@ export default function ContactLayout() {
     notes: "",
   });
 
-  // Fetch contacts from API
-  const fetchContacts = useCallback(
-    async (page = 1) => {
-      setContactsLoading(true);
-      try {
-        const params: Record<string, any> = { page, page_size: PAGE_SIZE };
-        if (debouncedSearch) params.search = debouncedSearch;
-        if (relationshipFilter) params.relationship = relationshipFilter;
-        if (tagFilter) params.tag = tagFilter;
-        if (activeTab === "favorites") params.is_favorite = true;
+  // Fetch a page (with optional prefetch flag)
+  const fetchPage = useCallback(
+    async (page: number, prefetch = false) => {
+      const params: Record<string, any> = { page, page_size: PAGE_SIZE };
+      if (debouncedSearch) params.search = debouncedSearch;
+      if (relationshipFilter) params.relationship = relationshipFilter;
+      if (tagFilter) params.tag = tagFilter;
+      if (activeTab === "favorites") params.is_favorite = true;
 
+      if (!prefetch) setContactsLoading(true);
+      try {
         const res = await fetchContactsAPI(params);
-        setContacts(res.data.results);
-        setTotalPages(Math.ceil(res.data.count / PAGE_SIZE));
-        setCurrentPage(page);
-      } catch (error) {
-        console.error("Error fetching contacts", error);
+        const results = res.data.results as Contact[];
+        const count = res.data.count as number;
+        const pages = Math.ceil(count / PAGE_SIZE);
+
+        if (prefetch) {
+          setPrefetchedPages(prev => ({ ...prev, [page]: results }));
+        } else {
+          setContacts(results);
+          setTotalPages(pages);
+          setCurrentPage(page);
+        }
+
+        // schedule next prefetch
+        if (!prefetch && page < pages) fetchPage(page + 1, true);
+      } catch (err) {
+        console.error(`Error fetching page ${page}`, err);
       } finally {
-        setContactsLoading(false);
+        if (!prefetch) setContactsLoading(false);
       }
     },
     [debouncedSearch, relationshipFilter, tagFilter, activeTab]
   );
 
-  // Load on mount and filters change
+  // Public fetchContacts uses prefetch cache
+  const fetchContacts = useCallback(
+    (page: number) => {
+      if (prefetchedPages[page]) {
+        setContacts(prefetchedPages[page]);
+        setCurrentPage(page);
+        window.scrollTo(0, 0);
+        if (page + 1 <= totalPages && !prefetchedPages[page + 1]) {
+          fetchPage(page + 1, true);
+        }
+      } else {
+        fetchPage(page);
+      }
+    },
+    [prefetchedPages, totalPages, fetchPage]
+  );
+
+  // Reset and load when filters change
   useEffect(() => {
-    setCurrentPage(1);
+    setPrefetchedPages({});
     fetchContacts(1);
   }, [debouncedSearch, relationshipFilter, tagFilter, activeTab]);
 
-  // Scroll to top on page change
+  // Scroll on page change
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [currentPage]);
@@ -148,12 +169,7 @@ export default function ContactLayout() {
     [currentPage, totalPages]
   );
 
-  const goToPage = (page: number) => {
-    if (page < 1 || page > totalPages) return;
-    fetchContacts(page);
-  };
-
-  // Reset form
+  // Form/dialog handlers
   const resetContactForm = () => {
     setContactForm({
       name: "",
@@ -172,75 +188,6 @@ export default function ContactLayout() {
     setCurrentContact(null);
   };
 
-  // CRUD actions
-  const addContact = async (data: ContactFormData, tags: string[]) => {
-    setActionLoading(true);
-    try {
-      await createContactAPI(data, tags);
-      setIsAddOpen(false);
-      resetContactForm();
-      fetchContacts(1);
-    } catch (error) {
-      console.error("Add contact error", error);
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const updateContact = async (data: ContactFormData, tags: string[]) => {
-    if (!currentContact) return;
-    setActionLoading(true);
-    try {
-      await updateContactAPI(currentContact.id, data, tags);
-      setIsEditOpen(false);
-      resetContactForm();
-      fetchContacts(currentPage);
-    } catch (error) {
-      console.error("Update contact error", error);
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const deleteContact = async (id: string) => {
-    if (!window.confirm("Delete contact?")) return;
-    setActionLoading(true);
-    try {
-      await deleteContactAPI(id);
-      const newPage = contacts.length === 1 && currentPage > 1 ? currentPage - 1 : currentPage;
-      fetchContacts(newPage);
-    } catch (error) {
-      console.error("Delete contact error", error);
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const addInteraction = async (data: Omit<Interaction, "id">) => {
-    if (!currentContact) return;
-    setActionLoading(true);
-    try {
-      await addInteractionAPI(currentContact.id, data);
-      setIsInteractOpen(false);
-      setInteractionForm({ date: new Date(), type: "email", notes: "" });
-      fetchContacts(currentPage);
-    } catch (error) {
-      console.error("Add interaction error", error);
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const onToggleFavorite = async (contact: Contact) => {
-    try {
-      await toggleFavoriteAPI(contact.id, !contact.isFavorite);
-      fetchContacts(currentPage);
-    } catch (error) {
-      console.error("Toggle favorite error", error);
-    }
-  };
-
-  // Dialog openers
   const openAdd = () => { resetContactForm(); setIsAddOpen(true); };
   const openEdit = (contact: Contact) => {
     setCurrentContact(contact);
@@ -262,24 +209,77 @@ export default function ContactLayout() {
   };
   const openInteract = (contact: Contact) => { setCurrentContact(contact); setIsInteractOpen(true); };
 
+  // CRUD actions
+  const addContact = async (data: ContactFormData, tags: string[]) => {
+    setContactsLoading(true);
+    try {
+      await createContactAPI(data, tags);
+      setIsAddOpen(false);
+      resetContactForm();
+      fetchContacts(1);
+    } finally {
+      setContactsLoading(false);
+    }
+  };
+
+  const updateContact = async (data: ContactFormData, tags: string[]) => {
+    if (!currentContact) return;
+    setContactsLoading(true);
+    try {
+      await updateContactAPI(currentContact.id, data, tags);
+      setIsEditOpen(false);
+      resetContactForm();
+      fetchContacts(currentPage);
+    } finally {
+      setContactsLoading(false);
+    }
+  };
+
+  const deleteContact = async (id: string) => {
+    if (!window.confirm("Delete contact?")) return;
+    setContactsLoading(true);
+    try {
+      await deleteContactAPI(id);
+      const newPage = contacts.length === 1 && currentPage > 1 ? currentPage - 1 : currentPage;
+      fetchContacts(newPage);
+    } finally {
+      setContactsLoading(false);
+    }
+  };
+
+  const addInteraction = async (data: Omit<Interaction, "id">) => {
+    if (!currentContact) return;
+    setContactsLoading(true);
+    try {
+      await addInteractionAPI(currentContact.id, data);
+      setIsInteractOpen(false);
+      setInteractionForm({ date: new Date(), type: "email", notes: "" });
+      fetchContacts(currentPage);
+    } finally {
+      setContactsLoading(false);
+    }
+  };
+
+  const toggleFavorite = async (contact: Contact) => {
+    try {
+      await toggleFavoriteAPI(contact.id, !contact.isFavorite);
+      fetchContacts(currentPage);
+    } catch { }
+  };
+
   return (
-    <div className={`${leftPaddingClass} transition-all duration-300`}>
+    <div className={`${leftPadding} transition-all duration-300`}>
       <div className="container mx-auto py-6 max-w-[105rem]">
         {/* Header */}
         <div className="flex mt-6 lg:mt-4 flex-col sm:flex-row justify-between items-center mb-4">
-          <div>
-            <h1 className="text-3xl font-bold">Network Contacts</h1>
-            {/* <p className="text-muted-foreground mt-1">Manage your professional connections</p> */}
-          </div>
-          <Button onClick={openAdd}>
-            <UserPlus className="mr-2 h-4 w-4" />Add Contact
-          </Button>
+          <h1 className="text-3xl font-bold">Network Contacts</h1>
+          <Button onClick={openAdd}><UserPlus className="mr-2 w-4 h-4" /> Add Contact</Button>
         </div>
 
         {/* Filters */}
         <ContactsToolbar
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
+          searchTerm={search}
+          setSearchTerm={setSearch}
           relationshipFilter={relationshipFilter}
           setRelationshipFilter={setRelationshipFilter}
           tagFilter={tagFilter}
@@ -289,54 +289,37 @@ export default function ContactLayout() {
         />
 
         {/* Tabs */}
-        <Tabs
-          value={activeTab}
-          onValueChange={(value) => setActiveTab(value as "all" | "favorites")}
-          className="mb-3"
-        >
+        <Tabs value={activeTab} onValueChange={v => setActiveTab(v as any)} className="mb-3">
           <TabsList className="dark:bg-zinc-850">
             <TabsTrigger value="all">All</TabsTrigger>
             <TabsTrigger value="favorites">Favorites</TabsTrigger>
           </TabsList>
         </Tabs>
 
-        {/* Grid & Loader */}
-        <div className="relative">
-          <div className={`grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 transition-opacity duration-300 ${contactsLoading ? "opacity-50" : "opacity-100"
-            }`}
-          >
-            {!contactsLoading && contacts.length === 0 ? (
+        {/* Contacts Grid */}
+        {contactsLoading && contacts.length === 0 ? <SolidCircleLoader className="w-10 h-10 mx-auto my-8" /> : (
+          <div className={`grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 ${contactsLoading ? 'opacity-50' : 'opacity-100'}`}>
+            {contacts.length === 0 ? (
               <Card className="w-full p-12 flex flex-col items-center text-center">
-                <User className="h-12 w-12 text-muted-foreground mb-4" />
+                <User className="w-12 h-12 text-muted-foreground mb-4" />
                 <h3 className="text-xl font-semibold mb-2">No contacts found</h3>
                 <p className="text-muted-foreground mb-4">
-                  {debouncedSearch || relationshipFilter || tagFilter
-                    ? "Try adjusting your filters."
-                    : "Add your first contact."}
+                  {debouncedSearch || relationshipFilter || tagFilter ? "Try adjusting your filters." : "Add your first contact."}
                 </p>
-                <Button onClick={openAdd}>
-                  <UserPlus className="mr-2 h-4 w-4" />Add Contact
-                </Button>
+                <Button onClick={openAdd}><UserPlus className="mr-2 w-4 h-4" /> Add Contact</Button>
               </Card>
-            ) : (
-              contacts.map((contact) => (
-                <ContactCard
-                  key={contact.id}
-                  contact={contact}
-                  onEdit={() => openEdit(contact)}
-                  onLogInteraction={() => openInteract(contact)}
-                  onDelete={() => deleteContact(contact.id)}
-                  toggleFavorite={() => onToggleFavorite(contact)}
-                />
-              ))
-            )}
+            ) : contacts.map(ct => (
+              <ContactCard
+                key={ct.id}
+                contact={ct}
+                onEdit={() => openEdit(ct)}
+                onLogInteraction={() => openInteract(ct)}
+                onDelete={() => deleteContact(ct.id)}
+                toggleFavorite={() => toggleFavorite(ct)}
+              />
+            ))}
           </div>
-          {contactsLoading && (
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <SolidCircleLoader className="w-10 h-10" />
-            </div>
-          )}
-        </div>
+        )}
 
         {/* Pagination */}
         {!contactsLoading && totalPages > 1 && (
@@ -346,28 +329,22 @@ export default function ContactLayout() {
                 <PaginationItem>
                   <PaginationPrevious
                     href="#"
-                    onClick={(e) => { e.preventDefault(); if (currentPage > 1) goToPage(currentPage - 1); }}
+                    onClick={e => { e.preventDefault(); if (currentPage > 1) fetchContacts(currentPage - 1); }}
                   />
                 </PaginationItem>
-                {paginationRange.map((page, idx) => (
-                  page === "..." ? (
-                    <PaginationItem key={`ellipsis-${idx}`}><PaginationEllipsis /></PaginationItem>
-                  ) : (
-                    <PaginationItem key={page}>
-                      <PaginationLink
-                        href="#"
-                        isActive={page === currentPage}
-                        onClick={(e) => { e.preventDefault(); goToPage(Number(page)); }}
-                      >
-                        {page}
-                      </PaginationLink>
-                    </PaginationItem>
-                  )
+                {paginationRange.map((p, i) => p === "..." ? (
+                  <PaginationItem key={`ell-${i}`}><PaginationEllipsis /></PaginationItem>
+                ) : (
+                  <PaginationItem key={p}>
+                    <PaginationLink href="#" isActive={p === currentPage} onClick={e => { e.preventDefault(); fetchContacts(Number(p)); }}>
+                      {p}
+                    </PaginationLink>
+                  </PaginationItem>
                 ))}
                 <PaginationItem>
                   <PaginationNext
                     href="#"
-                    onClick={(e) => { e.preventDefault(); if (currentPage < totalPages) goToPage(currentPage + 1); }}
+                    onClick={e => { e.preventDefault(); if (currentPage < totalPages) fetchContacts(currentPage + 1); }}
                   />
                 </PaginationItem>
               </PaginationContent>
@@ -381,28 +358,20 @@ export default function ContactLayout() {
           mode="add"
           initialData={contactForm}
           selectedTags={selectedTags}
-          onTagSelect={(tag) =>
-            setSelectedTags((prev) =>
-              prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
-            )
-          }
+          onTagSelect={tag => setSelectedTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag])}
           onClose={() => setIsAddOpen(false)}
           onSubmit={addContact}
-          actionLoading={actionLoading}
+          actionLoading={contactsLoading}
         />
         <ContactFormDialog
           isOpen={isEditOpen}
           mode="edit"
           initialData={contactForm}
           selectedTags={selectedTags}
-          onTagSelect={(tag) =>
-            setSelectedTags((prev) =>
-              prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
-            )
-          }
+          onTagSelect={tag => setSelectedTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag])}
           onClose={() => setIsEditOpen(false)}
           onSubmit={updateContact}
-          actionLoading={actionLoading}
+          actionLoading={contactsLoading}
         />
         <InteractionDialog
           isOpen={isInteractOpen}
@@ -410,9 +379,10 @@ export default function ContactLayout() {
           initialData={interactionForm}
           onClose={() => setIsInteractOpen(false)}
           onSubmit={addInteraction}
-          actionLoading={actionLoading}
+          actionLoading={contactsLoading}
         />
       </div>
     </div>
   );
 }
+

@@ -295,7 +295,7 @@ export default function DashboardLayout() {
   if (loading) {
     return (
       <div className={containerClasses}>
-        <div className="container mx-auto py-6 max-w-7xl 2xl:max-w-[100rem]">
+        <div className="container mx-auto py-5 max-w-[105rem]">
           {/* Header & Filter Skeleton */}
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
             <div className="mb-4 sm:mb-0">
@@ -360,7 +360,7 @@ export default function DashboardLayout() {
 
   return (
     <div className={containerClasses}>
-      <div className="container mx-auto py-6  max-w-[110rem]">
+      <div className="container mx-auto py-5  max-w-[105rem]">
         {/* Header & filter */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
           <div className="mb-4 sm:mb-0">

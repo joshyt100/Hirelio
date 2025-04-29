@@ -8,7 +8,7 @@ import {
   deleteJobApplicationAPI,
   deleteAttachmentAPI,
 } from "@/api/jobApplications";
-
+import { useSidebar } from "@/context/SideBarContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,14 +22,9 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Filter, Plus, Search } from "lucide-react";
 import { Card, CardTitle } from "@/components/ui/card";
-import { useSidebar } from "@/context/SideBarContext";
-import { SolidCircleLoader } from "../loader/SolidCircleLoader";
-
 import JobCard from "./JobCard";
 import AddJobDialog from "./AddJobDialog";
 import EditJobDialog from "./EditJobDialog";
-
-// Import shadcn Pagination components
 import {
   Pagination,
   PaginationContent,
@@ -41,58 +36,53 @@ import {
 } from "@/components/ui/pagination";
 import { useDebounce } from "@/hooks/useDebounce";
 
-// Custom hook for debouncing a value
-//interface debouncedValue<T> {
-//  value: T;
-//  setValue: (value: T) => void;
-//}
-
-// Helper function: returns a pagination range as an array of numbers and ellipsis strings ("...")
+// Helper: pagination range
 function getPaginationRange(currentPage: number, totalPages: number): (number | string)[] {
   const DOTS = "...";
-  const totalPageNumbersToShow = 7; // Maximum buttons to show (including first and last)
-
-  if (totalPages <= totalPageNumbersToShow) {
+  const maxButtons = 7;
+  if (totalPages <= maxButtons) {
     return Array.from({ length: totalPages }, (_, i) => i + 1);
   }
 
-  const leftSiblingIndex = Math.max(currentPage - 1, 1);
-  const rightSiblingIndex = Math.min(currentPage + 1, totalPages);
-
-  const showLeftDots = leftSiblingIndex > 2;
-  const showRightDots = rightSiblingIndex < totalPages - 1;
-
-  const firstPage = 1;
-  const lastPage = totalPages;
+  const left = Math.max(currentPage - 1, 1);
+  const right = Math.min(currentPage + 1, totalPages);
+  const showLeftDots = left > 2;
+  const showRightDots = right < totalPages - 1;
+  const first = 1;
+  const last = totalPages;
 
   if (!showLeftDots && showRightDots) {
-    const end = 4;
-    return [...Array.from({ length: end }, (_, i) => i + 1), DOTS, lastPage];
-  } else if (showLeftDots && !showRightDots) {
-    const start = totalPages - 3;
-    return [firstPage, DOTS, ...Array.from({ length: 4 }, (_, i) => start + i)];
-  } else if (showLeftDots && showRightDots) {
-    return [firstPage, DOTS, leftSiblingIndex, currentPage, rightSiblingIndex, DOTS, lastPage];
+    return [...Array.from({ length: 4 }, (_, i) => i + 1), DOTS, last];
   }
-
-  return Array.from({ length: totalPages }, (_, i) => i + 1);
+  if (showLeftDots && !showRightDots) {
+    return [first, DOTS, ...Array.from({ length: 4 }, (_, i) => totalPages - 3 + i)];
+  }
+  return [first, DOTS, left, currentPage, right, DOTS, last];
 }
 
 const JobApplicationsPage: React.FC = () => {
-  // States for job list and filters
+  // Sidebar padding logic (same as ContactLayout)
+  const { isMobile, collapsed } = useSidebar();
+  const leftPaddingClass = isMobile
+    ? "px-4"
+    : collapsed
+      ? "lg:pl-24 pr-2"
+      : "lg:pl-[17rem]";
+
+  // State & hooks
   const [jobs, setJobs] = useState<JobApplication[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
   const [activeTab, setActiveTab] = useState("all");
   const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
 
-  // Pagination state
+  // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  // Dialog & job state
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  // Dialogs & forms
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
   const [currentJob, setCurrentJob] = useState<JobApplication | null>(null);
   const [files, setFiles] = useState<File[]>([]);
   const [formData, setFormData] = useState<Omit<JobApplication, "id" | "attachments">>({
@@ -107,78 +97,50 @@ const JobApplicationsPage: React.FC = () => {
     contact_email: "",
     url: "",
   });
+  const [hasFetched, setHasFetched] = useState(false);
 
-  // Loading states
-  const [jobsLoading, setJobsLoading] = useState(false);
-  const [actionLoading, setActionLoading] = useState(false);
-  const { isMobile, collapsed } = useSidebar();
-  const leftPaddingClass = collapsed ? "lg:pl-24 lg:pr-2" : "lg:pl-[17rem]";
+  const resetPage = () => setCurrentPage(1);
 
-  // Reset pagination state
-  const resetPagination = () => setCurrentPage(1);
+  const fetchJobs = useCallback(async (page: number = 1) => {
+    try {
+      const params: Record<string, any> = { page, sortOrder };
+      if (activeTab !== "all") params.status = activeTab;
+      if (debouncedSearchTerm) params.search = debouncedSearchTerm;
 
-  // Fetch job applications based on filters and page number
-  const fetchJobs = useCallback(
-    async (page: number = 1) => {
-      setJobsLoading(true);
-      try {
-        const params: Record<string, any> = { page, sortOrder };
-        if (activeTab !== "all") params.status = activeTab;
-        if (debouncedSearchTerm) params.search = debouncedSearchTerm;
-
-        const response = await fetchJobApplications(params);
-        const data = response.data;
-        setJobs(data.results || []);
-        const count = data.count || (data.results && data.results.length) || 0;
-        setTotalPages(Math.ceil(count / 18)); // was 15
-        setCurrentPage(page);
-      } catch (error) {
-        console.error("Error fetching job applications:", error);
-        alert("Error fetching job applications");
-      } finally {
-        setJobsLoading(false);
-      }
-    },
-    [activeTab, debouncedSearchTerm, sortOrder]
-  );
-
-
+      const res = await fetchJobApplications(params);
+      const data = res.data;
+      setJobs(data.results || []);
+      const count = data.count ?? data.results.length;
+      setTotalPages(Math.ceil(count / 18));
+      setCurrentPage(page);
+    } catch (e) {
+      console.error(e);
+      alert("Error fetching job applications");
+    } finally {
+      setHasFetched(true);
+    }
+  }, [activeTab, debouncedSearchTerm, sortOrder]);
 
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [currentPage])
-
-  // When filters change, reset pagination and fetch new jobs.
-  useEffect(() => {
-    resetPagination();
-    // Do not clear jobs to avoid flickering; they remain visible until new data arrives
+    resetPage();
     fetchJobs(1);
   }, [debouncedSearchTerm, activeTab, sortOrder, fetchJobs]);
 
-  // Handlers for form changes and file uploads
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [currentPage]);
+
+  // Form handlers
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
-
-  const handleStatusChange = (value: string) =>
-    setFormData((prev) => ({ ...prev, status: value }));
-
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = e.target;
-    setFormData((prev) => ({ ...prev, date_applied: value }));
-  };
-
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const newFiles = Array.from(e.target.files);
-      setFiles((prev) => [...prev, ...newFiles]);
-    }
-  };
-
-  const removeFile = (index: number) =>
-    setFiles((prev) => prev.filter((_, i) => i !== index));
-
+  const handleStatus = (val: string) => setFormData(prev => ({ ...prev, status: val }));
+  const handleDate = (e: React.ChangeEvent<HTMLInputElement>) =>
+    setFormData(prev => ({ ...prev, date_applied: e.target.value }));
+  const handleFiles = (e: React.ChangeEvent<HTMLInputElement>) =>
+    e.target.files && setFiles(prev => [...prev, ...Array.from(e.target.files)]);
+  const removeFile = (i: number) => setFiles(prev => prev.filter((_, idx) => idx !== i));
   const resetForm = () => {
     setFormData({
       company: "",
@@ -195,85 +157,63 @@ const JobApplicationsPage: React.FC = () => {
     setFiles([]);
   };
 
-  // CRUD Actions
-  const addJobApplication = async () => {
-    setActionLoading(true);
+  // CRUD operations
+  const addJob = async () => {
+    const form = new FormData();
+    Object.entries(formData).forEach(([k, v]) => form.append(k, v as string));
+    files.forEach(f => form.append("attachments", f));
     try {
-      const form = new FormData();
-      for (const key in formData) {
-        form.append(key, formData[key as keyof typeof formData]);
-      }
-      files.forEach((file) => form.append("attachments", file));
-      const csrfToken = getCookie("csrftoken");
-      await createJobApplication(form, csrfToken);
-      resetPagination();
+      await createJobApplication(form, getCookie("csrftoken"));
+      resetPage();
       fetchJobs(1);
       resetForm();
-      setIsAddDialogOpen(false);
-    } catch (error: any) {
+      setIsAddOpen(false);
+    } catch {
       alert("Error adding job application");
-    } finally {
-      setActionLoading(false);
     }
   };
 
-  const updateJobApplication = async () => {
+  const updateJob = async () => {
     if (!currentJob) return;
-    setActionLoading(true);
+    const form = new FormData();
+    Object.entries(formData).forEach(([k, v]) => form.append(k, v as string));
+    files.forEach(f => form.append("attachments", f));
     try {
-      const form = new FormData();
-      for (const key in formData) {
-        form.append(key, formData[key as keyof typeof formData]);
-      }
-      files.forEach((file) => form.append("attachments", file));
-      const csrfToken = getCookie("csrftoken");
-      await updateJobApplicationAPI(currentJob.id, form, csrfToken);
-      resetPagination();
+      await updateJobApplicationAPI(currentJob.id, form, getCookie("csrftoken"));
+      resetPage();
       fetchJobs(1);
       resetForm();
-      setIsEditDialogOpen(false);
+      setIsEditOpen(false);
       setCurrentJob(null);
       alert("Job application updated.");
-    } catch (error: any) {
+    } catch {
       alert("Error updating job application");
-    } finally {
-      setActionLoading(false);
     }
   };
 
-  const deleteJobApplication = async (id: string) => {
-    if (confirm("Are you sure you want to delete this job application?")) {
-      setActionLoading(true);
-      try {
-        const csrfToken = getCookie("csrftoken");
-        await deleteJobApplicationAPI(id, csrfToken);
-        const newPage = currentPage > 1 ? currentPage - 1 : 1;
-        resetPagination();
-        fetchJobs(newPage);
-      } catch (error: any) {
-        alert("Error deleting job application");
-      } finally {
-        setActionLoading(false);
-      }
+  const deleteJob = async (id: string) => {
+    if (!confirm("Are you sure?")) return;
+    try {
+      await deleteJobApplicationAPI(id, getCookie("csrftoken"));
+      const prev = currentPage > 1 ? currentPage - 1 : 1;
+      resetPage();
+      fetchJobs(prev);
+    } catch {
+      alert("Error deleting job application");
     }
   };
 
-  const deleteAttachment = async (jobId: string, attachmentId: string) => {
-    if (confirm("Are you sure you want to delete this attachment?")) {
-      setActionLoading(true);
-      try {
-        const csrfToken = getCookie("csrftoken");
-        await deleteAttachmentAPI(jobId, attachmentId, csrfToken);
-        fetchJobs(currentPage);
-      } catch (error: any) {
-        alert("Error deleting attachment");
-      } finally {
-        setActionLoading(false);
-      }
+  const deleteAttachment = async (jobId: string, attId: string) => {
+    if (!confirm("Delete this attachment?")) return;
+    try {
+      await deleteAttachmentAPI(jobId, attId, getCookie("csrftoken"));
+      fetchJobs(currentPage);
+    } catch {
+      alert("Error deleting attachment");
     }
   };
 
-  const editJobApplication = (job: JobApplication) => {
+  const startEdit = (job: JobApplication) => {
     setCurrentJob(job);
     setFormData({
       company: job.company,
@@ -288,78 +228,51 @@ const JobApplicationsPage: React.FC = () => {
       url: job.url || "",
     });
     setFiles([]);
-    setIsEditDialogOpen(true);
+    setIsEditOpen(true);
   };
 
-  // Pagination navigation handler
-  const goToPage = (page: number) => {
-    if (page < 1 || page > totalPages) return;
-    fetchJobs(page);
-  };
-
-  //memoize the pagination range so it isn’t recalculated on every render
-  const paginationRange = useMemo(
-    () => getPaginationRange(currentPage, totalPages),
-    [currentPage, totalPages]
-  );
+  // Pagination helpers
+  const goTo = (p: number) => { if (p >= 1 && p <= totalPages) fetchJobs(p); };
+  const range = useMemo(() => getPaginationRange(currentPage, totalPages), [currentPage, totalPages]);
 
   return (
-    <div className="min-h-screen">
-      <div
-        className={`container ${!isMobile && leftPaddingClass}  ${isMobile ? "px-4" : ""} "pr-4 pt-8 mx-auto max-w-[110rem] w-full transition-all duration-300`}
-      >
+    <div className={`${leftPaddingClass} transition-all duration-300 min-h-screen`}>
+      <div className="container mx-auto pt-8 pr-1 max-w-[105rem] w-full">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-0">
-          <div className="mb-6 sm:mb-0">
-            <h1 className="text-3xl  mt-3 lg:mt-2 font-bold bg-clip-text">
-              Job Application Tracker
-            </h1>
-          </div>
-          <Button onClick={() => setIsAddDialogOpen(true)} type="button">
-            <Plus className="mr-2 h-5 w-5" />
-            Add Application
+          <h1 className="text-3xl mt-3 lg:mt-2 font-bold">Job Application Tracker</h1>
+          <Button onClick={() => setIsAddOpen(true)}>
+            <Plus className="mr-2 h-5 w-5" />Add Application
           </Button>
         </div>
 
-        {/* Search and Controls */}
-        <div className="rounded-xl shadow-none p-2 mb-2">
+        {/* Filters */}
+        <div className="rounded-xl p-2 mb-2">
           <div className="flex flex-col md:flex-row gap-4 items-end">
             <div className="relative flex-1">
-              <Label
-                htmlFor="search"
-                className="text-sm font-medium mb-1.5 block"
-              >
+              <Label htmlFor="search" className="text-sm font-medium mb-1.5 block">
                 Search Applications
               </Label>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="search"
-                  placeholder="Search by company, position, or location..."
-                  className="pl-9 bg-background"
+                  placeholder="Search by company or position"
+                  className="pl-9"
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={e => setSearchTerm(e.target.value)}
                 />
               </div>
             </div>
             <div className="w-full md:w-64">
-              <Label
-                htmlFor="sort-order"
-                className="text-sm font-medium mb-1.5 block"
-              >
+              <Label htmlFor="sort-order" className="text-sm font-medium mb-1.5 block">
                 Sort by Date
               </Label>
               <Select
                 value={sortOrder}
-                onValueChange={(value) => {
-                  setSortOrder(value as "desc" | "asc");
-                  resetPagination();
-                }}
+                onValueChange={val => { setSortOrder(val as any); resetPage(); }}
               >
-                <SelectTrigger
-                  id="sort-order"
-                  className="w-full bg-background"
-                >
+                <SelectTrigger id="sort-order" className="w-full">
                   <SelectValue placeholder="Sort by Date" />
                 </SelectTrigger>
                 <SelectContent>
@@ -371,28 +284,20 @@ const JobApplicationsPage: React.FC = () => {
             <Button
               variant="outline"
               className="h-10 px-4 md:self-end"
-              onClick={() => {
-                setSearchTerm("");
-                setSortOrder("desc");
-                resetPagination();
-                fetchJobs(1);
-              }}
+              onClick={() => { setSearchTerm(""); setSortOrder("desc"); resetPage(); fetchJobs(1); }}
             >
               <Filter className="h-4 w-4 mr-2" /> Reset Filters
             </Button>
           </div>
         </div>
 
-        {/* Tabs for Status Filter */}
+        {/* Tabs */}
         <Tabs
           value={activeTab}
-          onValueChange={(value) => {
-            setActiveTab(value);
-            resetPagination();
-          }}
+          onValueChange={val => { setActiveTab(val); resetPage(); }}
           className="mb-4"
         >
-          <TabsList className="dark:bg-zinc-850">
+          <TabsList className="dark:bg-zinc-900">
             <TabsTrigger value="all">All</TabsTrigger>
             <TabsTrigger value="saved">Saved</TabsTrigger>
             <TabsTrigger value="applied">Applied</TabsTrigger>
@@ -402,78 +307,60 @@ const JobApplicationsPage: React.FC = () => {
           </TabsList>
         </Tabs>
 
-        {/* Job Cards Section */}
-        <div className="relative">
-          <div
-            className={`job-cards grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3  gap-4 transition-opacity duration-300 ${jobsLoading ? "opacity-50" : "opacity-100"
-              }`}
-          >
-            {jobs.length === 0 && !jobsLoading ? (
-              <Card className="w-full p-12 flex flex-col items-center justify-center text-center">
-                <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-4">
-                  <CardTitle className="text-emerald-500">No Jobs</CardTitle>
-                </div>
-                <h3 className="text-xl font-semibold mb-2">
-                  No job applications found
-                </h3>
-                <p className="text-muted-foreground mb-6 max-w-md">
-                  {searchTerm || activeTab !== "all"
-                    ? "Try adjusting your search or filters to find what you're looking for."
-                    : "Start by adding your first job application to track your job search journey."}
-                </p>
-                <Button onClick={() => setIsAddDialogOpen(true)}>
-                  <Plus className="mr-2 h-4 w-4" /> Add Your First Application
-                </Button>
-              </Card>
-            ) : (
-              jobs.map((job) => (
-                <JobCard
-                  key={job.id}
-                  job={job}
-                  onEdit={() => editJobApplication(job)}
-                  onDelete={() => deleteJobApplication(job.id)}
-                  onDeleteAttachment={deleteAttachment}
-                />
-              ))
-            )}
-          </div>
-          {jobsLoading && (
-            <div className="absolute mt-12 inset-0 flex justify-center items-center pointer-events-none">
-              <SolidCircleLoader className="w-10 h-10" />
-            </div>
+        {/* Job Cards */}
+        <div className="job-cards grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {jobs.length === 0 && hasFetched ? (
+            <Card className="w-full p-12 flex flex-col items-center justify-center text-center">
+              <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                <CardTitle className="text-emerald-500">No Jobs</CardTitle>
+              </div>
+              <h3 className="text-xl font-semibold mb-2">No job applications found</h3>
+              <p className="text-muted-foreground mb-6 max-w-md">
+                {searchTerm || activeTab !== "all"
+                  ? "Try adjusting your search or filters."
+                  : "Start by adding your first job application."}
+              </p>
+              <Button onClick={() => setIsAddOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" />Add Your First Application
+              </Button>
+            </Card>
+          ) : (
+            jobs.map(job => (
+              <JobCard
+                key={job.id}
+                job={job}
+                onEdit={() => startEdit(job)}
+                onDelete={() => deleteJob(job.id)}
+                onDeleteAttachment={deleteAttachment}
+              />
+            ))
           )}
         </div>
 
-        {/* Optimized Pagination UI */}
-        {!jobsLoading && totalPages > 1 && (
+        {/* Pagination */}
+        {totalPages > 1 && (
           <div className="mt-8 flex justify-center">
-            <Pagination className="mb-7">
+            <Pagination>
               <PaginationContent>
                 <PaginationItem>
                   <PaginationPrevious
                     href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      if (currentPage > 1) goToPage(currentPage - 1);
-                    }}
+                    onClick={e => { e.preventDefault(); goTo(currentPage - 1); }}
                   />
                 </PaginationItem>
-                {paginationRange.map((page, index) =>
-                  page === "..." ? (
-                    <PaginationItem key={`ellipsis-${index}`}>
+                {range.map((p, i) =>
+                  p === "..." ? (
+                    <PaginationItem key={`e-${i}`}>
                       <PaginationEllipsis />
                     </PaginationItem>
                   ) : (
-                    <PaginationItem key={page}>
+                    <PaginationItem key={p}>
                       <PaginationLink
                         href="#"
-                        isActive={page === currentPage}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          goToPage(Number(page));
-                        }}
+                        isActive={p === currentPage}
+                        onClick={e => { e.preventDefault(); goTo(Number(p)); }}
                       >
-                        {page}
+                        {p}
                       </PaginationLink>
                     </PaginationItem>
                   )
@@ -481,10 +368,7 @@ const JobApplicationsPage: React.FC = () => {
                 <PaginationItem>
                   <PaginationNext
                     href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      if (currentPage < totalPages) goToPage(currentPage + 1);
-                    }}
+                    onClick={e => { e.preventDefault(); goTo(currentPage + 1); }}
                   />
                 </PaginationItem>
               </PaginationContent>
@@ -492,32 +376,30 @@ const JobApplicationsPage: React.FC = () => {
           </div>
         )}
 
+        {/* Dialogs */}
         <AddJobDialog
-          open={isAddDialogOpen}
-          onOpenChange={setIsAddDialogOpen}
+          open={isAddOpen}
+          onOpenChange={setIsAddOpen}
           formData={formData}
-          onInputChange={handleInputChange}
-          handleStatusChange={handleStatusChange}
-          handleDateChange={handleDateChange}
+          onInputChange={handleChange}
+          handleStatusChange={handleStatus}
+          handleDateChange={handleDate}
           files={files}
-          handleFileUpload={handleFileUpload}
+          handleFileUpload={handleFiles}
           removeFile={removeFile}
-          onSubmit={addJobApplication}
-          actionLoading={actionLoading}
+          onSubmit={addJob}
         />
-
         <EditJobDialog
-          open={isEditDialogOpen}
-          onOpenChange={setIsEditDialogOpen}
+          open={isEditOpen}
+          onOpenChange={setIsEditOpen}
           formData={formData}
-          onInputChange={handleInputChange}
-          handleStatusChange={handleStatusChange}
-          handleDateChange={handleDateChange}
+          onInputChange={handleChange}
+          handleStatusChange={handleStatus}
+          handleDateChange={handleDate}
           files={files}
-          handleFileUpload={handleFileUpload}
+          handleFileUpload={handleFiles}
           removeFile={removeFile}
-          onSubmit={updateJobApplication}
-          actionLoading={actionLoading}
+          onSubmit={updateJob}
           currentJob={currentJob}
           onDeleteAttachment={deleteAttachment}
         />
@@ -527,4 +409,5 @@ const JobApplicationsPage: React.FC = () => {
 };
 
 export default JobApplicationsPage;
+
 
