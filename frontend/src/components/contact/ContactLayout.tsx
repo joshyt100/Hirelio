@@ -247,18 +247,27 @@ export default function ContactLayout() {
     }
   };
 
+
+  const toDateString = (d: Date) => d.toISOString().split("T")[0];
   const addInteraction = async (data: Omit<Interaction, "id">) => {
     if (!currentContact) return;
     setContactsLoading(true);
     try {
-      await addInteractionAPI(currentContact.id, data);
+      // convert the Date -> "YYYY-MM-DD"
+      const payload = {
+        ...data,
+        date: toDateString(data.date),
+      };
+      await addInteractionAPI(currentContact.id, payload);
       setIsInteractOpen(false);
       setInteractionForm({ date: new Date(), type: "email", notes: "" });
+      setPrefetchedPages({});
       fetchContacts(currentPage);
     } finally {
       setContactsLoading(false);
     }
   };
+
 
   const toggleFavorite = async (contact: Contact) => {
     try {

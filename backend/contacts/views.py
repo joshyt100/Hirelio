@@ -1,4 +1,4 @@
-from django.db.models import Q
+from django.db.models import Q, Prefetch
 import django_filters
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, filters
@@ -42,11 +42,6 @@ class ContactFilter(django_filters.FilterSet):
 
 
 class ContactListCreateAPIView(generics.ListCreateAPIView):
-    """
-    GET: List contacts with filtering, ordering, pagination, and interaction prefetching.
-    POST: Create a new contact tied to the authenticated user.
-    """
-
     serializer_class = ContactSerializer
     pagination_class = ContactPageNumberPagination
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
@@ -55,9 +50,12 @@ class ContactListCreateAPIView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        # Prefetch interactions in descending-date order
         return (
             Contact.objects.filter(user=self.request.user)
-            .prefetch_related("interactions")
+            .prefetch_related(
+                Prefetch("interactions", queryset=Interaction.objects.order_by("-date"))
+            )
             .order_by("-id")
         )
 
@@ -65,9 +63,9 @@ class ContactListCreateAPIView(generics.ListCreateAPIView):
         serializer.save(user=self.request.user)
 
     def list(self, request, *args, **kwargs):
-        query_params = request.query_params
+        params = request.query_params
         user_id = request.user.id
-        filter_key = "&".join(f"{k}={v}" for k, v in sorted(query_params.items()))
+        filter_key = "&".join(f"{k}={v}" for k, v in sorted(params.items()))
         raw_key = f"contacts_count:{user_id}:{filter_key}"
         key_hash = hashlib.md5(raw_key.encode()).hexdigest()
         cache_key = f"contacts_count:{key_hash}"
@@ -80,36 +78,25 @@ class ContactListCreateAPIView(generics.ListCreateAPIView):
 
         page = self.paginate_queryset(queryset)
         if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            response = self.get_paginated_response(serializer.data)
-            response.data["count"] = count  # Ensure accurate total
-            return response
+            data = self.get_serializer(page, many=True).data
+            resp = self.get_paginated_response(data)
+            resp.data["count"] = count
+            return resp
 
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+        return Response(self.get_serializer(queryset, many=True).data)
 
 
 class ContactRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
-    """
-    GET:    Retrieve a single contact and its interactions.
-    PUT:    Update a contact.
-    DELETE: Delete a contact.
-    """
-
     serializer_class = ContactSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         return Contact.objects.filter(user=self.request.user).prefetch_related(
-            "interactions"
+            Prefetch("interactions", queryset=Interaction.objects.order_by("-date"))
         )
 
 
 class InteractionCreateAPIView(generics.CreateAPIView):
-    """
-    POST: Create a new interaction for a given contact ID.
-    """
-
     serializer_class = InteractionSerializer
     permission_classes = [IsAuthenticated]
 
@@ -123,10 +110,6 @@ class InteractionCreateAPIView(generics.CreateAPIView):
 
 
 class InteractionDestroyAPIView(generics.DestroyAPIView):
-    """
-    DELETE: Delete an interaction (ownership is validated via contact.user).
-    """
-
     serializer_class = InteractionSerializer
     permission_classes = [IsAuthenticated]
 
