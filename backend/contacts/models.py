@@ -1,12 +1,10 @@
 # contacts/models.py
 
+
 from django.db import models
 from django.db.models import indexes
-from django.conf import settings
 from django.contrib.postgres.indexes import GinIndex
-
 from django.contrib.auth import get_user_model
-
 
 User = get_user_model()
 
@@ -47,7 +45,6 @@ class Contact(models.Model):
     linkedin_url = models.URLField(blank=True, null=True)
     twitter_url = models.URLField(blank=True, null=True)
     is_favorite = models.BooleanField(default=False, db_index=True)
-    # Using JSONField for tags; alternatively use ArrayField (if using Postgres) or a separate Tag model.
     tags = models.JSONField(default=list, blank=True, db_index=True)
     avatar = models.URLField(blank=True, null=True)
 
@@ -78,6 +75,13 @@ class Interaction(models.Model):
     date = models.DateField()
     type = models.CharField(max_length=20, choices=INTERACTION_TYPES, default="email")
     notes = models.TextField(blank=True, null=True)
+
+    class Meta:
+        # Always order interactions newest first
+        ordering = ["-date"]
+        indexes = [
+            models.Index(fields=["contact", "-date"]),
+        ]
 
     def __str__(self):
         return f"{self.type} on {self.date} for {self.contact.name}"

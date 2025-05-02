@@ -1,4 +1,4 @@
-// contact/ContactCard.tsx
+// src/components/ContactCard.tsx
 import React from "react";
 import {
   Mail,
@@ -18,8 +18,20 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Contact, interactionTypes, relationshipOptions } from "@/types/ContactTypes";
 
 interface ContactCardProps {
@@ -37,10 +49,15 @@ export const ContactCard: React.FC<ContactCardProps> = ({
   onDelete,
   toggleFavorite,
 }) => {
-  // Helper Functions
+  // Helper: format a date as "MMM DD, YYYY"
   const formatDate = (date: Date) =>
-    new Date(date).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+    new Date(date).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
 
+  // Helper: initials from name
   const getInitials = (name: string) =>
     name
       .split(" ")
@@ -49,26 +66,35 @@ export const ContactCard: React.FC<ContactCardProps> = ({
       .toUpperCase()
       .substring(0, 2);
 
+  // Helper: human-friendly "time ago"
   const getTimeAgo = (date?: Date) => {
     if (!date) return "";
     const now = new Date();
-    const diffInDays = Math.floor((now.getTime() - new Date(date).getTime()) / (1000 * 60 * 60 * 24));
-    if (diffInDays === 0) return "Today";
-    if (diffInDays === 1) return "Yesterday";
-    if (diffInDays < 7) return `${diffInDays} days ago`;
-    if (diffInDays < 30) return `${Math.floor(diffInDays / 7)} weeks ago`;
-    if (diffInDays < 365) return `${Math.floor(diffInDays / 30)} months ago`;
-    return `${Math.floor(diffInDays / 365)} years ago`;
+    const diff = now.getTime() - new Date(date).getTime();
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    if (days === 0) return "Today";
+    if (days === 1) return "Yesterday";
+    if (days < 7) return `${days} days ago`;
+    if (days < 30) return `${Math.floor(days / 7)} weeks ago`;
+    if (days < 365) return `${Math.floor(days / 30)} months ago`;
+    return `${Math.floor(days / 365)} years ago`;
   };
 
+  // Helper: relationship label
   const getRelationshipLabel = (value: string) =>
     relationshipOptions.find((opt) => opt.value === value)?.label || "Unknown";
 
+  // Helper: icon for interaction type
   const getInteractionTypeIcon = (type: string) => {
-    const interaction = interactionTypes.find((t) => t.value === type);
-    const Icon = interaction?.icon || interactionTypes[0].icon;
+    const found = interactionTypes.find((t) => t.value === type);
+    const Icon = found?.icon || interactionTypes[0].icon;
     return <Icon className="h-4 w-4" />;
   };
+
+  // Sort interactions newest-first
+  const sortedInteractions = [...contact.interactions].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
 
   return (
     <Card className="overflow-hidden">
@@ -124,7 +150,7 @@ export const ContactCard: React.FC<ContactCardProps> = ({
                 <Edit className="h-4 w-4 mr-2" /> Edit Contact
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onLogInteraction(contact)}>
-                <MessageSquare className="h-4 w-4 mr-2 " /> Log Interaction
+                <MessageSquare className="h-4 w-4 mr-2" /> Log Interaction
               </DropdownMenuItem>
               <DropdownMenuItem className="text-red-600" onClick={() => onDelete(contact.id)}>
                 <Trash2 className="h-4 w-4 mr-2" /> Delete Contact
@@ -133,6 +159,7 @@ export const ContactCard: React.FC<ContactCardProps> = ({
           </DropdownMenu>
         </div>
       </CardHeader>
+
       <CardContent className="pb-3">
         <div className="space-y-3">
           {(contact.company || contact.position) && (
@@ -145,16 +172,19 @@ export const ContactCard: React.FC<ContactCardProps> = ({
               </span>
             </div>
           )}
+
           <div className="flex items-center text-sm">
             <Briefcase className="h-4 w-4 mr-1.5 text-muted-foreground" />
             <span>{getRelationshipLabel(contact.relationship)}</span>
           </div>
+
           {contact.lastContacted && (
             <div className="flex items-center text-sm">
               <Clock className="h-4 w-4 mr-1.5 text-muted-foreground" />
               <span>Last contacted: {getTimeAgo(contact.lastContacted)}</span>
             </div>
           )}
+
           {contact.tags.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mt-2">
               {contact.tags.map((tag) => (
@@ -164,21 +194,25 @@ export const ContactCard: React.FC<ContactCardProps> = ({
               ))}
             </div>
           )}
+
           {contact.notes && (
             <div className="mt-3 text-sm">
               <p className="line-clamp-2">{contact.notes}</p>
             </div>
           )}
-          {contact.interactions.length > 0 && (
+
+          {sortedInteractions.length > 0 && (
             <div className="mt-4">
               <h4 className="text-sm font-medium mb-2">Recent Interactions</h4>
               <div className="space-y-2 max-h-32 overflow-y-auto pr-2">
-                {contact.interactions.slice(0, 3).map((interaction) => (
+                {sortedInteractions.slice(0, 3).map((interaction) => (
                   <div
                     key={interaction.id}
                     className="flex gap-2 text-sm border-l-2 border-muted pl-3 py-1"
                   >
-                    <div className="flex-shrink-0 mt-0.5">{getInteractionTypeIcon(interaction.type)}</div>
+                    <div className="flex-shrink-0 mt-0.5">
+                      {getInteractionTypeIcon(interaction.type)}
+                    </div>
                     <div className="flex-1">
                       <div className="flex justify-between">
                         <span className="font-medium capitalize">{interaction.type}</span>
@@ -195,13 +229,19 @@ export const ContactCard: React.FC<ContactCardProps> = ({
           )}
         </div>
       </CardContent>
+
       <CardFooter className="pt-0">
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => onEdit(contact)}>
             <Edit className="h-3.5 w-3.5 mr-1.5" /> Edit
           </Button>
-          <Button className="text-primary " variant="outline" size="sm" onClick={() => onLogInteraction(contact)}>
-            <MessageSquare className="h-3.5 w-3.5 mr-1.5 " /> Log Interaction
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-primary"
+            onClick={() => onLogInteraction(contact)}
+          >
+            <MessageSquare className="h-3.5 w-3.5 mr-1.5" /> Log Interaction
           </Button>
           {contact.linkedinUrl && (
             <Button

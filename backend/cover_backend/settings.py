@@ -36,7 +36,7 @@ COVER_LETTER_PROMPT = env("COVER_LETTER_PROMPT")
 # SECURITY WARNING: keep the secret key used in production secret!
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = [
     "localhost",
@@ -364,6 +364,7 @@ AWS_S3_FILE_OVERWRITE = False
 # LOGIN_REDIRECT_URL = "/"
 # LOGOUT_REDIRECT_URL = "/"
 GEMINI_API_KEY = env("GEMINI_API_KEY")
+GROQ_API_KEY = env("GROQ_API_KEY")
 
 
 LOGIN_REDIRECT_URL = "http://127.0.0.1:5173/dashboard"

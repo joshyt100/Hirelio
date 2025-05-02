@@ -67,8 +67,14 @@ const RESPONSE_TIME_COLORS = [
 
 const RATE_COLORS = ["#3b82f6", "#f59e0b", "#22c55e"];
 
-// Memoized card components to prevent unnecessary re-renders
-const SummaryCard = React.memo(({ title, value, subtitle }) => (
+// Memoized card components to prevent unnecessary <re-renders</re-renders>
+
+interface SummaryCardProps {
+  title: string,
+  value: string,
+  subtitle: string,
+}
+const SummaryCard = React.memo(({ title, value, subtitle }: SummaryCardProps) => (
   <Card>
     <CardHeader className="pb-2">
       <CardTitle className="text-sm font-medium">{title}</CardTitle>
@@ -159,7 +165,6 @@ const LocationBarChart = React.memo(({ data }) => (
     </BarChart>
   </ResponsiveContainer>
 ));
-
 const TimelineChart = React.memo(({ data }) => (
   <ResponsiveContainer width="100%" height="100%">
     <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
@@ -299,56 +304,53 @@ export default function DashboardLayout() {
           {/* Header & Filter Skeleton */}
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
             <div className="mb-4 sm:mb-0">
-              <Skeleton className="h-8 w-48 mb-2" />
-              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-8 dark:bg-zinc-800 w-48 mb-2" />
+              <Skeleton className="h-4 w-32 dark:bg-zinc-800" />
             </div>
             <Skeleton className="h-8 w-40" />
           </div>
 
-          {/* Summary Cards Skeleton */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             {Array.from({ length: 4 }).map((_, i) => (
               <Card key={i}>
                 <CardHeader className="pb-2">
-                  <Skeleton className="h-4 w-24 mb-1" />
+                  <Skeleton className="h-4 dark:bg-zinc-800 w-24 mb-1" />
                 </CardHeader>
                 <CardContent>
-                  <Skeleton className="h-8 w-16 mb-1" />
-                  <Skeleton className="h-3 w-28" />
+                  <Skeleton className="h-8 w-16 dark:bg-zinc-800 mb-1" />
+                  <Skeleton className="h-3 w-28 dark:bg-zinc-800" />
                 </CardContent>
               </Card>
             ))}
           </div>
 
           {/* Tabs Skeleton */}
-          <Skeleton className="h-10 w-full mb-6" />
+          <Skeleton className="h-10 w-full mb-6 dark:bg-zinc-800" />
 
           {/* Charts Skeleton */}
           <div className="grid md:grid-cols-2 gap-6 mb-6">
-            {/* Application Status Pie Chart and Recent Applications */}
             {Array.from({ length: 2 }).map((_, i) => (
               <Card key={`mid-${i}`}>
                 <CardHeader>
-                  <Skeleton className="h-6 w-32 mb-2" />
-                  <Skeleton className="h-4 w-48" />
+                  <Skeleton className="h-6 w-32 mb-2 dark:bg-zinc-800" />
+                  <Skeleton className="h-4 w-48 dark:bg-zinc-800" />
                 </CardHeader>
                 <CardContent>
-                  <Skeleton className="h-[300px] w-full" />
+                  <Skeleton className="h-[300px] dark:bg-zinc-800 w-full" />
                 </CardContent>
               </Card>
             ))}
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
-            {/* Response & Success Rate Bar Chart and Top Locations */}
             {Array.from({ length: 2 }).map((_, i) => (
               <Card key={`bottom-${i}`}>
                 <CardHeader>
-                  <Skeleton className="h-6 w-32 mb-2" />
-                  <Skeleton className="h-4 w-48" />
+                  <Skeleton className="h-6 dark:bg-zinc-800 w-32 mb-2" />
+                  <Skeleton className="h-4 w-48 dark:bg-zinc-800" />
                 </CardHeader>
                 <CardContent>
-                  <Skeleton className="h-[300px] w-full" />
+                  <Skeleton className="h-[300px] w-full dark:bg-zinc-800" />
                 </CardContent>
               </Card>
             ))}

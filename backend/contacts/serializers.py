@@ -1,5 +1,3 @@
-# contacts/serializers.py
-
 from rest_framework import serializers
 from .models import Contact, Interaction
 
@@ -11,8 +9,8 @@ class InteractionSerializer(serializers.ModelSerializer):
 
 
 class ContactSerializer(serializers.ModelSerializer):
-    # Represent the interactions as a nested serializer (read-only here)
-    interactions = InteractionSerializer(many=True, read_only=True)
+    # Expose interactions in descending-date order
+    interactions = serializers.SerializerMethodField()
 
     class Meta:
         model = Contact
@@ -34,3 +32,8 @@ class ContactSerializer(serializers.ModelSerializer):
             "avatar",
             "interactions",
         ]
+
+    def get_interactions(self, obj):
+        # Because of Interaction.Meta.ordering, .all() is already newest first
+        qs = obj.interactions.all()
+        return InteractionSerializer(qs, many=True).data
