@@ -1,4 +1,4 @@
-# 🚀 HireMind (Coming Soon!)
+# 🚀 Hirelio (Coming Soon!)
 
 **Job Application Tracker + Analytics + Tools**  
 Built with a full-stack architecture using modern web technologies and best practices.
