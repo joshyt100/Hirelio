@@ -31,7 +31,8 @@ const navItems = [
 
 // Sidebar item component
 const SidebarNavItem: React.FC<SidebarNavItemProps> = React.memo(
-  ({ to, icon, label, collapsed }) => (
+  ({ to, icon, label, collapsed }: SidebarNavItemProps) => (
+
     <Link to={to} className="w-full">
       <Button variant="ghost" className="w-full justify-start border-none">
         {icon}

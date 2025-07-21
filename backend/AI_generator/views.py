@@ -1,12 +1,12 @@
+# backend/AI_generator/views.py
+
 import logging
-import re
 import boto3
+import google.generativeai as genai
 import PyPDF2
 import textwrap
 
 from io import BytesIO
-from datetime import datetime
-from openai import OpenAI
 from django.conf import settings
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
@@ -27,21 +27,6 @@ from AI_generator.serializers import (
 logger = logging.getLogger(__name__)
 
 
-def extract_info_from_resume(resume_text):
-    email_match = re.search(r"[\w.+-]+@[\w-]+\.[\w.-]+", resume_text)
-    phone_match = re.search(r"\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}", resume_text)
-    linkedin_match = re.search(r"https?://(www\.)?linkedin\.com/in/[\w-]+", resume_text)
-    lines = [line.strip() for line in resume_text.split("\n") if line.strip()]
-    name_guess = lines[0] if lines else "[APPLICANT_NAME]"
-
-    return {
-        "email": email_match.group() if email_match else "[APPLICANT_EMAIL]",
-        "phone": phone_match.group() if phone_match else "[APPLICANT_PHONE]",
-        "linkedin": linkedin_match.group() if linkedin_match else "[LINKEDIN_URL]",
-        "name": name_guess,
-    }
-
-
 class CoverLetterPageNumberPagination(PageNumberPagination):
     page_size = 15
     page_size_query_param = "page_size"
@@ -53,6 +38,9 @@ class GenerateCoverLetterView(APIView):
     parser_classes = [MultiPartParser, FormParser]
 
     def extract_text_from_pdf(self, file_obj):
+        """
+        Extract text from a PDF file and reset the file pointer.
+        """
         try:
             reader = PyPDF2.PdfReader(file_obj)
             text = ""
@@ -71,72 +59,40 @@ class GenerateCoverLetterView(APIView):
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        job_title = serializer.validated_data.get("job_title")
-        company_name = serializer.validated_data.get("company_name")
-        job_description = serializer.validated_data.get("job_description")
-        resume_file = serializer.validated_data.get("resume")
+        job_description = serializer.validated_data["job_description"]
+        resume_file = serializer.validated_data["resume"]
 
         try:
             resume_text = self.extract_text_from_pdf(resume_file)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-        resume_info = extract_info_from_resume(resume_text)
+        prompt = (
+            settings.COVER_LETTER_PROMPT
+            + f"""
 
-        city = serializer.validated_data.get("city", "[CITY]")
-        state = serializer.validated_data.get("state", "[STATE]")
-        city_state = f"{city}, {state}"
-        today_date = datetime.now().strftime("%m/%d/%Y")
+📌 **Applicant’s Resume**:
+{resume_text}
 
-        try:
-            header = settings.COVER_LETTER_PROMPT.format(
-                position_title=job_title,
-                company_name=company_name,
-                applicant_name=resume_info["name"],
-                applicant_email=resume_info["email"],
-                applicant_phone=resume_info["phone"],
-                city_state=city_state,
-                linkedin_url=resume_info["linkedin"],
-                date=today_date,
-            )
-        except KeyError as e:
-            logger.error("Missing placeholder in COVER_LETTER_PROMPT: %s", e)
-            return Response({"error": f"Prompt formatting error: {e}"}, status=500)
+📌 **Job Description**:
+{job_description}
 
-        prompt = f"""
-{header}
-
-📄 Resume:
-{resume_text.strip()}
-
-🔍 Job Description:
-{job_description.strip()}
+---
+Now, generate a **highly engaging, professional, and personalized cover letter** using the format above.
+**Make it feel like a real person wrote it**, avoiding stiff and robotic phrasing.
 """
+        )
 
         try:
-            client = OpenAI(
-                api_key=settings.GROQ_API_KEY, base_url="https://api.groq.com/openai/v1"
-            )
-            logger.debug("Prompt to LLM: %s", prompt)
-            response = client.chat.completions.create(
-                model="llama3-70b-8192",
-                messages=[
-                    {
-                        "role": "system",
-                        "content": "You are a helpful and professional writing assistant.",
-                    },
-                    {"role": "user", "content": prompt},
-                ],
-                temperature=0.7,
-                max_tokens=800,
-            )
-            generated = response.choices[0].message.content.strip()
-            return Response({"cover_letter": generated}, status=status.HTTP_200_OK)
+            genai.configure(api_key=settings.GEMINI_API_KEY)
+            model = genai.GenerativeModel("gemini-2.0-flash-lite")
+            response = model.generate_content(prompt)
+            text = response.text if response else "Error generating cover letter."
+            return Response({"cover_letter": text}, status=status.HTTP_200_OK)
         except Exception as e:
-            logger.error("LLM generation failed: %s", e)
+            logger.error("Error generating cover letter: %s", e)
             return Response(
-                {"error": "Failed to generate cover letter."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
 
@@ -151,13 +107,11 @@ class SaveCoverLetter(APIView):
 
         job_title = serializer.validated_data["job_title"]
         company_name = serializer.validated_data["company_name"]
-        cover_text = request.data.get("cover_letter")
+        cover_letter_text = request.data.get("cover_letter")
 
-        if not (job_title and company_name and cover_text):
+        if not (job_title and company_name and cover_letter_text):
             return Response(
-                {
-                    "error": "Job title, company name, and cover letter text are required."
-                },
+                {"error": "Job title, company name, and cover letter are required"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -166,6 +120,7 @@ class SaveCoverLetter(APIView):
         pdf = canvas.Canvas(buffer)
         pdf.setFont("Helvetica", 12)
 
+        # Layout settings
         page_width = 780
         left_margin, right_margin = 40, 30
         usable_width = page_width - left_margin - right_margin
@@ -174,7 +129,7 @@ class SaveCoverLetter(APIView):
         para_space = 10
         max_chars = int(usable_width / pdf.stringWidth("A", "Helvetica", 12))
 
-        for paragraph in cover_text.split("\n"):
+        for paragraph in cover_letter_text.split("\n"):
             if not paragraph.strip():
                 y -= para_space
                 continue
@@ -203,14 +158,14 @@ class SaveCoverLetter(APIView):
             ExtraArgs={"ContentType": "application/pdf"},
         )
 
-        cover = CoverLetter.objects.create(
+        cover_letter = CoverLetter.objects.create(
             user=request.user,
             job_title=job_title,
             company_name=company_name,
             cover_letter_file_path=file_name,
         )
         return Response(
-            {"message": "Cover letter saved", "cover_letter_id": cover.id},
+            {"message": "Cover letter saved", "cover_letter_id": cover_letter.id},
             status=status.HTTP_201_CREATED,
         )
 
@@ -270,7 +225,8 @@ class DeleteCoverLetter(APIView):
             region_name=settings.AWS_S3_REGION_NAME,
         )
         s3.delete_object(
-            Bucket=settings.AWS_STORAGE_BUCKET_NAME, Key=cl.cover_letter_file_path
+            Bucket=settings.AWS_STORAGE_BUCKET_NAME,
+            Key=cl.cover_letter_file_path,
         )
         cl.delete()
         return Response({"message": "Deleted"}, status=status.HTTP_200_OK)
