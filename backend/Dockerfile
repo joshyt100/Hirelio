@@ -1,26 +1,23 @@
-# Use official Python image
-FROM python:3.12
+FROM python:3.12-slim
 
-# Set environment variables
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+# Prevent Python from writing pyc files & buffering
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
-# Set the working directory
 WORKDIR /app
 
-# Copy only requirements first (for better caching)
-COPY requirements.txt /app/
+# Install Postgres client libs
+RUN apt-get update && apt-get install -y libpq-dev gcc && rm -rf /var/lib/apt/lists/*
 
-# Install dependencies
-RUN apt-get update && apt-get install -y libpq-dev && rm -rf /var/lib/apt/lists/*
+# Install Python dependencies
+COPY requirements.txt /app/
 RUN pip install --no-cache-dir --upgrade pip && pip install -r requirements.txt
 
-# Copy the rest of the application files
+# Copy Django app
 COPY . /app/
 
-# Expose port 8000
+# Expose port internally
 EXPOSE 8000
 
-# Start the Django application using Gunicorn
 CMD ["gunicorn", "--bind", "0.0.0.0:8000", "cover_backend.wsgi:application"]
 
