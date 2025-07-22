@@ -53,7 +53,7 @@ HireMind uses **session-based authentication** powered by Django’s `django.con
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/hiremind.git
+git clone https://github.com/joshyt100/hiremind.git
 cd hiremind
 
 # Start everything
@@ -67,7 +67,7 @@ docker-compose up --build
 
 ### Clone Repo
 ```bash
-git clone https://github.com/yourusername/hiremind.git
+git clone https://github.com/joshyt100/hiremind.git
 cd hiremind
 ```
 ```bash
