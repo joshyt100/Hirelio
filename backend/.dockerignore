@@ -1,8 +1,29 @@
-__pycache__/
+
+# Virtual environments
+venv
+.env
 *.pyc
+__pycache__/
 *.pyo
 *.pyd
-.env
-media/
+
+# Local dev artifacts
+*.db
+*.sqlite3
+*.log
+
+# Django static/media (usually collected in container)
 staticfiles/
+media/
+
+# Git / IDE
+.git
+.gitignore
+.idea
+.vscode
+.DS_Store
+
+# Docker itself
+Dockerfile
+docker-compose.yml
 

@@ -2,13 +2,13 @@ import axios from "axios";
 import type { JobApplication } from "@/types/JobApplicationTypes";
 import type { AxiosResponse } from "axios";
 
-const API_URL = "http://127.0.0.1:8000/api/job-applications";
+const API_URL = import.meta.env.VITE_API_BASE_URL + "job-applications";
 
 // Fetch list of job applications
 export async function fetchJobApplications(
   params: Record<string, any>
 ): Promise<AxiosResponse<JobApplication[]>> {
-  return await axios.get(API_URL, { params, withCredentials: true });
+  return await axios.get(API_URL + "/", { params, withCredentials: true });
 }
 
 // Create a job application

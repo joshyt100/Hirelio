@@ -6,7 +6,8 @@ import {
   PagedCoverLettersResponse,
 } from "@/types/CoverLetterTypes";
 
-const BASE_URL = "http://127.0.0.1:8000/cover";
+const BASE_URL = import.meta.env.VITE_API_BASE_URL + "cover";
+
 
 /**
  * Save a generated cover letter to the backend.

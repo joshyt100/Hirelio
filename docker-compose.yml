@@ -7,38 +7,70 @@ services:
     restart: always
     env_file:
       - ./backend/.env
+    # Expose to other containers; publish 8000 if you want to reach Django from host
     expose:
-      - "8000"  # Internal only (Nginx will proxy)
+      - "8000"
+    ports:
+      - "8000:8000"
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     command: >
-      sh -c "python manage.py migrate &&
-             python manage.py collectstatic --noinput &&
-             gunicorn --bind 0.0.0.0:8000 cover_backend.wsgi:application"
+      sh -c "
+        python manage.py migrate &&
+        python manage.py collectstatic --noinput &&
+        gunicorn --bind 0.0.0.0:8000 cover_backend.wsgi:application
+      "
+    networks:
+      - hiremind-network
 
   frontend:
     build: ./frontend
     container_name: hiremind-frontend
     restart: always
     ports:
-      - "3000:80"  # Single origin: React + API proxy
+      - "3000:80"
     depends_on:
       - backend
+    networks:
+      - hiremind-network
 
   db:
     image: postgres:15-alpine
     container_name: hiremind-db
     restart: always
-    env_file:
-      - ./backend/.env
+    environment:
+      POSTGRES_DB: cover
+      POSTGRES_USER: josh
+      POSTGRES_PASSWORD: Ilovecats-09
     volumes:
       - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d cover -U josh"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - hiremind-network
 
   redis:
     image: redis:alpine
     container_name: hiremind-redis
     restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - hiremind-network
+
+networks:
+  hiremind-network:
+    driver: bridge
 
 volumes:
   db-data:

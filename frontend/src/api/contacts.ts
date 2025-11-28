@@ -3,7 +3,8 @@ import axios, { AxiosResponse } from "axios";
 import type { Contact, Interaction, ContactFormData } from "@/types/ContactTypes";
 import { getCookie } from "@/utils/csrfUtils";
 
-const API_URL = "http://127.0.0.1:8000/api/contacts";
+const API_URL = import.meta.env.VITE_API_BASE_URL + "contacts";
+
 
 // Fetch a paginated list of contacts
 export async function fetchContactsAPI(

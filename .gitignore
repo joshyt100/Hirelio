@@ -7,6 +7,10 @@ backend/media/
 backend/staticfiles/
 .env
 
+*.env
+.env.*
+
+
 backend/source/
 
 

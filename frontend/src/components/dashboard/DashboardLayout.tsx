@@ -47,7 +47,7 @@ import {
 } from "@/types/JobApplicationTypes";
 
 // Dashboard API endpoint
-const DASHBOARD_URL = "http://127.0.0.1:8000/api/dashboard/";
+const DASHBOARD_URL = import.meta.env.VITE_API_BASE_URL + "dashboard/";
 
 // Color maps for pies - defined outside component to prevent recreation
 const STATUS_COLORS = {
@@ -369,7 +369,7 @@ export default function DashboardLayout() {
             <h1 className="text-3xl font-bold sm:mt-4 lg:mt-0">Job Application Dashboard</h1>
             <p className="text-muted-foreground mb-4">Track your job search progress and analytics</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items=center gap-2">
             <Filter className="h-4 w-4 text-muted-foreground" />
             <Select value={timeRange} onValueChange={setTimeRange}>
               <SelectTrigger className="w-[180px]">
@@ -530,3 +530,4 @@ export default function DashboardLayout() {
     </div>
   );
 }
+

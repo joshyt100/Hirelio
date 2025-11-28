@@ -165,16 +165,16 @@ WSGI_APPLICATION = "cover_backend.wsgi.application"
 #         "PORT": os.environ["PGPORT"],
 #     }
 # }
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.postgresql",
-#         "NAME": os.environ["DATABASE_NAME"],
-#         "USER": os.environ["DATABASE_USER"],
-#         "PASSWORD": os.environ["DATABASE_PASSWORD"],
-#         "HOST": os.environ["DATABASE_HOST"],
-#         "PORT": os.environ["DATABASE_PORT"],
-#     }
-# }
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.environ["DATABASE_NAME"],
+        "USER": os.environ["DATABASE_USER"],
+        "PASSWORD": os.environ["DATABASE_PASSWORD"],
+        "HOST": os.environ["DATABASE_HOST"],
+        "PORT": os.environ["DATABASE_PORT"],
+    }
+}
 # new for logging
 # LOGGING = {
 #     "version": 1,
@@ -192,11 +192,11 @@ WSGI_APPLICATION = "cover_backend.wsgi.application"
 
 
 # prod
-DATABASES = {
-    "default": dj_database_url.config(
-        default=env("DATABASE_URL"), conn_max_age=600, ssl_require=True
-    )
-}
+# DATABASES = {
+#     "default": dj_database_url.config(
+#         default=env("DATABASE_URL"), conn_max_age=600, ssl_require=True
+#     )
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -299,15 +299,30 @@ else:
 # }
 #
 # cache
+# CACHES = {
+#     "default": {
+#         "BACKEND": "django_redis.cache.RedisCache",
+#         "LOCATION": "redis://127.0.0.1:6379/1",  # Change the URL if your Redis is hosted elsewhere
+#         "OPTIONS": {
+#             "CLIENT_CLASS": "django_redis.client.DefaultClient",
+#         },
+#     }
+# }
+
+
+# docker version
+REDIS_URL = os.getenv(
+    "REDIS_URL", "redis://127.0.0.1:6379/1"
+)  # default for bare-metal dev
+
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379/1",  # Change the URL if your Redis is hosted elsewhere
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-        },
+        "LOCATION": REDIS_URL,
+        "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
     }
 }
+
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"
 
@@ -319,6 +334,7 @@ CORS_ALLOW_CREDENTIALS = True
 # ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 
 CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
     "http://localhost:5174",
     "http://127.0.0.1:5174",
     "http://127.0.0.1:5173",
@@ -326,6 +342,7 @@ CORS_ALLOWED_ORIGINS = [
     "https://ai-cover-letter-generator-mrxj.vercel.app",
 ]
 CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
     "http://localhost:5174",
     "http://127.0.0.1:5174",
     "http://127.0.0.1:5173",
@@ -353,10 +370,6 @@ AWS_SECRET_ACCESS_KEY = env("AWS_SECRET_ACCESS_KEY")
 AWS_STORAGE_BUCKET_NAME = env("AWS_STORAGE_BUCKET_NAME")
 AWS_S3_REGION_NAME = "us-east-2"  # Change if needed
 AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
-print("custom AWS_S3_CUSTOM_DOMAIN", AWS_S3_CUSTOM_DOMAIN)
-print("AWS_STORAGE_BUCKET_NAME", AWS_STORAGE_BUCKET_NAME)
-print("secret", AWS_SECRET_ACCESS_KEY)
-print("access", AWS_ACCESS_KEY_ID)
 AWS_S3_FILE_OVERWRITE = False
 
 # Use S3 as default storage for files
