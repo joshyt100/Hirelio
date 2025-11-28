@@ -58,10 +58,6 @@ cd hiremind
 
 # Start everything
 docker-compose up --build
-
-
-# Start everything
-docker-compose up --build
 ```
 ## Manual Backend Setup (Without Docker)
 
